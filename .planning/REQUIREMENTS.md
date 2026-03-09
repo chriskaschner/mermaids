@@ -19,10 +19,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Coloring
 
-- [ ] **COLR-01**: User can view 4-6 mermaid-themed coloring pages
-- [ ] **COLR-02**: User can tap a region on a coloring page to fill it with the selected color
-- [ ] **COLR-03**: User can select colors from the same 8-12 swatch palette
-- [ ] **COLR-04**: User can undo last color fill with a single tap
+- [x] **COLR-01**: User can view 4-6 mermaid-themed coloring pages
+- [x] **COLR-02**: User can tap a region on a coloring page to fill it with the selected color
+- [x] **COLR-03**: User can select colors from the same 8-12 swatch palette
+- [x] **COLR-04**: User can undo last color fill with a single tap
 
 ### Navigation
 
@@ -101,10 +101,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DRSS-05 | Phase 2 | Complete |
 | DRSS-06 | Phase 2 | Complete |
 | DRSS-07 | Phase 2 | Complete |
-| COLR-01 | Phase 3 | Pending |
-| COLR-02 | Phase 3 | Pending |
-| COLR-03 | Phase 3 | Pending |
-| COLR-04 | Phase 3 | Pending |
+| COLR-01 | Phase 3 | Complete |
+| COLR-02 | Phase 3 | Complete |
+| COLR-03 | Phase 3 | Complete |
+| COLR-04 | Phase 3 | Complete |
 
 **Coverage:**
 - v1 requirements: 17 total

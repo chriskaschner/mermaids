@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - SVG rendering, art assets, touch interaction, navigation shell on iPad Safari (completed 2026-03-09)
 - [x] **Phase 2: Dress-Up** - Mermaid customization with swappable parts, colors, accessories, and undo (completed 2026-03-09)
-- [ ] **Phase 3: Coloring** - Tap-to-fill coloring pages with color palette and undo
+- [x] **Phase 3: Coloring** - Tap-to-fill coloring pages with color palette and undo (completed 2026-03-09)
 
 ## Phase Details
 
@@ -60,11 +60,11 @@ Plans:
   2. Tapping a region on a coloring page fills it with the currently selected color
   3. The same 8-12 color swatch palette from dress-up is available for coloring
   4. Tapping an undo button reverts the last color fill
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
 - [x] 03-01-PLAN.md -- Playwright test scaffold, 4 coloring page SVG assets, coloring.js state module
-- [ ] 03-02-PLAN.md -- Gallery UI, tap-to-fill wiring, color palette, undo, back button, visual verification
+- [x] 03-02-PLAN.md -- Gallery UI, tap-to-fill wiring, color palette, undo, back button, visual verification
 
 ## Progress
 
@@ -75,4 +75,4 @@ Phases execute in numeric order: 1 -> 2 -> 3
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete   | 2026-03-09 |
 | 2. Dress-Up | 2/2 | Complete | 2026-03-09 |
-| 3. Coloring | 1/2 | In progress | - |
+| 3. Coloring | 2/2 | Complete | 2026-03-09 |
