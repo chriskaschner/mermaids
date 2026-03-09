@@ -3,42 +3,40 @@
 **Defined:** 2026-03-09
 **Core Value:** A 6-year-old can open this on an iPad, build her own mermaid, and color mermaid pages -- with zero friction and pure delight.
 
-## v1 Requirements
+## v1.1 Requirements
 
-Requirements for initial release. Each maps to roadmap phases.
+Requirements for v1.1 Art & Deploy milestone. Each maps to roadmap phases.
 
-### Dress-Up
+### Art Pipeline
 
-- [x] **DRSS-01**: User can view a base mermaid character on screen
-- [x] **DRSS-02**: User can swap between 3-4 tail options by tapping
-- [x] **DRSS-03**: User can swap between 3-4 hair style options by tapping
-- [x] **DRSS-04**: User can add/swap crowns and accessories (3-4 options)
-- [x] **DRSS-05**: User can recolor mermaid parts by tapping color swatches (8-12 colors)
-- [x] **DRSS-06**: User can undo last action with a single tap
-- [x] **DRSS-07**: Sparkle/bubble animation plays when all parts are selected
+- [ ] **ARTP-01**: Local script generates kawaii mermaid coloring page PNGs via OpenAI gpt-image-1 API
+- [ ] **ARTP-02**: Local script traces generated PNGs to SVG via vtracer
+- [ ] **ARTP-03**: Local script generates dress-up mermaid variant parts (tails, hair, accessories) with consistent alignment via edit API masks
+- [ ] **ARTP-04**: Generated SVG assets are committed to frontend/assets/svg/ for static serving
 
 ### Coloring
 
-- [x] **COLR-01**: User can view 4-6 mermaid-themed coloring pages
-- [x] **COLR-02**: User can tap a region on a coloring page to fill it with the selected color
-- [x] **COLR-03**: User can select colors from the same 8-12 swatch palette
-- [x] **COLR-04**: User can undo last color fill with a single tap
+- [ ] **CLRV-01**: Coloring pages use canvas-based flood fill at tap point (replaces region-based fill)
+- [ ] **CLRV-02**: SVG line art overlays canvas for crisp retina-quality outlines
+- [ ] **CLRV-03**: Flood fill handles anti-aliased edges with configurable tolerance
+- [ ] **CLRV-04**: Canvas memory is released when navigating away from coloring (iPad Safari safety)
+- [ ] **CLRV-05**: Undo reverts last flood-fill operation via ImageData snapshots
 
-### Navigation
+### Dress-Up
 
-- [x] **NAVG-01**: Home screen shows dress-up and coloring as large icon buttons (no text required)
-- [x] **NAVG-02**: User can switch between activities from any screen via icon navigation
+- [ ] **DRSV-01**: Dress-up mermaid uses AI-generated kawaii art (replaces hand-crafted SVG)
+- [ ] **DRSV-02**: SVG defs+use variant swap works with new AI-generated part assets
+- [ ] **DRSV-03**: Color recoloring works on kawaii flat-color style parts
 
-### Foundation
+### Deployment
 
-- [x] **FOUN-01**: All tap targets are 60pt+ for a 6-year-old's motor control
-- [x] **FOUN-02**: App works in iPad Safari with touch interaction
-- [x] **FOUN-03**: Consistent watercolor art style across all assets
-- [x] **FOUN-04**: All interactions provide instant visual feedback (no loading states)
+- [ ] **DPLY-01**: frontend/ directory deploys to GitHub Pages as static site
+- [ ] **DPLY-02**: All asset paths are relative (no absolute /assets/ paths)
+- [ ] **DPLY-03**: App is accessible on iPad Safari via GitHub Pages URL
 
-## v2 Requirements
+## Future Requirements
 
-Deferred to future release. Tracked but not in current roadmap.
+Deferred to later milestones. Tracked but not in current roadmap.
 
 ### Scene Builder
 
@@ -81,6 +79,7 @@ Deferred to future release. Tracked but not in current roadmap.
 | Complex color picker | HSL/hex too complex, use preset swatches |
 | Zoom / pan | Spatial navigation is confusing for a child |
 | Onboarding tutorial | If the app needs a tutorial, it's too complex |
+| GitHub Actions CI | Local scripts sufficient for art generation, manual deploy |
 
 ## Traceability
 
@@ -88,29 +87,27 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FOUN-01 | Phase 1 | Partial (01-01: CSS foundation) |
-| FOUN-02 | Phase 1 | Partial (01-01: viewport + web-app meta) |
-| FOUN-03 | Phase 1 | Complete (01-02: watercolor SVG filter + mermaid SVG) |
-| FOUN-04 | Phase 1 | Complete |
-| NAVG-01 | Phase 1 | Complete |
-| NAVG-02 | Phase 1 | Complete |
-| DRSS-01 | Phase 2 | Complete |
-| DRSS-02 | Phase 2 | Complete |
-| DRSS-03 | Phase 2 | Complete |
-| DRSS-04 | Phase 2 | Complete |
-| DRSS-05 | Phase 2 | Complete |
-| DRSS-06 | Phase 2 | Complete |
-| DRSS-07 | Phase 2 | Complete |
-| COLR-01 | Phase 3 | Complete |
-| COLR-02 | Phase 3 | Complete |
-| COLR-03 | Phase 3 | Complete |
-| COLR-04 | Phase 3 | Complete |
+| ARTP-01 | - | Pending |
+| ARTP-02 | - | Pending |
+| ARTP-03 | - | Pending |
+| ARTP-04 | - | Pending |
+| CLRV-01 | - | Pending |
+| CLRV-02 | - | Pending |
+| CLRV-03 | - | Pending |
+| CLRV-04 | - | Pending |
+| CLRV-05 | - | Pending |
+| DRSV-01 | - | Pending |
+| DRSV-02 | - | Pending |
+| DRSV-03 | - | Pending |
+| DPLY-01 | - | Pending |
+| DPLY-02 | - | Pending |
+| DPLY-03 | - | Pending |
 
 **Coverage:**
-- v1 requirements: 17 total
-- Mapped to phases: 17
-- Unmapped: 0
+- v1.1 requirements: 15 total
+- Mapped to phases: 0
+- Unmapped: 15
 
 ---
 *Requirements defined: 2026-03-09*
-*Last updated: 2026-03-09 after roadmap creation*
+*Last updated: 2026-03-09 after milestone v1.1 start*
