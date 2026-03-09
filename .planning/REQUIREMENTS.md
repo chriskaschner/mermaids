@@ -88,29 +88,29 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DRSS-01 | TBD | Pending |
-| DRSS-02 | TBD | Pending |
-| DRSS-03 | TBD | Pending |
-| DRSS-04 | TBD | Pending |
-| DRSS-05 | TBD | Pending |
-| DRSS-06 | TBD | Pending |
-| DRSS-07 | TBD | Pending |
-| COLR-01 | TBD | Pending |
-| COLR-02 | TBD | Pending |
-| COLR-03 | TBD | Pending |
-| COLR-04 | TBD | Pending |
-| NAVG-01 | TBD | Pending |
-| NAVG-02 | TBD | Pending |
-| FOUN-01 | TBD | Pending |
-| FOUN-02 | TBD | Pending |
-| FOUN-03 | TBD | Pending |
-| FOUN-04 | TBD | Pending |
+| FOUN-01 | Phase 1 | Pending |
+| FOUN-02 | Phase 1 | Pending |
+| FOUN-03 | Phase 1 | Pending |
+| FOUN-04 | Phase 1 | Pending |
+| NAVG-01 | Phase 1 | Pending |
+| NAVG-02 | Phase 1 | Pending |
+| DRSS-01 | Phase 2 | Pending |
+| DRSS-02 | Phase 2 | Pending |
+| DRSS-03 | Phase 2 | Pending |
+| DRSS-04 | Phase 2 | Pending |
+| DRSS-05 | Phase 2 | Pending |
+| DRSS-06 | Phase 2 | Pending |
+| DRSS-07 | Phase 2 | Pending |
+| COLR-01 | Phase 3 | Pending |
+| COLR-02 | Phase 3 | Pending |
+| COLR-03 | Phase 3 | Pending |
+| COLR-04 | Phase 3 | Pending |
 
 **Coverage:**
 - v1 requirements: 17 total
-- Mapped to phases: 0
-- Unmapped: 17
+- Mapped to phases: 17
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-09*
-*Last updated: 2026-03-09 after initial definition*
+*Last updated: 2026-03-09 after roadmap creation*
