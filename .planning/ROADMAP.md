@@ -12,7 +12,7 @@ This roadmap delivers a mermaid-themed creative activity app for a 6-year-old on
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation** - SVG rendering, art assets, touch interaction, navigation shell on iPad Safari
+- [x] **Phase 1: Foundation** - SVG rendering, art assets, touch interaction, navigation shell on iPad Safari (completed 2026-03-09)
 - [ ] **Phase 2: Dress-Up** - Mermaid customization with swappable parts, colors, accessories, and undo
 - [ ] **Phase 3: Coloring** - Tap-to-fill coloring pages with color palette and undo
 
@@ -28,12 +28,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. All interactive elements have tap targets of 60pt or larger
   4. Home screen shows two large icon buttons (dress-up and coloring) and tapping either navigates to that activity screen
   5. Navigation icons are visible from every activity screen and switching between them works with a single tap
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 
 Plans:
 - [x] 01-01-PLAN.md -- Project scaffolding, FastAPI server, iPad HTML/CSS shell, test infrastructure
 - [x] 01-02-PLAN.md -- Art pipeline (vtracer) and proof-of-concept mermaid SVG with tappable regions
-- [ ] 01-03-PLAN.md -- Hash router, touch interaction, sparkle feedback, navigation, and visual verification
+- [x] 01-03-PLAN.md -- Hash router, touch interaction, sparkle feedback, navigation, and visual verification
 
 ### Phase 2: Dress-Up
 **Goal**: A child can build her own mermaid by mixing and matching tails, hair, accessories, and colors -- and see a sparkle animation when she's done
@@ -72,6 +72,6 @@ Phases execute in numeric order: 1 -> 2 -> 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 2/3 | Executing | - |
+| 1. Foundation | 3/3 | Complete   | 2026-03-09 |
 | 2. Dress-Up | 0/0 | Not started | - |
 | 3. Coloring | 0/0 | Not started | - |

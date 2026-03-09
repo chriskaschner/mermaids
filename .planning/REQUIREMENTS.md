@@ -26,15 +26,15 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Navigation
 
-- [ ] **NAVG-01**: Home screen shows dress-up and coloring as large icon buttons (no text required)
-- [ ] **NAVG-02**: User can switch between activities from any screen via icon navigation
+- [x] **NAVG-01**: Home screen shows dress-up and coloring as large icon buttons (no text required)
+- [x] **NAVG-02**: User can switch between activities from any screen via icon navigation
 
 ### Foundation
 
-- [ ] **FOUN-01**: All tap targets are 60pt+ for a 6-year-old's motor control
-- [ ] **FOUN-02**: App works in iPad Safari with touch interaction
+- [x] **FOUN-01**: All tap targets are 60pt+ for a 6-year-old's motor control
+- [x] **FOUN-02**: App works in iPad Safari with touch interaction
 - [x] **FOUN-03**: Consistent watercolor art style across all assets
-- [ ] **FOUN-04**: All interactions provide instant visual feedback (no loading states)
+- [x] **FOUN-04**: All interactions provide instant visual feedback (no loading states)
 
 ## v2 Requirements
 
@@ -91,9 +91,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FOUN-01 | Phase 1 | Partial (01-01: CSS foundation) |
 | FOUN-02 | Phase 1 | Partial (01-01: viewport + web-app meta) |
 | FOUN-03 | Phase 1 | Complete (01-02: watercolor SVG filter + mermaid SVG) |
-| FOUN-04 | Phase 1 | Pending |
-| NAVG-01 | Phase 1 | Pending |
-| NAVG-02 | Phase 1 | Pending |
+| FOUN-04 | Phase 1 | Complete |
+| NAVG-01 | Phase 1 | Complete |
+| NAVG-02 | Phase 1 | Complete |
 | DRSS-01 | Phase 2 | Pending |
 | DRSS-02 | Phase 2 | Pending |
 | DRSS-03 | Phase 2 | Pending |

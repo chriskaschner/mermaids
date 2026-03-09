@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 01-02-PLAN.md
-last_updated: "2026-03-09T17:22:51Z"
-last_activity: 2026-03-09 -- Completed plan 01-02 (art pipeline and mermaid SVG)
+status: planning
+stopped_at: Completed 01-03-PLAN.md (Phase 1 complete)
+last_updated: "2026-03-09T18:15:28.000Z"
+last_activity: 2026-03-09 -- Completed plan 01-03 (interactive frontend, routing, touch, sparkle)
 progress:
   total_phases: 3
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
-  percent: 22
+  completed_plans: 3
+  percent: 33
 ---
 
 # Project State
@@ -21,32 +21,32 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-09)
 
 **Core value:** A 6-year-old can open this on an iPad, build her own mermaid, and color mermaid pages -- with zero friction and pure delight.
-**Current focus:** Phase 1: Foundation
+**Current focus:** Phase 2: Dress-Up
 
 ## Current Position
 
-Phase: 1 of 3 (Foundation)
-Plan: 3 of 3 in current phase
-Status: Executing
-Last activity: 2026-03-09 -- Completed plan 01-02 (art pipeline and mermaid SVG)
+Phase: 2 of 3 (Dress-Up)
+Plan: 1 of 2 in current phase
+Status: Ready for Phase 2 planning
+Last activity: 2026-03-09 -- Completed plan 01-03 (interactive frontend, routing, touch, sparkle)
 
-Progress: [##░░░░░░░░] 22%
+Progress: [███░░░░░░░] 33%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: 2.5min
-- Total execution time: 0.08 hours
+- Total plans completed: 3
+- Average duration: 3min
+- Total execution time: 0.15 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Foundation | 2 | 5min | 2.5min |
+| 1. Foundation | 3 | 9min | 3min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (2min), 01-02 (3min)
+- Last 5 plans: 01-01 (2min), 01-02 (3min), 01-03 (4min)
 - Trend: Consistent
 
 *Updated after each plan completion*
@@ -67,6 +67,10 @@ Recent decisions affecting current work:
 - [01-02]: vtracer API uses out_path parameter (writes file directly), not string return
 - [01-02]: PoC mermaid SVG hand-crafted for guaranteed region structure, not pipeline-traced
 - [01-02]: Face details rendered outside watercolor filter for clarity
+- [01-03]: Mermaid SVG inlined as template string (no fetch, no build step in Phase 1)
+- [01-03]: Single pointerdown listener with event delegation to [data-region] elements
+- [01-03]: Sparkle particles are SVG circles in SVG coordinate space (not HTML divs)
+- [01-03]: Nav bar hidden on home screen (home IS the navigation)
 
 ### Pending Todos
 
@@ -79,6 +83,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-09T17:22:51Z
-Stopped at: Completed 01-02-PLAN.md
-Resume file: .planning/phases/01-foundation/01-02-SUMMARY.md
+Last session: 2026-03-09T18:15:27.997Z
+Stopped at: Completed 01-03-PLAN.md (Phase 1 complete)
+Resume file: None
