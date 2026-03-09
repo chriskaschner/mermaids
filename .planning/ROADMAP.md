@@ -63,7 +63,7 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 03-01-PLAN.md -- Playwright test scaffold, 4 coloring page SVG assets, coloring.js state module
+- [x] 03-01-PLAN.md -- Playwright test scaffold, 4 coloring page SVG assets, coloring.js state module
 - [ ] 03-02-PLAN.md -- Gallery UI, tap-to-fill wiring, color palette, undo, back button, visual verification
 
 ## Progress
@@ -75,4 +75,4 @@ Phases execute in numeric order: 1 -> 2 -> 3
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete   | 2026-03-09 |
 | 2. Dress-Up | 2/2 | Complete | 2026-03-09 |
-| 3. Coloring | 0/2 | In progress | - |
+| 3. Coloring | 1/2 | In progress | - |

@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Completed 02-02-PLAN.md (Phase 2 complete)
-last_updated: "2026-03-09T19:36:51.579Z"
-last_activity: 2026-03-09 -- Completed plan 02-02 (Selection panel UI, color palette, undo, celebration animation)
+status: executing
+stopped_at: Completed 03-01-PLAN.md
+last_updated: "2026-03-09T22:22:05Z"
+last_activity: 2026-03-09 -- Completed plan 03-01 (Coloring page SVGs, coloring.js state module, test scaffold)
 progress:
   total_phases: 3
   completed_phases: 2
-  total_plans: 5
-  completed_plans: 5
-  percent: 100
+  total_plans: 7
+  completed_plans: 6
+  percent: 86
 ---
 
 # Project State
@@ -21,23 +21,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-09)
 
 **Core value:** A 6-year-old can open this on an iPad, build her own mermaid, and color mermaid pages -- with zero friction and pure delight.
-**Current focus:** Phase 3: Coloring (Phase 2 complete)
+**Current focus:** Phase 3: Coloring (Plan 01 complete, Plan 02 next)
 
 ## Current Position
 
 Phase: 3 of 3 (Coloring)
-Plan: 1 of ? in current phase (not yet planned)
-Status: Phase 2 complete, Phase 3 pending planning
-Last activity: 2026-03-09 -- Completed plan 02-02 (Selection panel UI, color palette, undo, celebration animation)
+Plan: 2 of 2 in current phase
+Status: Plan 03-01 complete, Plan 03-02 next
+Last activity: 2026-03-09 -- Completed plan 03-01 (Coloring page SVGs, coloring.js state module, test scaffold)
 
-Progress: [██████████] 100%
+Progress: [████████░░] 86%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
+- Total plans completed: 6
 - Average duration: 3min
-- Total execution time: 0.25 hours
+- Total execution time: 0.30 hours
 
 **By Phase:**
 
@@ -45,9 +45,10 @@ Progress: [██████████] 100%
 |-------|-------|-------|----------|
 | 1. Foundation | 3 | 9min | 3min |
 | 2. Dress-Up | 2 | 6min | 3min |
+| 3. Coloring | 1 | 3min | 3min |
 
 **Recent Trend:**
-- Last 5 plans: 01-02 (3min), 01-03 (4min), 02-01 (4min), 02-02 (2min)
+- Last 5 plans: 01-03 (4min), 02-01 (4min), 02-02 (2min), 03-01 (3min)
 - Trend: Consistent
 
 *Updated after each plan completion*
@@ -80,6 +81,10 @@ Recent decisions affecting current work:
 - [02-02]: Dynamic option rendering via renderOptions() clears and rebuilds on tab switch
 - [02-02]: lastPartCategory tracks which part category to recolor when color tab is active
 - [02-02]: Celebration fires once per completion, resets if any part reverts to default
+- [03-01]: Duplicated COLORS array in coloring.js (not imported from dressup.js) for separate state lifecycles
+- [03-01]: Hot pink (#ff69b4, COLORS[2]) as default selected color for coloring pages
+- [03-01]: Undo closures capture per-element fill snapshots for correct multi-element region restore
+- [03-01]: SVG coloring pages use <g data-region pointer-events=all> convention for fillable regions
 
 ### Pending Todos
 
@@ -92,6 +97,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-09T19:32:00Z
-Stopped at: Completed 02-02-PLAN.md (Phase 2 complete)
+Last session: 2026-03-09T22:22:05Z
+Stopped at: Completed 03-01-PLAN.md
 Resume file: None
