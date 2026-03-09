@@ -6,6 +6,15 @@
 
 import { initTouch } from "./touch.js";
 import { initDressUp, resetState } from "./dressup.js";
+import {
+  COLORING_PAGES,
+  COLORS,
+  fillRegion,
+  undo as coloringUndo,
+  setSelectedColor,
+  getSelectedColor,
+  resetColoringState,
+} from "./coloring.js";
 
 const appEl = () => document.getElementById("app");
 
@@ -105,11 +114,106 @@ async function renderDressUp() {
 
 function renderColoring() {
   const el = appEl();
+  resetColoringState();
   el.innerHTML = `
-    <div class="coloring-placeholder">
-      <p>Coming soon!</p>
+    <div class="coloring-gallery">
+      ${COLORING_PAGES.map(
+        (page) => `
+        <button class="gallery-thumb" data-page="${page.id}" aria-label="${page.label}">
+          <img src="${page.file}" alt="${page.label}" />
+        </button>
+      `
+      ).join("")}
     </div>
   `;
+  // Wire thumbnail clicks
+  el.querySelectorAll(".gallery-thumb").forEach((btn) => {
+    btn.addEventListener("click", () => openColoringPage(btn.dataset.page));
+  });
+}
+
+async function openColoringPage(pageId) {
+  const el = appEl();
+  const page = COLORING_PAGES.find((p) => p.id === pageId);
+  if (!page) return;
+
+  el.innerHTML = '<div class="loading">Loading...</div>';
+
+  try {
+    const resp = await fetch(page.file);
+    const svgText = await resp.text();
+
+    el.innerHTML = `
+      <div class="coloring-view">
+        <div class="coloring-page-container">
+          ${svgText}
+        </div>
+        <div class="coloring-panel">
+          <div class="coloring-toolbar">
+            <button class="back-btn" aria-label="Back to gallery">
+              <svg width="24" height="24" viewBox="0 0 24 24">
+                <path d="M15,4 L7,12 L15,20" fill="none" stroke="#888" stroke-width="2.5" stroke-linecap="round" />
+              </svg>
+            </button>
+            <button class="undo-btn" aria-label="Undo">
+              <svg width="24" height="24" viewBox="0 0 24 24">
+                <path d="M7,12 L3,8 L7,4 M3,8 L15,8 Q20,8 20,14 Q20,20 15,20 L10,20"
+                      fill="none" stroke="#888" stroke-width="2.5" stroke-linecap="round" />
+              </svg>
+            </button>
+          </div>
+          <div class="options-row" id="color-swatches">
+            ${COLORS.map(
+              (color, i) => `
+              <button class="color-swatch${i === 2 ? " selected" : ""}"
+                      data-color="${color}"
+                      aria-label="Color ${color}"
+                      style="background: ${color};">
+              </button>
+            `
+            ).join("")}
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Set default selected color (hot pink, COLORS[2])
+    setSelectedColor(COLORS[2]);
+
+    // Wire back button
+    el.querySelector(".back-btn").addEventListener("click", () => {
+      renderColoring();
+    });
+
+    // Wire undo button
+    el.querySelector(".undo-btn").addEventListener("click", () => {
+      coloringUndo();
+    });
+
+    // Wire color swatch selection
+    el.querySelectorAll(".color-swatch").forEach((swatch) => {
+      swatch.addEventListener("click", () => {
+        setSelectedColor(swatch.dataset.color);
+        el.querySelectorAll(".color-swatch").forEach((s) =>
+          s.classList.remove("selected")
+        );
+        swatch.classList.add("selected");
+      });
+    });
+
+    // Wire tap-to-fill on SVG regions via pointerdown event delegation
+    const svgRoot = el.querySelector(".coloring-page-container svg");
+    if (svgRoot) {
+      svgRoot.addEventListener("pointerdown", (event) => {
+        const region = event.target.closest("[data-region]");
+        if (region) {
+          fillRegion(region, getSelectedColor());
+        }
+      });
+    }
+  } catch (err) {
+    el.innerHTML = '<div class="error">Could not load coloring page.</div>';
+  }
 }
 
 // -- Router ------------------------------------------------------------------

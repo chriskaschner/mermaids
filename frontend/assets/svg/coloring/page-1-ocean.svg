@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800">
   <!-- Ocean Mermaid Coloring Page -->
 
-  <!-- Water background section -->
+  <!-- Water background section (bottom area, below mermaid) -->
   <g data-region="water" pointer-events="all">
-    <path d="M0,0 L600,0 L600,800 L0,800 Z" fill="white" stroke="#555" stroke-width="2"/>
+    <path d="M0,680 Q100,670 200,690 Q300,710 400,690 Q500,670 600,680 L600,800 L0,800 Z" fill="white" stroke="#555" stroke-width="2"/>
   </g>
 
   <!-- Mermaid tail -->

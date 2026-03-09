@@ -250,18 +250,92 @@ html, body {
     }
 }
 
-/* Coloring placeholder */
-.coloring-placeholder {
+/* Coloring gallery */
+.coloring-gallery {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    padding: 16px;
+    height: 100%;
+    align-content: center;
+}
+
+.gallery-thumb {
+    aspect-ratio: 3 / 4;
+    border: 3px solid #ddd;
+    border-radius: 16px;
+    background: white;
+    padding: 8px;
+    cursor: pointer;
+    touch-action: manipulation;
+    min-height: 120px;
+}
+
+.gallery-thumb:active {
+    transform: scale(0.95);
+    border-color: #5b8fa8;
+}
+
+.gallery-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* Coloring view */
+.coloring-view {
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column;
     height: 100%;
 }
 
-.coloring-placeholder p {
-    font-size: 2rem;
-    color: #7eb8c8;
-    font-weight: 600;
+.coloring-page-container {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 8px;
+}
+
+.coloring-page-container svg {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* Coloring panel */
+.coloring-panel {
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.9);
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.coloring-toolbar {
+    display: flex;
+    gap: 8px;
+    padding: 4px 8px;
+    justify-content: space-between;
+}
+
+.back-btn {
+    width: 60px;
+    height: 60px;
+    min-width: 60px;
+    min-height: 60px;
+    border: 2px solid transparent;
+    border-radius: 14px;
+    background: rgba(200, 220, 240, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+    cursor: pointer;
+}
+
+/* Coloring color swatch selected state */
+.color-swatch.selected {
+    border-color: #5b8fa8;
+    box-shadow: 0 0 0 2px #5b8fa8;
 }
 
 /* Loading state */
