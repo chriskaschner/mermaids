@@ -87,27 +87,27 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ARTP-01 | - | Pending |
-| ARTP-02 | - | Pending |
-| ARTP-03 | - | Pending |
-| ARTP-04 | - | Pending |
-| CLRV-01 | - | Pending |
-| CLRV-02 | - | Pending |
-| CLRV-03 | - | Pending |
-| CLRV-04 | - | Pending |
-| CLRV-05 | - | Pending |
-| DRSV-01 | - | Pending |
-| DRSV-02 | - | Pending |
-| DRSV-03 | - | Pending |
-| DPLY-01 | - | Pending |
-| DPLY-02 | - | Pending |
-| DPLY-03 | - | Pending |
+| ARTP-01 | Phase 4 | Pending |
+| ARTP-02 | Phase 4 | Pending |
+| ARTP-03 | Phase 4 | Pending |
+| ARTP-04 | Phase 4 | Pending |
+| CLRV-01 | Phase 5 | Pending |
+| CLRV-02 | Phase 5 | Pending |
+| CLRV-03 | Phase 5 | Pending |
+| CLRV-04 | Phase 5 | Pending |
+| CLRV-05 | Phase 5 | Pending |
+| DRSV-01 | Phase 6 | Pending |
+| DRSV-02 | Phase 6 | Pending |
+| DRSV-03 | Phase 6 | Pending |
+| DPLY-01 | Phase 7 | Pending |
+| DPLY-02 | Phase 7 | Pending |
+| DPLY-03 | Phase 7 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 15 total
-- Mapped to phases: 0
-- Unmapped: 15
+- Mapped to phases: 15
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-09*
-*Last updated: 2026-03-09 after milestone v1.1 start*
+*Last updated: 2026-03-09 after roadmap creation*
