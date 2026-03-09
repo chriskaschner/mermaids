@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: MVP
-status: milestone_complete
-stopped_at: v1.0 milestone archived
-last_updated: "2026-03-09T23:00:00Z"
-last_activity: 2026-03-09 -- Archived v1.0 milestone (3 phases, 7 plans)
+milestone: v1.1
+milestone_name: Art & Deploy
+status: defining_requirements
+stopped_at: Milestone v1.1 started
+last_updated: "2026-03-09T23:10:00Z"
+last_activity: 2026-03-09 -- Milestone v1.1 started (art pipeline, flood fill, deployment)
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 7
-  completed_plans: 7
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,15 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-09)
 
 **Core value:** A 6-year-old can open this on an iPad, build her own mermaid, and color mermaid pages -- with zero friction and pure delight.
-**Current focus:** v1.0 complete -- planning next milestone
+**Current focus:** v1.1 Art & Deploy -- AI-generated kawaii art, flood-fill coloring, GitHub Pages
 
 ## Current Position
 
-Milestone: v1.0 MVP -- SHIPPED 2026-03-09
-Status: Milestone archived, ready for next milestone
-Last activity: 2026-03-09 -- Archived v1.0 milestone
-
-Progress: [##########] 100%
+Phase: Not started (defining requirements)
+Plan: --
+Status: Defining requirements
+Last activity: 2026-03-09 -- Milestone v1.1 started
 
 ## Accumulated Context
 
@@ -43,10 +42,12 @@ None.
 
 ### Blockers/Concerns
 
-None -- v1.0 shipped clean (17/17 requirements, 37/37 tests).
+- OpenAI API key needed for art generation pipeline
+- Flood fill on SVG requires canvas-based approach or path analysis -- needs research
+- Dress-up variant parts from AI art is the highest-complexity item
 
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: v1.0 milestone archived
+Stopped at: Milestone v1.1 started, defining requirements
 Resume file: None
