@@ -48,7 +48,7 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 02-01-PLAN.md -- Test scaffold, restructured mermaid SVG with variant system, dressup.js state module
+- [x] 02-01-PLAN.md -- Test scaffold, restructured mermaid SVG with variant system, dressup.js state module
 - [ ] 02-02-PLAN.md -- Selection panel UI, color palette, undo, celebration animation, visual verification
 
 ### Phase 3: Coloring
@@ -73,5 +73,5 @@ Phases execute in numeric order: 1 -> 2 -> 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete   | 2026-03-09 |
-| 2. Dress-Up | 0/2 | In progress | - |
+| 2. Dress-Up | 1/2 | In progress | - |
 | 3. Coloring | 0/0 | Not started | - |
