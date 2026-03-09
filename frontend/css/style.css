@@ -89,3 +89,78 @@ html, body {
         transform: scale(0.5) translateY(-10px);
     }
 }
+
+/* Home screen activity buttons */
+.home-grid {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+    height: 100%;
+}
+
+.activity-btn {
+    min-width: 120px;
+    min-height: 120px;
+    width: 160px;
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 24px;
+    text-decoration: none;
+    touch-action: manipulation;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.activity-btn:active {
+    transform: scale(0.95);
+}
+
+.activity-btn--dressup {
+    background: #f5e6fa;
+    box-shadow: 0 4px 12px rgba(196, 126, 208, 0.25);
+}
+
+.activity-btn--coloring {
+    background: #fce8d8;
+    box-shadow: 0 4px 12px rgba(232, 151, 107, 0.25);
+}
+
+/* Dress-up view */
+.dressup-view {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    padding: 16px;
+}
+
+.dressup-view svg {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* Coloring placeholder */
+.coloring-placeholder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.coloring-placeholder p {
+    font-size: 2rem;
+    color: #7eb8c8;
+    font-weight: 600;
+}
+
+/* Loading state */
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    font-size: 1.5rem;
+    color: #7eb8c8;
+}
