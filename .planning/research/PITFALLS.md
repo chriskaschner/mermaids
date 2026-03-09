@@ -1,133 +1,153 @@
 # Domain Pitfalls
 
-**Domain:** Kids creative web app (dress-up, coloring, scene builder) on iPad Safari
+**Domain:** AI-generated art pipeline + flood-fill coloring + static deployment for kids' creative app
 **Researched:** 2026-03-09
-**Confidence:** MEDIUM (based on training data; web search tools unavailable for live verification)
+**Context:** v1.1 milestone -- adding AI art, flood fill, dress-up decomposition, GitHub Pages to existing v1.0 app
 
 ---
 
 ## Critical Pitfalls
 
-Mistakes that cause rewrites, broken core UX, or make the app unusable for a 6-year-old.
+Mistakes that cause rewrites or major issues.
 
 ---
 
-### Pitfall 1: Safari Touch Event Model Breaks Canvas Interaction
+### Pitfall 1: Flood Fill Cannot Work on SVG DOM -- Requires Canvas Layer
 
-**What goes wrong:** Safari on iPad handles touch events differently from Chrome/Android. Key issues: (1) `touchmove` events don't fire unless `preventDefault()` is called on `touchstart`, but calling it also kills scrolling -- so you need to know *where* the touch started. (2) Safari has a 300ms click delay unless you add `touch-action: manipulation` CSS. (3) Double-tap zoom interferes with rapid tapping (selecting accessories). (4) Safari fires both touch events and synthesized mouse events, causing duplicate actions (e.g., selecting an accessory twice).
+**What goes wrong:** The v1.0 coloring system uses `data-region` groups with `setAttribute("fill", color)` on SVG `<g>` elements. This is region-based coloring, not flood fill. Flood fill is a pixel-level algorithm that requires `getImageData()` on a canvas. You cannot implement flood fill by manipulating SVG DOM attributes. Traced SVGs from AI art will not have clean, semantically-labeled `<g data-region>` groups -- they are just raw `<path>` elements with no semantic meaning.
 
-**Why it happens:** Developers test in Chrome DevTools with "mobile simulation" which uses mouse events, not real touch events. Everything works in dev, breaks on actual iPad.
+**Why it happens:** The v1.0 system works beautifully because coloring page SVGs were hand-crafted with named `data-region` groups (see `page-1-ocean.svg`: `<g data-region="tail">`, `<g data-region="hair">`, etc.). The temptation is to keep this approach and just "auto-detect" regions from traced SVGs, but traced SVGs have hundreds of overlapping stacked paths with no semantic grouping.
 
-**Consequences:** Coloring strokes lag or skip. Dress-up items get selected twice. Pinch-to-zoom unexpectedly fires when the child uses two fingers near the canvas. The child gets frustrated because tapping feels "broken."
+**Consequences:** If you try to implement flood fill as SVG attribute manipulation, you either (a) need to manually tag every traced path with `data-region` (defeating the purpose of AI generation), or (b) accept that tapping fills only a single tiny path fragment under the pointer, which looks broken to a 6-year-old who expects a whole tail to fill.
 
 **Prevention:**
-- Use `pointer events` API (pointerdown/pointermove/pointerup) instead of separate touch/mouse handlers. Safari supports pointer events since iOS 13+.
-- Add `touch-action: manipulation` on all interactive elements to kill the 300ms delay and disable double-tap zoom.
-- Add `touch-action: none` on canvas/SVG areas where drawing happens.
-- Test on a real iPad from day one -- not just Chrome DevTools.
-- Set viewport meta: `<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">` to prevent all zoom.
+- Accept that flood fill means adding a **canvas-based rendering layer** for coloring pages
+- Architecture: render the SVG line art onto a hidden `<canvas>`, run flood fill on the canvas pixel data via `getImageData()`/`putImageData()`, display the canvas as the visible coloring surface
+- Keep SVG as the source format (scalable, clean lines) but use canvas for user interaction
+- Alternatively: use SVG line art as a crisp overlay on top of the canvas fill layer (best of both worlds)
 
-**Detection:** App works in browser dev tools but taps feel delayed, strokes skip, or items double-select on real iPad.
+**Detection:** If your flood fill implementation never calls `getImageData()` or `putImageData()`, it is not a flood fill -- it is region-based coloring with extra steps.
 
-**Phase:** Must address in Phase 1 (foundation). Touch handling is the entire interaction model.
+**Impact on existing code:**
+- `coloring.js` `fillRegion()` function (which does `element.setAttribute("fill", color)`) cannot be used for flood fill on traced SVGs
+- `app.js` coloring page touch handler (`event.target.closest("[data-region]")`) will not work on canvas -- canvas has no child elements to traverse
+- The undo system (storing previous fill values) needs to change to storing canvas image snapshots or pixel diffs
 
-**Confidence:** HIGH -- these are well-documented Safari-specific behaviors.
+**Confidence:** HIGH -- canvas flood fill is a well-established pattern with many reference implementations (q-floodfill, FloodFill2D).
 
 ---
 
-### Pitfall 2: AI Art Style Inconsistency Across Generated Assets
+### Pitfall 2: vtracer Color-Mode Output Produces Hundreds of Paths That Kill iPad Performance
 
-**What goes wrong:** You generate mermaid tails with one prompt, hair with another, accessories with a third. Each generation has slightly different color palettes, line weights, shading styles, and proportions. A crown generated separately doesn't visually "belong" on a head generated in a different session. The watercolor aesthetic varies between "loose and blobby" and "tight and detailed" across assets.
+**What goes wrong:** vtracer in `color` mode with `hierarchical="stacked"` traces every color region in an AI-generated image as a separate `<path>`. A kawaii mermaid illustration with gradients, shading, and detail easily produces 200-500+ paths. The v1.0 coloring page SVGs have ~10-15 elements each. A 30-50x increase in DOM node count causes visible jank on touch interactions and slow initial rendering on iPad Safari.
 
-**Why it happens:** AI image generators (DALL-E, Midjourney, Stable Diffusion) have no concept of a "style sheet." Each generation is probabilistic. Even with the same prompt prefix, outputs drift. The more separate generation sessions you run, the more divergent the assets become.
+**Why it happens:** vtracer is designed for faithful raster-to-vector conversion, not for producing interactive-friendly SVGs. Its "stacked" mode avoids holes by layering shapes, but each layer is a separate DOM node. AI-generated kawaii images have far more visual detail than hand-drawn line art.
 
-**Consequences:** The app looks like a collage of different artists instead of a cohesive product. A 6-year-old won't articulate "the style is inconsistent" but will feel something is "off" and lose the sense of magic.
+**Consequences:**
+- Laggy touch response on coloring pages
+- Large SVG files (100KB+ per page vs current 2-3KB hand-crafted SVGs)
+- Rendering SVG to canvas for flood fill takes longer with more paths
+- Memory pressure on iPad Safari
 
 **Prevention:**
-- Generate assets in batches, not one-at-a-time. Generate all tails in one session, all hair in one session, etc.
-- Use a single reference image in every generation prompt (img2img or style reference).
-- Establish a strict prompt template with exact style descriptors: e.g., "watercolor, soft edges, pastel palette, no outlines, dreamy, on transparent background" -- reuse verbatim.
-- Post-process all assets through the same pipeline: normalize brightness/contrast, apply consistent color grading, ensure uniform line weight.
-- Consider generating "base" assets and then creating variations (recolors, flips) programmatically rather than generating each variant separately.
-- For coloring pages specifically: generate the detailed version, then convert to outlines algorithmically (edge detection + threshold) rather than generating outlines separately. This ensures coloring pages match the dress-up assets.
+- **For coloring pages:** Use vtracer in `binary` mode (the `simplify=True` path already in `trace.py`) to produce clean black-and-white outlines only. The user adds the color -- you only need line art.
+- **For dress-up:** Keep path count manageable. Run SVGO optimization post-trace. Use aggressive `filter_speckle` (20+) and low `color_precision` (3-4) to reduce path count.
+- **Set a complexity budget:** target <50 paths per coloring page outline, <100 paths per dress-up component SVG.
+- **Test on actual iPad hardware** early and often. Simulator performance does not match real device performance.
 
-**Detection:** Place two assets from different generation sessions side-by-side. If you can tell they came from different generations, the user can too.
+**Impact on existing code:**
+- `trace.py` already has the `simplify` parameter -- use it for coloring pages
+- For dress-up SVGs, add an SVGO post-processing step to the pipeline
 
-**Phase:** Must address before any asset generation begins (Phase 1 or pre-Phase 1 asset pipeline setup). Fixing style inconsistency retroactively means regenerating everything.
+**Detection:** If `document.querySelectorAll("svg path").length` exceeds 100 on any single view, investigate performance on a real iPad.
 
-**Confidence:** HIGH -- this is universally reported by developers using AI-generated assets.
+**Confidence:** HIGH -- SVG DOM performance degradation with path count is well-documented. The project's own `trace.py` already has the `simplify` parameter for this reason.
 
 ---
 
-### Pitfall 3: Canvas/SVG Performance Death on iPad Safari with Many Layers
+### Pitfall 3: Canvas Memory Limit on iPad Safari Crashes the App Silently
 
-**What goes wrong:** A dress-up feature stacks images: body base + tail + hair + crown + necklace + earrings + background scene + fish + coral + castle. Each layer is a high-resolution PNG with transparency. On an iPad (especially older models), compositing 10-15 large transparent PNGs on a canvas causes visible lag, jank when switching items, or outright crashes in Safari due to memory pressure.
+**What goes wrong:** iPad Safari has a hard canvas memory limit of ~384MB (varies by device and iOS version). Each canvas pixel uses 4 bytes (RGBA). A single 1024x1024 canvas uses ~4MB. Creating multiple canvases (one per coloring page, or temp canvases for flood fill processing) without releasing them causes Safari to either silently invalidate canvases or crash the tab entirely. Calling `getImageData()` on an invalidated canvas throws `InvalidStateError`.
 
-**Why it happens:** Each transparent PNG must be alpha-composited. Safari's canvas implementation has lower memory limits than Chrome. iPads have 3-6 GB RAM shared between OS and all tabs. Safari aggressively kills tabs that use too much memory, with no warning -- the tab just reloads and the child loses her creation.
+**Why it happens:** Safari hoards canvas memory even for canvases no longer referenced in JavaScript. Navigating between coloring pages (back to gallery, open a new page) accumulates unreleased canvases. The v1.0 app has zero canvas elements, so this is an entirely new concern.
 
-**Consequences:** Switching a hair style takes 500ms+. The app feels sluggish. Safari kills the tab silently, and when the child goes back, her mermaid is gone. Absolute worst case for a 6-year-old.
+**Consequences:** The app crashes or shows a blank canvas after the user opens several coloring pages in sequence. The child thinks the app is broken. Safari may kill the tab entirely with no recovery.
 
 **Prevention:**
-- Keep individual asset images small: 512x512px max per layer for dress-up pieces. The composite can be larger, but individual layers should be modest.
-- Use SVG for dress-up components instead of raster PNGs. SVGs composite more efficiently, scale perfectly, and use far less memory. Recoloring is trivial (change fill attribute).
-- If using canvas: render to an offscreen canvas only when something changes (not every frame). Cache the composite. Don't re-render on every touch.
-- Flatten layers: when adding a new piece, composite the previous layers into a single cached image rather than re-compositing all layers from scratch.
-- Monitor `performance.memory` (where available) or test on the oldest iPad you want to support.
-- Limit total active layers to 8-10 maximum. If the design wants more, flatten background elements into a single image.
+- **Always release canvases** when navigating away from a coloring page:
+  ```javascript
+  function releaseCanvas(canvas) {
+    canvas.width = 1;
+    canvas.height = 1;
+    const ctx = canvas.getContext('2d');
+    ctx && ctx.clearRect(0, 0, 1, 1);
+  }
+  ```
+- Use a **single shared canvas element**, reused across coloring pages (do not create a new canvas per page)
+- Keep canvas dimensions matching the SVG viewBox (600x800 for current pages) -- do NOT double for retina resolution on the flood fill buffer
+- Call `releaseCanvas()` in the router when navigating away from the coloring view
 
-**Detection:** Test on an actual iPad (not Pro, ideally an iPad 9th gen or Air). If switching accessories isn't instant, there's a performance problem.
+**Impact on existing code:**
+- The hash router in `app.js` needs a cleanup hook -- when leaving the coloring view, release the canvas
+- Consider adding cleanup to `resetColoringState()` in `coloring.js`
 
-**Phase:** Architecture decision in Phase 1. Switching from canvas-PNG to SVG later is a full rewrite of the rendering system.
+**Detection:** Test by opening and closing 10+ coloring pages in sequence on a real iPad. Watch for "Total canvas memory use exceeds the maximum limit" warnings in Safari Web Inspector.
 
-**Confidence:** HIGH -- canvas memory limits in Safari are well-documented and aggressively enforced.
+**Confidence:** HIGH -- Apple Developer Forums and multiple libraries document this exact issue.
 
 ---
 
-### Pitfall 4: Touch Targets Too Small for a 6-Year-Old
+### Pitfall 4: AI-Generated Art Inconsistency Makes Dress-Up Parts Look Mismatched
 
-**What goes wrong:** Developers (adults with fine motor skills using a mouse) design selection UI with reasonably sized buttons. On a real iPad, a 6-year-old's finger pad is ~15mm wide and their motor control is imprecise. They tap the crown but hit the necklace. They try to color inside a mermaid's tail but the brush paints outside. Frustration escalates fast.
+**What goes wrong:** Generating tail-1, tail-2, tail-3 as separate API calls produces tails that vary in size, angle, line weight, color palette, and style. When combined in the dress-up interface, the parts look like they were drawn by different artists. A child will notice this immediately.
 
-**Why it happens:** Apple's HIG recommends 44pt minimum touch targets for adults. Kids need MORE, not less. Most developers follow adult guidelines and call it good.
+**Why it happens:** Generative models are stochastic. Even with identical style descriptions, each generation has variance. OpenAI's own documentation acknowledges the model "may occasionally struggle to maintain visual consistency for recurring characters or brand elements across multiple generations."
 
-**Consequences:** The child can't select what she wants. She gives up. The core value proposition -- "zero friction and pure delight" -- is broken.
+**Consequences:** The dress-up feature looks like a collage. Parts that do not align at seam points (tail-to-body, hair-to-head) create obvious visual gaps or overlaps. This breaks the illusion and the delight.
 
 **Prevention:**
-- Minimum touch target: 60x60pt for all tappable elements. This is ~16mm physical, comfortable for a child's fingertip.
-- Accessory/option selector: use a scrollable horizontal strip with large preview cards, not a grid of small thumbnails.
-- Coloring tool: use a large brush size by default (20-30px radius). Provide only 2-3 size options (big, bigger, biggest), not a fine slider.
-- Color picker: large swatches (at least 48x48pt each) in a single row or large grid. No color wheel -- a child cannot operate a color wheel.
-- Drag-and-drop for scene building: make items snap to reasonable positions. Don't require pixel-perfect placement.
-- Give generous hit areas: the tappable area should extend beyond the visible element by 8-10pt in all directions.
+- **Generate the full character first**, then create variants using the **edit API with masks** -- do NOT generate parts independently
+- Use a single reference image as the base character; edit only the region you want to vary (e.g., mask the tail area, regenerate with "different tail style")
+- Establish alignment anchors: define exact pixel coordinates where parts connect and enforce them
+- Generate all variants in a single session/conversation where the model can reference prior context
+- Consider GPT Image 1.5 (stronger at edit consistency than GPT Image 1)
+- **Pre-generate all assets offline** during the build pipeline -- never generate at runtime
+- Have a human QA step: review all variants side-by-side before shipping
 
-**Detection:** Watch a real 6-year-old use the app for 2 minutes. If she mis-taps more than once, the targets are too small.
+**Impact on existing code:**
+- The `PARTS` definition in `dressup.js` expects `tail-1`, `tail-2`, etc. as `<defs>` in the SVG. The pipeline must produce parts that fit this system.
+- The `<defs>` + `<use>` pattern from v1.0 is the right architecture -- the challenge is producing the assets, not the code.
 
-**Phase:** Phase 1 UI/UX design. Retrofit is cheaper than most pitfalls but still wastes cycles.
+**Detection:** Place all tail variants side-by-side in a test page. If a non-technical person notices style differences, the variants need regeneration.
 
-**Confidence:** HIGH -- Apple HIG and child development research both support larger targets for children.
+**Confidence:** HIGH -- OpenAI docs + community reports confirm this is a persistent issue.
 
 ---
 
-### Pitfall 5: Print-to-Color Pipeline Produces Bad Output
+### Pitfall 5: GitHub Pages Base Path Breaks All `fetch()` Calls
 
-**What goes wrong:** The "print coloring page" feature is a key differentiator but has multiple failure modes: (1) The watercolor-style art doesn't convert cleanly to printable outlines -- soft edges become messy grey blobs. (2) Colors print instead of just outlines, wasting ink. (3) The printable area doesn't match paper proportions (iPad is 4:3, US letter is ~1.29:1, A4 is ~1.41:1). (4) Safari's print dialog adds headers/footers/margins that crop the image. (5) The outlines are too thin to see when printed, or too thick and look ugly.
+**What goes wrong:** The current code uses root-relative paths like `fetch("/assets/svg/mermaid.svg")` (line 52 of `app.js`). On GitHub Pages project sites, the app is served from `https://username.github.io/mermaids/`, not the root. A fetch to `/assets/svg/mermaid.svg` resolves to `https://username.github.io/assets/svg/mermaid.svg` (missing the `/mermaids/` prefix), returning 404. Every fetch-based asset load breaks.
 
-**Why it happens:** Print CSS and screen CSS are completely different domains. Most web developers never deal with print. Safari's `window.print()` behavior has quirks (especially on iOS -- it opens a share sheet, not a print dialog). The watercolor aesthetic that looks beautiful on screen is specifically the hardest style to convert to clean outlines.
+**Why it happens:** FastAPI serves from root (`/`), so root-relative paths work in development. GitHub Pages project sites serve from a subdirectory. This is the single most common GitHub Pages deployment issue.
 
-**Consequences:** Parent prints a coloring page and it looks terrible -- grey smudges, tiny on the paper, headers at the top. The "bridge between digital and physical" differentiator fails. If the parent has to fiddle with print settings, it's not "zero friction."
+**Consequences:** The app shows "Could not load mermaid" and "Could not load coloring page" errors for every view. Total breakage, zero functionality.
 
 **Prevention:**
-- Design coloring pages as a SEPARATE asset pipeline. Don't try to derive outlines from the watercolor art automatically. Generate clean vector outlines as the source-of-truth for coloring pages, then optionally add watercolor fills for the digital version.
-- Use `@media print` CSS to: hide all UI chrome, force white background, set image to fill the page.
-- Target 8.5x11" (US Letter) portrait as default layout. Add 0.5" margins on all sides for printer bleed.
-- Test `window.print()` on actual iPad Safari. On iOS, this opens the system share sheet which allows AirPrint. Ensure the printable view is what gets captured.
-- Alternative approach: generate a downloadable PDF instead of using browser print. This gives full control over layout. Python backend can generate PDFs with ReportLab or similar.
-- Line weight for outlines: 2-3pt for main outlines, 1-1.5pt for detail lines. Test by actually printing.
+- **Audit every `fetch()` call and asset path.** Replace root-relative paths (`/assets/...`) with relative paths (`assets/...`)
+- Specific fix needed: `app.js` line 52 -- change `fetch("/assets/svg/mermaid.svg")` to `fetch("assets/svg/mermaid.svg")`
+- The `COLORING_PAGES` file paths in `coloring.js` (lines 28-31) already use relative paths (`assets/svg/coloring/...`) -- these are correct and will work
+- The hash-based routing (`#/home`, `#/dressup`, `#/coloring`) is already GitHub Pages-compatible -- the hash is never sent to the server, so no 404 issues for navigation
+- Optionally add a `<base href>` tag to `index.html`, but relative paths are simpler and less error-prone
+- **Test on GitHub Pages immediately after first deployment**, before building new features
 
-**Detection:** Print a coloring page to a real printer. If a parent wouldn't hang it on the fridge, it needs work.
+**Impact on existing code:**
+- `app.js`: one `fetch()` call needs path fix
+- `coloring.js`: paths are already relative (no change needed)
+- Any new asset loading code must use relative paths
 
-**Phase:** Dedicated phase for print pipeline. Don't leave this as "we'll add print later" -- the asset pipeline decision (vector outlines vs. raster conversion) must happen early.
+**Detection:** Open browser Network tab on the deployed site. Any 404s on asset loads indicate broken paths.
 
-**Confidence:** HIGH -- print CSS and Safari iOS print behavior are well-documented pain points.
+**Confidence:** HIGH -- documented by GitHub, freeCodeCamp, Smashing Magazine, and many developers.
 
 ---
 
@@ -135,102 +155,110 @@ Mistakes that cause rewrites, broken core UX, or make the app unusable for a 6-y
 
 ---
 
-### Pitfall 6: No Save/Restore Causes Lost Creations and Tears
+### Pitfall 6: Anti-Aliasing Fringe on Flood Fill Edges
 
-**What goes wrong:** The child spends 10 minutes building her perfect mermaid. She accidentally swipes to go back in Safari, or the tab reloads (Safari aggressively reclaims memory), or the iPad goes to sleep and Safari drops the tab. Everything is gone.
+**What goes wrong:** When the browser renders SVG line art onto a canvas, it anti-aliases the edges of strokes, creating semi-transparent pixels at stroke boundaries. A naive flood fill with tolerance=0 stops at these anti-aliased pixels, leaving an unfilled fringe between the fill color and the line. Setting tolerance too high bleeds the fill through lines into adjacent regions.
 
 **Prevention:**
-- Auto-save state to `localStorage` on every meaningful change (item selection, color choice). Restore on page load.
-- `localStorage` in Safari has a 5MB limit per origin. Store state as JSON references (which items are selected, which colors), not rendered images.
-- For completed creations in the gallery: save the rendered composite as a data URL or Blob in `localStorage`, or save to the backend.
-- Add `beforeunload` handler to warn about unsaved state (though Safari on iOS doesn't always honor this).
-- Use the `visibilitychange` event to save state when the app goes to background.
-- Test: open the app, build a mermaid, kill the Safari tab, reopen. The mermaid should still be there.
+- Use a tolerance of ~30-50 for flood fill color matching (not 0 which stops at anti-aliased pixels, not 128 which bleeds through lines)
+- Consider a `toleranceFade` approach that applies graduated alpha at edge pixels
+- Ensure traced line art has a stroke width of at least 2-3px -- thicker lines reduce fringe problems compared to 1px lines
+- If using vtracer binary mode, verify the output stroke width is adequate
 
-**Detection:** Kill Safari and reopen. If state is lost, this needs fixing.
+**Detection:** Flood fill a region and zoom in to the edge where fill meets outline. If there is a visible white/unfilled gap between the color and the line, tolerance is too low. If color leaks through to adjacent regions, tolerance is too high.
 
-**Phase:** Must be in Phase 1 or early Phase 2. Losing creations is emotionally devastating for the user.
-
-**Confidence:** HIGH -- Safari tab lifecycle and localStorage behavior are well-documented.
+**Confidence:** HIGH -- the most common complaint in canvas flood fill implementations.
 
 ---
 
-### Pitfall 7: Overscoping the Weekend Project
+### Pitfall 7: Transparent Background Generation Cuts Holes in White Character Parts
 
-**What goes wrong:** The project scope says "weekend project" but the feature list includes dress-up customization, scene builder, coloring pages, print support, gallery, and consistent watercolor art. This is easily 2-4 weeks of work if done properly. The developer either burns out trying to do everything, or ships a half-broken version of each feature instead of a polished version of one.
+**What goes wrong:** OpenAI's image API with `background: "transparent"` frequently makes white or light-colored parts of the character (eyes, belly, light-colored skin) transparent instead of white. Community reports indicate this happens in ~80% of generations when the character has large white areas.
 
 **Prevention:**
-- Ruthlessly prioritize. The project description says the daughter loves Crayola Create and Play and the "core ask" is dress-up + coloring. Scene builder is additive.
-- Phase 1 (weekend): Dress-up only. Pre-made set of 4-5 tails, 4-5 hair styles, 3-4 accessories. Tap to select. One background. Save screenshot. This alone will delight a 6-year-old.
-- Phase 2 (next weekend): Add coloring pages. Start with 3-4 pre-made outline pages. Simple fill (tap region to color) rather than free-paint.
-- Phase 3: Print support, scene builder, gallery.
-- The watercolor art generation will take longer than the code. Budget 60% of time for asset creation/iteration, 40% for code.
+- Generate on a **solid non-character color background** (bright green, magenta, or another color that does not appear in the character)
+- Use a programmatic background removal tool (`rembg` Python library or similar) as a post-processing step instead of relying on the API's `transparent` parameter
+- For dress-up parts that need transparency for layering, remove the background programmatically after generation
+- Validate each generated image before processing: check that character body pixels are opaque
 
-**Detection:** If the first working demo isn't in the child's hands within 2 days, scope is too big.
+**Impact on existing code:**
+- Add a background removal step to the art pipeline (`trace.py` or a new pipeline module)
 
-**Phase:** Phase 0 (planning). Scope control is a planning-time decision.
-
-**Confidence:** HIGH -- this is the most common failure mode for personal projects.
+**Confidence:** MEDIUM -- based on multiple OpenAI Developer Forum threads from 2025. OpenAI may improve this in future model updates.
 
 ---
 
-### Pitfall 8: Transparent PNG Background Handling on iPad
+### Pitfall 8: Dress-Up Part Decomposition from a Single Image Is Unreliable
 
-**What goes wrong:** AI-generated images come with backgrounds (usually white or a generated scene). Removing backgrounds to get transparent PNGs for layering is harder than expected. Automated background removal (rembg, remove.bg) leaves halos around soft watercolor edges. Semi-transparent watercolor washes lose their character when background-removed. The mermaid looks "cut out and pasted on" rather than naturally composited.
+**What goes wrong:** The plan calls for decomposing AI art into swappable dress-up parts. Taking a single generated mermaid image and automatically splitting it into head, hair, body, tail, and accessories requires semantic segmentation at a level that current tools handle inconsistently. AI layer decomposition tools (like Qwen-Image-Layered, released Dec 2025) split by depth and semantics but not by the specific part boundaries a dress-up game needs (hair-to-head boundary, waist-to-tail boundary at exact pixel coordinates).
 
 **Prevention:**
-- Generate assets on a solid, unusual color background (e.g., bright green) that's easy to chroma-key out. Avoid white backgrounds since watercolor art often bleeds into white.
-- Better: use SVG-based assets where transparency is native. Generate AI art as reference, then trace to SVG.
-- If using PNGs: use `rembg` (Python library) for batch removal, then manually touch up the 10-15 most important assets. Don't try to automate everything.
-- For coloring pages: outlines on white is fine -- no transparency needed since they print on white paper.
-- Test compositing by layering a piece onto the actual background you'll use. Halo artifacts are immediately visible on non-white backgrounds.
+- **Do not attempt fully automatic decomposition.** Instead:
+  1. Generate the full mermaid character as a reference
+  2. Use the OpenAI edit API with explicit masks to generate variants of specific regions
+  3. Or: generate full character variants and manually crop/mask parts in the pipeline script
+- Define part boundaries as fixed pixel coordinates in the pipeline configuration
+- Accept that this step requires some manual curation, at least for the first asset set
+- The v1.0 `<defs>` + `<use>` SVG pattern for part swapping is architecturally sound -- the challenge is producing the assets, not the rendering code
 
-**Detection:** Place a generated asset on a colored background. If there's a white fringe or halo around edges, the transparency extraction failed.
-
-**Phase:** Phase 1 asset pipeline. Every phase that adds new assets will hit this problem if the pipeline isn't solved upfront.
-
-**Confidence:** MEDIUM -- based on common AI art workflow reports in training data.
+**Confidence:** MEDIUM -- AI layer decomposition is rapidly evolving but not yet reliable for precise game-ready part boundaries.
 
 ---
 
-### Pitfall 9: Coloring "Flood Fill" Is Deceptively Hard
+### Pitfall 9: Migrating to Static Deployment Breaks the 37 Playwright Tests
 
-**What goes wrong:** The intuitive coloring interaction for a child is "tap a region, it fills with color" (like a paint bucket tool). Implementing flood fill on a canvas is simple in theory (BFS/DFS pixel walk) but has nasty edge cases: (1) anti-aliased outline edges cause color leaks -- the fill bleeds through semi-transparent pixels along lines. (2) Performance is poor on large regions on iPad -- a naive pixel-walk on a 1024x1024 canvas can freeze the UI for 1-2 seconds. (3) Undo is complex -- you need to store the previous pixel state.
-
-**Why it happens:** Tutorials show flood fill on simple bitmaps with hard 1px edges. Real watercolor-style outlines have soft, anti-aliased, variable-width edges.
-
-**Consequences:** Child taps to color the tail, and color bleeds through the outline into the background. Or the tap causes a visible freeze. She taps again thinking it didn't work, now she's queued multiple operations.
+**What goes wrong:** All 37 Playwright E2E tests run against the FastAPI server. Removing FastAPI or changing the serving setup breaks every test. If you keep FastAPI only for tests but deploy differently, the two environments can diverge and bugs slip through.
 
 **Prevention:**
-- Option A (simpler, recommended): Use SVG-based coloring pages with pre-defined regions as `<path>` elements. Tap a path, change its `fill` attribute. No pixel manipulation needed. Instant. No edge leaks. Trivially undoable.
-- Option B: If using canvas flood fill, set a high tolerance threshold (40-60 on a 0-255 scale) to treat anti-aliased edge pixels as "wall" pixels. Use a scanline fill algorithm instead of recursive/BFS for performance. Run in a Web Worker to avoid blocking the UI.
-- Option C: Pre-segment the coloring page into labeled regions (during asset creation). Store a "region map" -- a hidden canvas where each region is a unique solid color. Flood fill operates on the region map, not the visible art.
-- For a weekend project, Option A (SVG paths) is the only realistic choice.
+- **Keep FastAPI as the local development and test server.** It is 16 lines of code (`app.py`) and costs nothing.
+- The deployment pipeline copies `frontend/` to GitHub Pages. The test suite runs against FastAPI serving the same `frontend/` directory. Both serve the same files.
+- Do NOT introduce a separate test server, test configuration, or test-only paths
+- Add one CI verification step: serve the `frontend/` directory with `python -m http.server` (no FastAPI) and run a smoke test to confirm the app loads. This catches any accidental dependency on FastAPI.
 
-**Detection:** Try flood-filling a region in a watercolor-style outline. If color leaks through edges, the approach needs changing.
+**Impact on existing code:**
+- `app.py` stays as-is (it is just `StaticFiles(directory=_frontend_dir, html=True)`)
+- GitHub Actions workflow deploys `frontend/` to Pages
+- Playwright tests continue to use `uvicorn` as before
 
-**Phase:** Phase 2 (coloring pages). The rendering approach decision (SVG vs. canvas) in Phase 1 directly determines what's possible here.
+**Detection:** If any Playwright test fails with connection errors after deployment changes, the test infrastructure is broken.
 
-**Confidence:** HIGH -- flood fill edge-leak is one of the most commonly reported issues in coloring app development.
+**Confidence:** HIGH -- preserving the existing test infrastructure is straightforward.
 
 ---
 
-### Pitfall 10: Safari-Specific CSS and API Gaps
+### Pitfall 10: Touch Event Handling Must Change for Canvas Coloring Surface
 
-**What goes wrong:** Multiple small Safari-specific issues accumulate: (1) `position: fixed` behaves differently with the Safari toolbar -- bottom-fixed elements jump when the toolbar shows/hides. (2) CSS `backdrop-filter` (for blur effects) has intermittent rendering bugs in Safari. (3) `100vh` includes the Safari address bar height, so full-screen layouts have a scroll. (4) No native file-system save API -- `showSaveFilePicker()` doesn't exist in Safari, so "save image" requires a workaround. (5) `OffscreenCanvas` support was added only recently and may not work on older iPads.
+**What goes wrong:** The v1.0 touch system uses `pointerdown` on SVG elements with `event.target.closest("[data-region]")` for region detection (see `app.js` line 209 and `touch.js`). Canvas elements have no child elements -- `closest()` and all DOM traversal methods return nothing useful when the tap target is a `<canvas>`. The touch handler for flood fill must calculate tap position in canvas pixel coordinates and pass those directly to the flood fill algorithm.
 
 **Prevention:**
-- Use `100dvh` (dynamic viewport height) instead of `100vh` to account for Safari toolbar.
-- For "save image": render to canvas, call `canvas.toBlob()`, create an `<a>` download link, or use the Web Share API (`navigator.share()`) which works well on iOS Safari.
-- Avoid `position: fixed` for bottom-anchored toolbars. Use `position: sticky` or flex layout instead.
-- Test every feature in Safari, not just Chrome. Use the iOS Safari Web Inspector (connected via Mac Safari > Develop menu) for debugging.
-- If using `OffscreenCanvas`, check support with `typeof OffscreenCanvas !== 'undefined'` and fall back to regular canvas.
+- Write a **new touch handler** for the canvas coloring surface that:
+  1. Gets pointer coordinates from the event
+  2. Converts to canvas pixel coordinates using `getBoundingClientRect()` and accounting for CSS scaling
+  3. Passes (x, y) to the flood fill function operating on `ImageData`
+- The sparkle effect system (`sparkle.js`) already has `getSVGPoint()` for SVG coordinate conversion -- a similar but canvas-specific approach is needed
+- **Keep the SVG-based touch handling for dress-up** (it still uses SVG DOM with `<defs>` and `<use>`)
+- Do not try to make a single unified handler for both SVG and canvas views
 
-**Detection:** Test in Safari on iPad. Any layout that looks different from Chrome desktop is a Safari-specific issue.
+**Impact on existing code:**
+- The pointerdown delegation in `app.js` `openColoringPage()` (lines 205-213) needs to be replaced with canvas-aware touch handling
+- `touch.js` `initTouch()` remains unchanged for the dress-up view
+- `sparkle.js` effects may need adaptation if sparkles should appear on the canvas surface
 
-**Phase:** Ongoing, but establish the viewport and layout foundations in Phase 1.
+**Confidence:** HIGH -- direct consequence of switching from SVG DOM to canvas rendering.
 
-**Confidence:** HIGH -- Safari CSS quirks are very well-documented.
+---
+
+### Pitfall 11: SVG-to-Canvas Rendering Inconsistency in Safari
+
+**What goes wrong:** Rendering SVG to canvas (via `drawImage()` with an `<img>` whose src is a data URI or blob URL of SVG content) produces slightly different results in Safari vs Chrome. Safari handles certain SVG features (foreign objects, CSS-driven styling, text elements) differently. If the flood fill depends on exact pixel color matching, cross-browser rendering differences cause fill behavior to vary.
+
+**Prevention:**
+- Use only basic SVG features: `<path>`, `<circle>`, `<rect>` with solid fills and strokes. No `foreignObject`, no CSS within SVG, no `<text>`.
+- When rendering SVG to canvas, use the `Image()` + `data:` URI approach or a library like `canvg`, not `URL.createObjectURL()` (which has CORS complications in some Safari versions)
+- Set `ctx.imageSmoothingEnabled = false` when rendering line art to minimize anti-aliasing variance
+- Test flood fill behavior on Safari specifically since that is the target platform
+
+**Confidence:** MEDIUM -- SVG rendering differences are well-known but impact depends on SVG complexity. Simple binary-mode line art should be low-risk.
 
 ---
 
@@ -238,119 +266,100 @@ Mistakes that cause rewrites, broken core UX, or make the app unusable for a 6-y
 
 ---
 
-### Pitfall 11: Color Palette Is Wrong for Watercolor Aesthetic
+### Pitfall 12: OpenAI API Costs Compound During Prompt Iteration
 
-**What goes wrong:** The color picker offers standard saturated colors (fire-engine red, royal blue, bright yellow). These clash with the watercolor aesthetic which uses soft, muted, pastel tones. The child's colored creation looks garish against the soft background art.
+**What goes wrong:** The art generation pipeline makes multiple API calls per asset set (full character + variants + coloring pages). Each generation costs $0.04-0.08+. Iterating on prompts 10+ times to get the style right costs $10-20+, which adds up for a hobby project.
 
 **Prevention:**
-- Curate a custom palette of 12-16 watercolor-appropriate colors: soft pink, lavender, seafoam, coral, sky blue, pale gold, etc.
-- Name the colors with fun names the child will enjoy: "Mermaid Pink," "Ocean Sparkle," "Sunset Coral."
-- Don't offer a free color picker. A curated palette prevents ugly results and is easier for a child to use.
+- Cache every generation locally with its prompt hash
+- Use `gpt-image-1-mini` for iteration and style experimentation, `gpt-image-1` or `gpt-image-1.5` only for final assets
+- Set a budget cap in the pipeline script (warn after N generations)
+- Run the pipeline in batch mode with explicit human review before regenerating
 
-**Detection:** Color a region and compare against the background art. If the colors feel jarring, the palette needs softening.
-
-**Phase:** Phase 2 (coloring pages) but palette should be established during Phase 1 art direction.
-
-**Confidence:** MEDIUM -- based on design best practices for children's apps.
+**Confidence:** HIGH -- straightforward cost management.
 
 ---
 
-### Pitfall 12: Gallery/Save Creates Storage Bloat
+### Pitfall 13: Do Not "Upgrade" Hash Routing -- It Is Already Correct
 
-**What goes wrong:** Each saved creation stored as a data URL in `localStorage` is 100KB-500KB. After 20-30 saves (a prolific 6-year-old could do this in one session), `localStorage` hits the 5MB Safari limit. Subsequent saves silently fail. The gallery stops working.
+**What goes wrong:** Developers sometimes "upgrade" from hash routing (`#/dressup`) to History API routing (`/dressup`) during a refactor. History API routing breaks on GitHub Pages because the server returns 404 for any path other than `/index.html`. There is no server-side redirect capability on GitHub Pages.
 
 **Prevention:**
-- Store creation state as JSON metadata (selected items, colors) rather than rendered images. Re-render the preview from metadata when displaying the gallery.
-- If storing images: compress heavily (JPEG quality 0.6 for gallery thumbnails, ~20KB each).
-- Implement a gallery limit (e.g., 20 most recent) with oldest-first eviction.
-- Monitor `localStorage` usage and warn (with a kid-friendly message) when approaching limits.
-- Alternatively: use the backend to store gallery items, with creations keyed by a browser fingerprint or simple device ID.
+- **Do not change the routing strategy.** The current hash-based router in `app.js` (lines 220-243) is already GitHub Pages-compatible. This is a solved problem.
+- The 404.html workaround for History API routing exists but adds complexity for no benefit in this app.
 
-**Detection:** Save 30 creations and check if the 31st save works.
-
-**Phase:** Phase 2 or 3 (gallery feature).
-
-**Confidence:** HIGH -- localStorage limits in Safari are well-documented (5MB per origin).
+**Confidence:** HIGH -- the current routing is correct for the target deployment.
 
 ---
 
-### Pitfall 13: Accidental Navigation Destroys State
+### Pitfall 14: Retina Display Makes Canvas Look Blurry But Doubling Resolution Costs Memory
 
-**What goes wrong:** Safari has aggressive swipe-to-go-back gestures. A child painting on a canvas swipes horizontally to color a tail, and Safari interprets it as a back navigation. The page navigates away and the creation is lost.
-
-**Prevention:**
-- Build as a Single-Page Application. No navigation between pages means back-swipe has nowhere to go (after the initial page load).
-- Alternatively, use `history.pushState()` to add entries so back-swipe triggers `popstate` event which you can intercept and use to show a "go back?" confirmation.
-- Use `overscroll-behavior: none` CSS on the body to prevent pull-to-refresh (another accidental gesture).
-- The canvas/interaction area should have `touch-action: none` to claim all touch gestures.
-
-**Detection:** Swipe right on the canvas area. If Safari starts a back-navigation animation, this needs fixing.
-
-**Phase:** Phase 1 (SPA architecture and touch event setup).
-
-**Confidence:** HIGH -- Safari swipe navigation interference is a well-known issue for canvas apps.
-
----
-
-### Pitfall 14: Asset Loading Time Creates Blank Stares
-
-**What goes wrong:** If all mermaid assets (tails, hair, accessories, backgrounds, coloring pages) are loaded on app startup, the initial load takes 10+ seconds on a typical connection. The child sees a blank or loading screen and loses interest. If assets load lazily, switching to a new tail shows a flash of empty space.
+**What goes wrong:** iPad displays are 2x retina. A canvas element sized 600x800 in CSS occupies 1200x1600 physical pixels. If the canvas buffer is 600x800, content looks blurry. But setting the buffer to 1200x1600 quadruples memory usage and makes flood fill 4x slower (4x more pixels to scan).
 
 **Prevention:**
-- Preload the default/initial mermaid configuration (one body, one tail, one hair) on startup. Load the rest in the background.
-- Use a fun loading animation (bubbles rising, a mermaid tail swishing) for the initial load. Keep it under 3 seconds for essential assets.
-- Lazy-load alternative options with skeleton/shimmer placeholders in the selector strip.
-- Optimize images: WebP format (Safari supports it since iOS 14), appropriate resolution (don't serve 2048px images for 200px display slots), use srcset.
-- Consider inlining SVG assets in the HTML/JS bundle if using the SVG approach -- no additional network requests needed.
+- For the flood fill data buffer: use CSS dimensions (600x800), NOT retina resolution. Speed matters more than sub-pixel accuracy for a fill operation.
+- For the display layer: use the SVG line art as a crisp overlay on top of the canvas. SVGs render at full retina resolution automatically. The canvas only holds the fill colors.
+- Architecture: **SVG overlay (lines, crisp) on top + canvas underlay (fills, can be lower-res)**
+- This gives the best of both worlds: crisp outlines at retina resolution, fast flood fills at 1x resolution.
 
-**Detection:** Throttle network to "Slow 3G" in dev tools. If any screen takes more than 3 seconds to become interactive, optimize.
-
-**Phase:** Phase 1 (asset pipeline and loading strategy).
-
-**Confidence:** MEDIUM -- standard web performance knowledge, specific thresholds for children based on general UX research.
+**Confidence:** MEDIUM -- the visual impact depends on the app's layout, but the layered approach is well-established.
 
 ---
 
 ## Phase-Specific Warnings
 
-| Phase Topic | Likely Pitfall | Mitigation | Severity |
-|-------------|---------------|------------|----------|
-| Foundation/Setup | Safari touch event model (Pitfall 1) | Use pointer events, test on real iPad | Critical |
-| Foundation/Setup | Accidental navigation (Pitfall 13) | SPA architecture, touch-action CSS | Critical |
-| Asset Pipeline | AI art inconsistency (Pitfall 2) | Batch generation, style template, post-processing | Critical |
-| Asset Pipeline | Transparent PNG halos (Pitfall 8) | Green-screen backgrounds or SVG approach | Moderate |
-| Dress-Up Feature | Canvas/SVG performance (Pitfall 3) | SVG approach, layer limits, real-device testing | Critical |
-| Dress-Up Feature | Touch targets too small (Pitfall 4) | 60pt minimum, test with actual child | Critical |
-| Coloring Pages | Flood fill edge leaks (Pitfall 9) | SVG region-based fill, not pixel flood fill | Moderate |
-| Coloring Pages | Color palette mismatch (Pitfall 11) | Curated pastel/watercolor palette | Minor |
-| Print Feature | Print output quality (Pitfall 5) | Separate outline assets, PDF generation, test print | Critical |
-| Save/Gallery | Lost creations (Pitfall 6) | Auto-save to localStorage on every change | Moderate |
-| Save/Gallery | Storage bloat (Pitfall 12) | JSON metadata, not image blobs; eviction policy | Minor |
-| Overall Scope | Weekend project overscope (Pitfall 7) | Phase 1 = dress-up only, resist feature creep | Moderate |
-| Cross-cutting | Safari CSS quirks (Pitfall 10) | 100dvh, Web Share API, test in Safari always | Moderate |
-| Cross-cutting | Asset loading time (Pitfall 14) | Preload essentials, lazy-load rest, optimize formats | Minor |
+| Phase Topic | Likely Pitfall | Mitigation |
+|-------------|---------------|------------|
+| Art generation pipeline | Pitfall 4 (inconsistency), 7 (transparency holes), 12 (costs) | Generate full character first, use edit API with masks; solid background + programmatic removal; cache everything |
+| SVG tracing with vtracer | Pitfall 2 (too many paths) | Binary mode for coloring outlines; aggressive simplification; SVGO post-processing |
+| Flood fill coloring | Pitfall 1 (requires canvas), 3 (canvas memory), 6 (anti-aliasing fringe), 10 (touch events), 14 (retina) | Canvas layer under SVG overlay; release canvases on nav; tolerance ~30-50; new touch handler; 1x resolution fill buffer |
+| Dress-up with AI art | Pitfall 4 (inconsistency), 8 (decomposition) | Edit API with masks over base image; fixed part boundaries; manual curation |
+| GitHub Pages deployment | Pitfall 5 (base path breaks fetch), 9 (test suite), 13 (keep hash routing) | Fix `/assets/` to `assets/`; keep FastAPI for tests; do not change router |
+| iPad Safari compatibility | Pitfall 2 (DOM perf), 3 (canvas memory), 11 (SVG rendering), 14 (retina) | Path count budgets; canvas lifecycle management; test on real hardware |
 
 ---
 
-## Key Architectural Decision That Prevents Multiple Pitfalls
+## Key Architectural Insight: Hybrid SVG+Canvas for Coloring
 
-**SVG over Canvas for dress-up and coloring** is the single most impactful architectural choice. It simultaneously mitigates:
+The single most important architectural decision for v1.1 is using a **hybrid SVG+Canvas approach** for coloring pages:
 
-- **Pitfall 3** (performance): SVGs are lightweight and GPU-accelerated
-- **Pitfall 8** (transparency): SVGs natively support transparency
-- **Pitfall 9** (flood fill): SVG paths can be filled by changing attributes, no pixel manipulation
-- **Pitfall 11** (recoloring): SVG fill/stroke attributes are trivially changeable
-- **Pitfall 12** (storage): SVG state is compact JSON (which paths, which colors)
+1. **SVG layer** (top): line art rendered at full retina resolution, always crisp, provides the visual outlines
+2. **Canvas layer** (bottom): flood fill target at 1x resolution, handles user interaction and color data
 
-Canvas should only be used for the final "save as image" export (render SVG to canvas, then `toBlob()`).
+This simultaneously addresses:
+- **Pitfall 1** (flood fill needs canvas): canvas provides the pixel data
+- **Pitfall 2** (too many SVG paths): only line art SVG in the DOM, not full-color traced SVG
+- **Pitfall 3** (canvas memory): single shared canvas, managed lifecycle
+- **Pitfall 6** (anti-aliasing): SVG overlay hides any fringe at fill edges
+- **Pitfall 14** (retina): SVG provides retina-quality lines; canvas can be lower-res
+
+The dress-up feature should remain SVG-only (the `<defs>` + `<use>` pattern from v1.0 is correct and performant).
 
 ---
 
 ## Sources
 
-- Apple Safari Web Content Guide (touch event handling, viewport behavior) -- training data, not live-verified
-- MDN Web Docs (Canvas API, Pointer Events, SVG) -- training data, not live-verified
-- Apple Human Interface Guidelines (touch target sizing) -- training data, not live-verified
-- Common patterns observed across children's app development discussions -- training data, not live-verified
-
-**Note:** Web search and web fetch tools were unavailable during this research. All findings are based on training data (up to early 2025). Confidence levels reflect this limitation. The iPad Safari behaviors documented here are stable platform characteristics unlikely to have changed, supporting the assigned confidence levels despite the lack of live verification.
+- [Canvas memory limit on iOS Safari (PQINA)](https://pqina.nl/blog/total-canvas-memory-use-exceeds-the-maximum-limit)
+- [Canvas area limits in Safari (PQINA)](https://pqina.nl/blog/canvas-area-exceeds-the-maximum-limit/)
+- [Apple Developer Forum: canvas memory](https://developer.apple.com/forums/thread/687866)
+- [Konva canvas limits in Safari iOS (2024)](https://longviewcoder.com/2024/02/09/konva-canvas-limits-in-safari-ios-explainer/)
+- [q-floodfill: optimized non-recursive flood fill](https://github.com/pavelkukov/q-floodfill)
+- [FloodFill2D: tolerance, alpha, and anti-aliasing handling](https://github.com/blindman67/FloodFill2D)
+- [Instant colour fill with HTML Canvas (preprocessed approach)](https://shaneosullivan.wordpress.com/2023/05/23/instant-colour-fill-with-html-canvas/)
+- [Canvas flood fill that doesn't kill the browser](https://ben.akrin.com/an-html5-canvas-flood-fill-that-doesnt-kill-the-browser/)
+- [GitHub Pages SPA routing limitations](https://github.com/orgs/community/discussions/64096)
+- [spa-github-pages: 404.html workaround](https://github.com/rafgraph/spa-github-pages)
+- [Fixing broken relative links on GitHub Pages](https://maximorlov.com/deploying-to-github-pages-dont-forget-to-fix-your-links/)
+- [GitHub Pages publishing source docs](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)
+- [OpenAI Image Generation API guide](https://platform.openai.com/docs/guides/image-generation)
+- [OpenAI GPT Image 1.5 model docs](https://platform.openai.com/docs/models/gpt-image-1.5)
+- [OpenAI: transparent background cuts holes in white areas](https://community.openai.com/t/gpt-image-1-transparency-remove-background-also-cuts-out-other-white-spots-of-the-image/1273481)
+- [OpenAI: character consistency across generations](https://community.openai.com/t/need-for-character-consistency-and-style-locking-in-image-generation/1232362)
+- [Character consistency guide for ChatGPT image generation](https://blog.laozhang.ai/ai-tools/mastering-character-consistency-chatgpt-image-generator/)
+- [vtracer: parameters and modes](https://github.com/visioncortex/vtracer)
+- [vtracer core functionality (DeepWiki)](https://deepwiki.com/visioncortex/vtracer/7-core-functionality)
+- [Improving SVG rendering performance](https://codepen.io/tigt/post/improving-svg-rendering-performance)
+- [High Performance SVGs (CSS-Tricks)](https://css-tricks.com/high-performance-svgs/)
+- [Qwen-Image-Layered: AI layer decomposition (Dec 2025)](https://dev.to/czmilo/2025-complete-guide-qwen-image-layered-revolutionary-ai-image-layer-decomposition-technology-4mm7)
+- [Raster to vector conversion gap issues](https://community.adobe.com/t5/illustrator-discussions/raster-to-vector-conversion-leaves-gaps-in-paths/td-p/9932299)
+- [OpenAI complete workflow guide for gpt-image-1](https://img.ly/blog/openai-gpt-4o-image-generation-api-gpt-image-1-a-complete-guide-for-creative-workflows-for-2025/)

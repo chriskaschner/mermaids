@@ -1,149 +1,203 @@
 # Feature Landscape
 
-**Domain:** Kids creative activity app (dress-up, coloring, scene builder) for a 6-year-old
+**Domain:** AI art generation pipeline, flood-fill coloring, dress-up art upgrade, static deployment for a children's creative app
 **Researched:** 2026-03-09
-**Confidence:** MEDIUM -- based on training data knowledge of Crayola Create and Play, Toca Boca, and kids app design patterns through mid-2025. Web verification was unavailable.
-
-## Competitive Landscape Context
-
-The kids creative app space breaks into three tiers:
-
-1. **Premium subscription apps** (Crayola Create and Play, Toca Boca Days): 100+ activities, frequent content updates, $5-8/month, large studios
-2. **Focused free/paid apps** (individual dress-up or coloring apps): 1-2 activities done well, ad-supported or $3-5 one-time, small studios
-3. **Web-based toys** (PBS Kids games, educational sites): lightweight, browser-based, narrow scope
-
-This project fits squarely into tier 3 -- a focused web-based toy. Feature list below is calibrated to that tier: do 2-3 things well for one kid, not 50 things for the App Store.
+**Milestone context:** v1.1 -- adding to an existing working app with SVG dress-up, region-based coloring, hash router, touch interactions
 
 ---
 
 ## Table Stakes
 
-Features a 6-year-old expects after using apps like Crayola Create and Play. Missing these means the app feels broken or boring, not "simple."
+Features users expect. Missing = product feels incomplete or broken.
 
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| **Drag-and-drop dress-up** | Core mechanic of every dress-up app. Tap an option, it appears on the mermaid. | Medium | SVG `<use>` elements swapped on tap. Accessories draggable via pointer events. Minimum 3-4 options per category (tails, hair, crowns, accessories). |
-| **Instant visual feedback** | Kids expect things to happen the moment they tap. Zero loading, zero delays. | Low | SVG attribute changes are instant. No server round-trips for any interactive action. |
-| **Color selection for customization** | Every dress-up app lets kids pick colors. A fixed set of items with no color choice feels rigid. | Low | 8-12 color swatches. Tap swatch -> SVG `fill` attribute changes on the selected part. No color picker widget. |
-| **Tap-to-fill coloring** | Tap a region, it fills with color. Standard kids coloring app interaction. | Medium (asset prep), Low (code) | SVG regions as `<path>` elements. Tap path -> change `fill`. Pre-segmented SVG pages require upfront asset work but make the code trivial. |
-| **Undo button** | Kids constantly tap wrong things. One big undo button. | Low | State stack. Pop last state, restore SVG attributes. |
-| **Big, obvious tap targets** | A 6-year-old's motor control requires 44pt minimum. 60pt is better. | Low | Design constraint, not a feature to build. All buttons, swatches, and interactive elements must be large. |
-| **Clear navigation between activities** | Kids need to know "I can do dress-up" and "I can do coloring" without reading. Icons, not text. | Low | Bottom tab bar or large visual buttons on home screen. Maximum 3-4 destinations. Icons only. |
-| **Gallery / save creations** | "Look what I made!" is the entire payoff. Kids revisit their gallery obsessively. | Medium | SVG state serialized as JSON -> localStorage. Thumbnails generated via SVG->Canvas->PNG export. |
-| **Sound effects on interaction** | Every kids app has tap sounds, swooshes, sparkle effects. Silence feels broken. | Low | Short audio clips. Web Audio API with user-gesture unlock for iOS Safari. Provide mute button for parents. |
-| **Consistent art style** | Mixing styles looks cheap. Kids apps live or die on visual cohesion. | N/A (asset production) | All AI-generated assets must share the same watercolor aesthetic. Asset pipeline concern. |
+### AI Art Generation Pipeline
+
+| Feature | Why Expected | Complexity | Dependencies | Notes |
+|---------|--------------|------------|--------------|-------|
+| Consistent kawaii art style across all outputs | Mismatched art styles feel jarring; a 6-year-old notices when "mermaid looks different" | Med | Prompt engineering discipline | Use a locked system prompt with style anchors: "kawaii, chibi proportions, thick black outlines, pastel palette, no shading" |
+| Clean line art for coloring pages (black outlines, white fill, no shading) | Coloring pages with gray blobs or crosshatching are unusable for tap-to-fill | Med | gpt-image-1 + post-processing | Prompt must explicitly say "no shading, no crosshatching, bold black outlines on white background." Real-world coloring book services confirm: AI frequently adds subtle gradients even when told not to. Post-processing cleanup required |
+| Age-appropriate content filtering | Non-negotiable for a 6-year-old's app | Low | Server-side prompt wrapping | Append safety instructions to every prompt server-side. OpenAI models already filter, but belt-and-suspenders approach |
+| Transparent background for dress-up parts | Parts must layer over each other without white rectangles showing through | Low | gpt-image-1 `background: "transparent"` + PNG output | Natively supported. Set quality to medium or high for clean transparency edges. Include "transparent background" in prompt as well -- model sets it automatically |
+| Raster-to-SVG conversion via vtracer | Both coloring and dress-up use SVG for interaction; AI outputs raster images | High | vtracer pipeline (already exists in `src/mermaids/pipeline/trace.py`) | Existing pipeline handles this. Key tuning: coloring pages need `binary` colormode for clean outlines; dress-up parts need `color` colormode for multi-fill regions. Parameters `filter_speckle`, `color_precision`, `layer_difference` all affect output quality |
+| Offline-first: pre-generated assets, no runtime API calls | A child opens the app on an iPad -- it must work instantly, no loading spinners waiting for an API | Low | Build-time pipeline | Pipeline runs at dev time, outputs committed as static SVG assets. Zero runtime dependency on OpenAI. This is the only sane architecture for a kids app |
+
+### Flood Fill Coloring
+
+| Feature | Why Expected | Complexity | Dependencies | Notes |
+|---------|--------------|------------|--------------|-------|
+| Tap a region, it fills with selected color | Core coloring interaction. Must feel instant (< 100ms response) | High | Canvas-based flood fill replaces current SVG `data-region` fill | Current system: `pointerdown` -> find `[data-region]` ancestor -> `fillRegion()` changes fill on child paths. New system: render SVG to Canvas, flood fill from tap coordinates, pixel-level region detection. Eliminates manual region tagging entirely |
+| Color palette with child-friendly presets | Already exists in v1.0 (10 swatches, `COLORS` array) | Low | Existing `COLORS` array in `coloring.js` | No change to palette needed. Only the fill mechanism changes |
+| Undo (at least last action) | Already exists in v1.0 with closure-based undo stack | Med | Undo stack with canvas `ImageData` snapshots | Current closure-based undo (`pushUndo(() => { restore fills })`) won't work with canvas pixels. Must switch to snapshot-based: save full `getImageData()` before each fill operation. Memory cost: ~4MB per snapshot at 1024x1024. Cap at 15-20 undo steps |
+| Anti-aliased edge handling with tolerance | AI-generated line art has anti-aliased edges. Naive exact-match flood fill either leaks through boundaries or leaves white halos around lines | High | Tolerance parameter (32-128 range for anti-aliased line art), tolerance fade for soft edges | FloodFill2D library solves this with `toleranceFade` -- applies alpha gradient at edges instead of hard cutoff. Without tolerance, fills look terrible on AI art. Tolerance too high = fill leaks through thin lines. Sweet spot requires per-image testing |
+| Touch target tolerance | A 6-year-old taps imprecisely. Fill must work even when tap lands slightly off-target | Low | Inherent in flood fill algorithm | Flood fill naturally handles imprecise taps better than region-based: it fills whatever enclosed area the tap point lands in. No explicit accommodation needed |
+| Works with any AI-generated image without manual tagging | The entire motivation for switching from region-based to flood fill | Med | Canvas rendering of SVG + pixel-based fill algorithm | Current system requires hand-crafted SVGs with `<g data-region="...">` groups (see `coloring.js:fillRegion()`). Flood fill works on any image with enclosed regions -- no manual tagging |
+
+### Dress-Up with AI Art
+
+| Feature | Why Expected | Complexity | Dependencies | Notes |
+|---------|--------------|------------|--------------|-------|
+| Swappable parts (tail, hair, accessories) | Core dress-up mechanic, already working in v1.0 | Med | AI-generated part variants as SVG, placed in `<defs>`, swapped via `<use>` | Existing pattern: `PARTS = { tail: ["tail-1", "tail-2", "tail-3"], ... }`. Each `<use id="active-tail">` references `#tail-1`. `swapPart("tail", "tail-2")` changes the `href`. New SVGs must use same IDs |
+| Color recoloring of active part | Already working in v1.0 by modifying fill on SVG path children | Med | SVG parts with fill-bearing `<path>` elements | `recolorActivePart()` calls `getFillBearingElements()` to find paths with `fill != "none"`, then sets new fill. vtracer output produces `<path>` elements with fills. This should work on traced SVGs, but need to verify vtracer's output structure matches expectations |
+| Consistent character proportions across part variants | If tail-1 is 200px tall and tail-2 is 400px, the mermaid looks broken when swapping | High | Prompt engineering + post-processing normalization | Generate all variants at same canvas size with explicit size/proportion instructions in prompt. Post-generation: normalize viewBox, scale paths to consistent bounding box. This requires manual adjustment |
+| Parts align at connection points (hair sits on head, tail connects to body) | Without alignment, swapping parts produces a Frankenstein mermaid | High | SVG viewBox alignment, consistent anchor positioning across all variants | Hardest integration problem in v1.1. AI won't naturally produce parts that align at connection points. Strategy: generate each part against a reference silhouette/template. Post-process to align anchor points. Expect manual SVG editing |
+| Celebration on completion | Sparkle effect when all categories customized. Already works in v1.0 | Low | Existing `checkCompletion()` + `triggerCelebration()` in `dressup.js` and `sparkle.js` | No change needed. Carries over automatically |
+
+### GitHub Pages Deployment
+
+| Feature | Why Expected | Complexity | Dependencies | Notes |
+|---------|--------------|------------|--------------|-------|
+| App loads at GitHub Pages URL | The whole point -- she can open it on her iPad from anywhere | Low | Static files served from repo, Pages enabled in repo settings | Hash router (`#/home`, `#/dressup`, `#/coloring`) already avoids the SPA 404 problem. GitHub Pages returns 404 for frontend routes like `/dressup`, but hash routes (`#/dressup`) never hit the server |
+| `.nojekyll` file in deploy root | Without it, Jekyll processing may interfere with file serving | Low | Empty file at repo root | Current project has no underscore-prefixed files, but add `.nojekyll` defensively. Jekyll can cause subtle issues with ES module serving |
+| ES modules work correctly | App uses `<script type="module" src="js/app.js">` with `import`/`export` statements | Low | GitHub Pages serves `.js` with correct MIME type | Verified: GitHub Pages serves JavaScript files correctly. ES modules with relative imports work fine |
+| No server dependency for static serving | Currently uses FastAPI (`app.py`) to serve static files. GitHub Pages is static-only | Med | Replace absolute asset paths, make FastAPI optional | Critical: `renderDressUp()` fetches `"/assets/svg/mermaid.svg"` with absolute path. On GitHub Pages at `username.github.io/mermaids/`, this resolves to `username.github.io/assets/svg/mermaid.svg` (wrong). Must use relative paths `"./assets/svg/mermaid.svg"` or `"assets/svg/mermaid.svg"` |
+| Works on iPad Safari | Primary target platform | Low | Already handled in v1.0 | Existing meta tags: `apple-mobile-web-app-capable`, `viewport-fit=cover`, `user-scalable=no`. Pointer event handling already works. No changes needed |
 
 ---
 
 ## Differentiators
 
-Features that set this app apart from generic dress-up/coloring apps. Not expected, but they create delight.
+Features that add delight beyond the baseline. Not expected, but valued.
 
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| **Print coloring pages** | Bridges digital and physical play. Most coloring apps are digital-only. A 6-year-old coloring on paper with real crayons after choosing her page digitally -- that is magic. | Low | SVG outlines print crisply at any DPI. CSS `@media print` + `window.print()`. This is the #1 differentiator per PROJECT.md. |
-| **Scene builder with placed mermaid** | Dress-up apps stop at "here's your character." Scene builders let kids place their character into a world. | High | Place customized mermaid into underwater scenes. Add scene elements (fish, coral, treasure). Reuses dress-up SVG mechanics. Most complex feature. |
-| **Watercolor art style** | Most kids apps use flat vector or glossy 3D. A soft, dreamy watercolor aesthetic is rare and memorable. | N/A (asset production) | Visual identity differentiator. Must be consistent and high quality. |
-| **Animation on completion** | Sparkles when all slots filled, bubbles when coloring page is finished. Creates a "ta-da!" moment. | Low-Medium | CSS animation or SVG SMIL. 2-3 seconds. Do not block interaction. |
-| **Themed coloring page sets** | Groups like "Coral Reef Collection," "Mermaid Castle Collection." Gives a sense of collection. | Low | Purely organizational. 3-4 sets of 3-4 pages each. |
-| **Stamp tool** | Pre-made stamps (stars, shells, fish) to decorate scenes. | Low | Same as dress-up accessories -- SVG elements placed on canvas. |
+| Feature | Value Proposition | Complexity | Dependencies | Notes |
+|---------|-------------------|------------|--------------|-------|
+| Preprocessed instant flood fill via Web Worker | Standard flood fill takes 100-500ms per tap on large canvases. Preprocessing assigns each enclosed region a unique ID on page load, making subsequent fills instant (< 10ms). KidzFun.art uses this approach | High | Web Worker for background preprocessing, alpha-channel region mapping | Preprocessing assigns incremental alpha values (1-255) to each enclosed area. On tap: look up alpha value, apply color mask using `globalCompositeOperation = "source-in"`. Limit: 255 regions per image. Only pursue if standard fill is noticeably slow on iPad |
+| Sparkle feedback on each coloring fill | Existing sparkle system in `sparkle.js` only triggers on dress-up completion. Triggering a small burst at the tap point on each fill gives immediate tactile delight | Low | Existing `triggerCelebration()` or lighter-weight burst variant | Low effort, high delight. Trigger a 3-5 particle burst at touch coordinates on fill |
+| PWA with "Add to Home Screen" | iPad Safari already supports `apple-mobile-web-app-capable` (meta tag present). Full PWA manifest + icons makes it feel like a "real app" on her home screen | Med | `manifest.json`, service worker for offline caching, app icons at multiple sizes | Service worker could cache all SVG assets for fully offline use. Would survive airplane mode / no wifi scenarios |
+| Clear/reset coloring page | "Start over" button resets all fills to original line art | Low | Redraw original SVG to canvas, clear undo stack | Simple: keep original SVG source, re-render to canvas on reset |
+| Animated view transitions | Smooth fade or slide when navigating between home/dressup/coloring | Med | CSS transitions or `View Transitions API` on view swap | Current implementation sets `innerHTML` directly (instant, jarring). Polish feature, not critical |
 
 ---
 
 ## Anti-Features
 
-Features to explicitly NOT build. Each is a trap that seems valuable but would blow up scope, confuse a 6-year-old, or undermine the core experience.
+Features to explicitly NOT build.
 
 | Anti-Feature | Why Avoid | What to Do Instead |
 |--------------|-----------|-------------------|
-| **Free drawing / canvas painting** | High complexity (undo, brushes, eraser, performance). Touch drawing on iPad is imprecise for a 6-year-old. Drawing apps are their own product category. | Stick to tap-to-fill coloring (SVG regions) and dress-up (pick from options). Constraint enables creativity for this age group. |
-| **Mini-games (matching, puzzles)** | Not what the target user gravitates to per PROJECT.md. Splits development effort across unrelated mechanics. | Keep all activities creative/expressive. No scoring, no timers, no win/lose. |
-| **User accounts / login** | She is 6. Auth is friction. COPPA compliance is a legal minefield for a weekend project. | Use localStorage. Anonymous by design. |
-| **Cloud sync** | Requires database, user identity, conflict resolution. Weekend-project-breaking complexity. | Local-only saves. If data is lost, she makes new mermaids. |
-| **Sharing / social** | COPPA, moderation, abuse risk. Social features for kids under 13 require legal compliance infrastructure. | "Sharing" means showing the iPad to a parent, or printing a page. |
-| **In-app text / reading required** | A 6-year-old reads at a beginner level. Any feature requiring reading instructions will fail. | All navigation via icons. All interaction via direct manipulation. Zero required reading. |
-| **Complex layer management** | Photoshop-style layers, z-ordering controls. Way beyond a child's mental model. | Auto-layer management. SVG element order handles z-ordering. User never sees or manages layers. |
-| **Complex color picker** | HSL sliders, hex input, color wheel. Too complex for a 6-year-old. | Fixed palette of 12-16 preset colors. Big colored circles to tap. |
-| **Zoom / pan on canvas** | Spatial navigation is confusing for a child. | Fixed viewport. Design SVG viewBox to fill iPad screen. |
-| **Premium content / IAP** | This is for one kid. No business model. | Everything unlocked from day one. |
-| **Onboarding tutorial** | If the app needs a tutorial, the app is too complex. Kids skip tutorials immediately. | The biggest, most colorful thing on screen should be the thing to tap. |
-| **Animation / video creation** | "Make your mermaid swim!" is a full animation tool. Months of work. | Static compositions. Subtle idle animations (hair floating, tail swaying) are decorative, not user-created. |
-| **Text labels or names** | Requires keyboard input. A 6-year-old typing is slow and frustrating. | Gallery shows visual thumbnails only. No names. |
+| Runtime AI image generation (generate on user request) | 10-30 seconds per image (gpt-image-1), requires API key in client-side code, costs ~$0.07/image, requires network. A 6-year-old will not wait 30 seconds | Pre-generate all assets at build time using Python pipeline. Commit SVGs as static assets |
+| Free-draw / paintbrush tool | Massive complexity: brush engine, pressure sensitivity, layer management, eraser. Out of scope per PROJECT.md | Keep flood fill as the only coloring interaction. Tap-to-fill is the model |
+| Complex color picker (HSL wheel, hex input) | A 6-year-old cannot use a color wheel. Out of scope per PROJECT.md | Keep 10 preset swatches. Big colored circles to tap |
+| Save/export/share colored pages | Canvas-to-image conversion, download handling, sharing API. Scope creep for v1.1 | Defer to v2 (listed in PROJECT.md Future section) |
+| User-customizable prompts for AI generation | A 6-year-old cannot type prompts. Adds content moderation complexity | All prompts are developer-authored and locked in the pipeline |
+| Multiple character bases for dress-up | One mermaid base is enough. Multiple bases multiplies the part alignment problem | One base, multiple variants per category (3 tails, 3 hairs, 3+ accessories) |
+| Zoom/pan on coloring pages | Spatial navigation confusing for a child. Out of scope per PROJECT.md | Design coloring pages at a scale that fills the iPad screen without needing zoom |
+| Backend API for the deployed app | FastAPI is currently the server. GitHub Pages cannot run Python. Do not try to add a serverless backend for v1.1 | The deployed app is 100% static. Python pipeline runs locally at dev time only |
 
 ---
 
 ## Feature Dependencies
 
 ```
-Art Assets (generated SVGs) --> Dress-Up (needs mermaid part SVGs)
-Art Assets (generated SVGs) --> Scene Builder (needs background images)
-Art Assets (generated SVGs) --> Coloring Pages (needs pre-segmented SVG outlines)
+AI Art Pipeline (Python, build-time only)
+  |
+  |---> generates coloring page PNGs (black outlines, white background)
+  |       |
+  |       |---> vtracer converts to SVG (binary mode, clean outlines)
+  |               |
+  |               |---> SVG rendered to <canvas> for flood fill interaction
+  |
+  |---> generates dress-up part PNGs (transparent background, color regions)
+          |
+          |---> vtracer converts to SVG (color mode, preserves fill regions)
+                  |
+                  |---> SVG placed in <defs>, swapped via <use> (existing pattern)
 
-Dress-Up --> Scene Builder (scene builder places the dressed-up mermaid)
-Coloring Pages --> Print (prints the coloring page, colored or outline)
+Flood Fill (replaces region-based coloring in coloring.js)
+  |
+  |---> REQUIRES: Canvas-based rendering (architectural shift from pure SVG DOM)
+  |---> REQUIRES: Flood fill algorithm with tolerance (for anti-aliased edges)
+  |---> REQUIRES: New undo strategy (ImageData snapshots, not closure-based)
+  |---> BREAKS: Current pointerdown -> closest("[data-region]") -> fillRegion() flow
+  |---> PRESERVES: Color palette (COLORS array), page gallery, back button, undo UX
 
-Dress-Up --> Save to Gallery (saves assembled mermaid state)
-Scene Builder --> Save to Gallery (saves scene state)
-Coloring Pages --> Save to Gallery (saves colored page state)
+Dress-Up Art Upgrade
+  |
+  |---> REQUIRES: AI-generated SVGs placed in <defs> with IDs matching PARTS config
+  |---> REQUIRES: Part alignment (viewBox consistency, anchor point matching)
+  |---> PRESERVES: swapPart(), recolorActivePart(), initDressUp(), category tabs
+  |---> PRESERVES: checkCompletion(), triggerCelebration()
+  |---> UPDATE NEEDED: getVariantPreviewSVG() (new thumbnails for new art)
 
-Sound Effects --> All interactive screens (independent, can add to any screen)
-Navigation --> All screens (home screen routes to each activity)
+GitHub Pages Deployment
+  |
+  |---> REQUIRES: Fix absolute paths ("/assets/...") to relative ("./assets/...")
+  |---> REQUIRES: .nojekyll file at repo root
+  |---> REQUIRES: FastAPI becomes optional (dev-only convenience, not required)
+  |---> PRESERVES: Hash router (already GitHub Pages compatible)
+  |---> PRESERVES: ES module script loading, all meta tags
 ```
-
-**Critical path:** Art Assets -> Navigation -> Dress-Up -> Scene Builder -> Gallery.
-Coloring pages are independent of dress-up and can be built in parallel after the art asset pipeline.
 
 ---
 
 ## MVP Recommendation
 
-**Phase 1 -- "She can play with it":**
+Prioritize in dependency order:
 
-1. **Dress-up with color selection** -- Core mechanic. Swappable tails, hair, and 3-4 accessories in selectable colors. This alone provides 30+ minutes of play.
-2. **Coloring pages with tap-to-fill** -- Independent second activity. 4-6 pre-segmented SVG coloring pages. Tap region, pick color.
-3. **Print coloring pages** -- The signature differentiator. Low code complexity (CSS print + `window.print()`).
-4. **Basic navigation** -- Home screen with 2-3 big icon buttons.
-5. **Sound effects** -- 5-6 audio clips (tap, place, sparkle, splash). Tiny effort, massive feel improvement.
+1. **AI Art Generation Pipeline** -- everything else depends on having assets
+   - Use gpt-image-1 at medium quality (~$0.07/image, 1024x1024)
+   - Generate ~4 coloring page line art images (black outlines, white background, kawaii mermaid themes)
+   - Generate ~9 dress-up part variants (3 tails, 3 hairs, 3 accessories) with transparent backgrounds
+   - Estimated cost: ~13 images x $0.07 x 3-5 iteration runs = $3-5 total
+   - Lock a system prompt template for style consistency across all generations
 
-**Phase 2 -- "It feels complete":**
+2. **vtracer SVG Conversion** -- convert AI raster output to interactive SVGs
+   - Coloring pages: `binary` colormode, `filter_speckle=20`, clean black/white outlines
+   - Dress-up parts: `color` colormode, `filter_speckle=10`, preserve fill-bearing regions
+   - Pipeline already exists in `trace.py` -- extend with coloring-specific vs dress-up-specific parameter sets
 
-6. **Gallery / save creations** -- Persist dressed-up mermaids and colored pages. Revisit and admire.
-7. **Scene builder** -- Place dressed-up mermaid in underwater scenes. Most complex feature, benefits from dress-up being solid first.
-8. **Celebration animations** -- Sparkles, bubbles. Polish layer.
+3. **Flood Fill Coloring** -- replace region-based system with canvas flood fill
+   - Render SVG coloring page onto `<canvas>` element
+   - Implement iterative (stack-based, not recursive) flood fill with tolerance ~64-128
+   - Use `toleranceFade` for anti-aliased edge handling
+   - Canvas `ImageData` snapshot undo (replacing closure-based undo)
+   - Overlay original SVG outlines on top of canvas for crisp line rendering at any resolution
+   - Test on iPad Safari for performance before considering Web Worker preprocessing
 
-**Defer (Phase 3 or never):**
+4. **Dress-Up Art Integration** -- swap hand-crafted SVGs for AI-generated ones
+   - Place new traced SVGs into `<defs>` with IDs matching `PARTS` config (`tail-1`, `tail-2`, etc.)
+   - Verify `recolorActivePart()` works with vtracer-output path elements
+   - Align parts using consistent viewBox dimensions (normalize all to same coordinate space)
+   - Update `getVariantPreviewSVG()` with new preview thumbnails
 
-- **Stamp tool** -- Easy to add later. Same SVG pattern as accessories.
-- **Themed coloring page sets** -- Needs 12+ pages to justify grouping.
-- **Free brush painting** -- Only if SVG region coloring feels too limiting. Requires Canvas, much more complex.
+5. **GitHub Pages Deployment** -- make it accessible on iPad
+   - Add `.nojekyll` to repo root
+   - Change all absolute paths to relative (`"/assets/svg/mermaid.svg"` -> `"assets/svg/mermaid.svg"`)
+   - Enable GitHub Pages on `main` branch, publish from root or `/frontend` directory
+   - Verify on iPad Safari at deployed URL
+
+**Defer:**
+- Preprocessed instant fill (Web Worker): only if standard flood fill is too slow on iPad
+- PWA manifest / service worker: nice-to-have, not blocking v1.1
+- Animated view transitions: polish, not substance
+- Print support: listed in PROJECT.md Future, not in v1.1 scope
 
 ---
 
-## Complexity Budget Reality Check
+## Complexity Assessment
 
-This is a weekend project. Total complexity budget is roughly:
-
-| Feature | Estimated Effort | Cumulative |
-|---------|-----------------|------------|
-| Art asset pipeline (AI generation + SVG prep) | 6-10 hours | 6-10 hours |
-| Dress-up (core mechanic + colors) | 3-5 hours | 9-15 hours |
-| Coloring pages (SVG region fill) | 2-4 hours | 11-19 hours |
-| Print support | 1 hour | 12-20 hours |
-| Navigation + app shell | 1-2 hours | 13-22 hours |
-| Sound effects | 1 hour | 14-23 hours |
-| Gallery / save | 2-3 hours | 16-26 hours |
-| Scene builder | 4-8 hours | 20-34 hours |
-
-**The art asset pipeline is the hidden time sink.** Every dress-up option needs an SVG. Every coloring page needs pre-segmented regions. Every scene needs a background. Budget at least as much time for asset creation/curation as for code.
-
-**Scene builder may need to be Phase 2 or a stretch goal.** Dress-up + coloring + print is a complete, delightful experience on its own. The app works without scenes.
+| Feature Area | Effort | Risk | Notes |
+|--------------|--------|------|-------|
+| AI prompt engineering for consistent kawaii art | Medium | Medium | Iteration-heavy. Expect 3-5 generation runs per asset. AI line art often includes unwanted shading despite prompt instructions |
+| vtracer parameter tuning | Medium | Low | Pipeline exists and works. Tuning `filter_speckle`, `color_precision`, `layer_difference` is incremental trial-and-error |
+| Flood fill implementation | High | High | Architectural shift from SVG DOM manipulation to Canvas pixel operations. Undo system rewrite. Anti-aliasing tolerance tuning. iPad Safari canvas performance is the unknown |
+| Dress-up part alignment | High | High | AI-generated parts will NOT naturally align at connection points. Manual SVG editing almost certainly required. This is the single hardest integration problem |
+| GitHub Pages deployment | Low | Low | Hash router eliminates the hard SPA routing problem. Mostly find-and-replace on asset paths |
 
 ---
 
 ## Sources
 
-- Crayola Create and Play app features (training data knowledge, MEDIUM confidence)
-- Toca Boca series feature patterns (training data knowledge, MEDIUM confidence)
-- Apple Human Interface Guidelines for kids apps (training data knowledge, HIGH confidence on touch targets)
-- COPPA compliance requirements (training data knowledge, HIGH confidence -- established law)
-- PROJECT.md requirements and constraints (direct source, HIGH confidence)
+- [OpenAI Image Generation API docs](https://developers.openai.com/api/docs/guides/image-generation/) -- HIGH confidence
+- [OpenAI Cookbook: Generate images with GPT Image](https://developers.openai.com/cookbook/examples/generate_images_with_gpt_image/) -- HIGH confidence
+- [GPT Image 1 Model docs](https://developers.openai.com/api/docs/models/gpt-image-1) -- HIGH confidence
+- [GPT Image 1.5 Model docs](https://platform.openai.com/docs/models/gpt-image-1.5) -- HIGH confidence
+- [OpenAI API Pricing](https://openai.com/api/pricing/) -- HIGH confidence
+- [KidzFun.art: Using DALL-E for kids coloring pages](https://shaneosullivan.wordpress.com/2024/04/09/using-dall-e-ai-to-create-kids-colouring-pages-in-kidzfun-art/) -- MEDIUM confidence
+- [Instant colour fill with HTML Canvas (Web Worker preprocessing)](https://shaneosullivan.wordpress.com/2023/05/23/instant-colour-fill-with-html-canvas/) -- MEDIUM confidence
+- [FloodFill2D library (tolerance + anti-aliasing)](https://github.com/blindman67/FloodFill2D) -- HIGH confidence (direct source code)
+- [floodfill.js (basic canvas flood fill)](https://github.com/binarymax/floodfill.js/) -- HIGH confidence (direct source code)
+- [Canvas flood fill that doesn't kill the browser](https://ben.akrin.com/an-html5-canvas-flood-fill-that-doesnt-kill-the-browser/) -- MEDIUM confidence
+- [HN: Personalized coloring book with OpenAI image API](https://news.ycombinator.com/item?id=43791992) -- MEDIUM confidence
+- [GitHub Pages SPA routing discussion](https://github.com/orgs/community/discussions/64096) -- HIGH confidence
+- [vtracer repository](https://github.com/visioncortex/vtracer) -- HIGH confidence (direct source)
+- [GitHub Pages and Jekyll docs](https://docs.github.com/en/pages/setting-up-a-github-pages-site-with-jekyll/about-github-pages-and-jekyll) -- HIGH confidence
