@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A web-based creative activity app for a 6-year-old, themed entirely around mermaids. It combines dress-up/customization (pick tails, hair, accessories, place mermaids in underwater scenes) with coloring pages that can be printed for real-world coloring or saved digitally. Inspired by Crayola Create and Play but with a dreamy watercolor mermaid aesthetic.
+A web-based creative activity app for a 6-year-old, themed entirely around mermaids. Two activities: dress-up (mix and match tails, hair, accessories, and colors on a mermaid character) and coloring (tap-to-fill mermaid-themed pages). Built with a dreamy watercolor aesthetic, designed for iPad Safari with 60pt+ touch targets and zero-instruction usability.
 
 ## Core Value
 
@@ -12,38 +12,40 @@ A 6-year-old can open this on an iPad, build her own mermaid, and color mermaid 
 
 ### Validated
 
-<!-- Shipped and confirmed valuable. -->
-
-(None yet -- ship to validate)
+- [x] Mermaid dress-up: mix and match tail colors, hair styles, crowns, and accessories -- v1.0
+- [x] Coloring pages: mermaid-themed outlines to color digitally -- v1.0
+- [x] Watercolor art style: dreamy, soft, painterly visual aesthetic throughout -- v1.0
+- [x] Touch-friendly: designed for iPad touch interaction, big tap targets, no tiny UI -- v1.0
 
 ### Active
 
-<!-- Current scope. Building toward these. -->
-
-- [ ] Mermaid dress-up: mix and match tail colors, hair styles, crowns, necklaces, and other accessories
-- [ ] Scene builder: place customized mermaid into underwater scenes (coral, fish, castles)
-- [ ] Coloring pages: mermaid-themed outlines to color digitally
+- [ ] Scene builder: place customized mermaid into underwater scene backgrounds
 - [ ] Print coloring pages: export/print uncolored outlines for real-world coloring
 - [ ] Save creations: gallery of completed mermaids and colored pages
-- [ ] Watercolor art style: dreamy, soft, painterly visual aesthetic throughout
-- [ ] Touch-friendly: designed for iPad touch interaction, big tap targets, no tiny UI
+- [ ] Sound effects on interaction (tap, place, sparkle) with mute button
+- [ ] Themed coloring page sets (Coral Reef, Mermaid Castle collections)
 
 ### Out of Scope
 
-- Drawing / free canvas -- complexity too high for v1, not the core ask
+- Drawing / free canvas -- complexity too high, not the core ask
 - Mini-games (matching, puzzles) -- not what she gravitates to in Crayola app
 - App Store native app -- web app in Safari keeps it simple and fast to build
 - Multiplayer / social -- this is a solo creative play experience
-- User accounts / login -- she's 6, no auth needed
+- User accounts / login -- she's 6, COPPA compliance is a legal minefield
+- Cloud sync -- weekend-project-breaking complexity
+- Complex color picker (HSL/hex) -- preset swatches work for a 6-year-old
+- Zoom / pan -- spatial navigation is confusing for a child
+- Onboarding tutorial -- if the app needs a tutorial, it's too complex
+- Text input / labels -- a 6-year-old reads at beginner level
 
 ## Context
 
-- Target user: one specific 6-year-old who loves mermaids and Crayola Create and Play
-- Platform: iPad via Safari (web app)
-- Art assets: AI-generated watercolor-style mermaid parts, scenes, and coloring pages
-- This is a fun weekend project -- good enough to delight her, not App Store polish
-- Python backend (user preference), web frontend
-- The print feature is a key differentiator -- bridges digital and physical play
+Shipped v1.0 MVP with 2,172 LOC across Python, JavaScript, HTML, CSS.
+Tech stack: FastAPI + vanilla JS, no framework, no build step.
+SVG-first rendering with vtracer art pipeline for raster-to-SVG conversion.
+37 Playwright E2E tests across 5 suites, all passing.
+Two complete activities: dress-up (7 requirements) and coloring (4 requirements).
+Platform: iPad Safari (web app).
 
 ## Constraints
 
@@ -56,10 +58,17 @@ A 6-year-old can open this on an iPad, build her own mermaid, and color mermaid 
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Web app over native | Faster to build, no App Store, Python backend | -- Pending |
-| AI-generated art | No budget for commissioned art, faster iteration | -- Pending |
-| Watercolor style | Daughter's preference, dreamy mermaid aesthetic | -- Pending |
-| Print support for coloring pages | Bridges digital/physical play, unique feature | -- Pending |
+| Web app over native | Faster to build, no App Store, Python backend | Good -- shipped in 1 day |
+| AI-generated art | No budget for commissioned art, faster iteration | Good -- watercolor SVGs look great |
+| Watercolor style | Daughter's preference, dreamy mermaid aesthetic | Good -- consistent across all assets |
+| SVG-first rendering | Interactive regions, scalable, touch-friendly | Good -- enables dress-up and coloring |
+| Vanilla JS, no framework | Weekend scope, no build step complexity | Good -- 893 LOC JS, fast iteration |
+| vtracer for art pipeline | Raster-to-SVG conversion for future assets | Good -- works but PoC SVG was hand-crafted |
+| SVG defs+use for variants | Single setAttribute to swap parts | Good -- clean, performant pattern |
+| Pointer event delegation | Single listener, works on SVG regions | Good -- consistent touch handling |
+| Duplicated COLORS array | Separate state lifecycles for dress-up and coloring | OK -- minor duplication, clear separation |
+| Scene builder deferred to v2 | Weekend scope constraint | Pending |
+| Print support deferred to v2 | Weekend scope constraint | Pending |
 
 ---
-*Last updated: 2026-03-09 after initialization*
+*Last updated: 2026-03-09 after v1.0 milestone*
