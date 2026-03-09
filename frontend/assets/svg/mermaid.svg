@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 400 700"
+     preserveAspectRatio="xMidYMid meet"
+     id="mermaid-svg">
+
+  <defs>
+    <!-- Watercolor texture filter -->
+    <filter id="watercolor" x="-10%" y="-10%" width="120%" height="120%">
+      <!-- Generate organic noise for edge softening -->
+      <feTurbulence type="fractalNoise" baseFrequency="0.04"
+                    numOctaves="4" seed="2" result="noise" />
+      <!-- Soften edges with displacement -->
+      <feDisplacementMap in="SourceGraphic" in2="noise"
+                         scale="8" xChannelSelector="R" yChannelSelector="G"
+                         result="displaced" />
+      <!-- Fine paper-like texture overlay -->
+      <feTurbulence type="fractalNoise" baseFrequency="0.8"
+                    numOctaves="3" result="fine-noise" />
+      <feComposite in="displaced" in2="fine-noise"
+                   operator="in" />
+    </filter>
+  </defs>
+
+  <!-- Mermaid art with watercolor filter applied -->
+  <g filter="url(#watercolor)">
+
+    <!-- HAIR REGION -->
+    <g data-region="hair" pointer-events="all">
+      <!-- Invisible hit-area rect (80x130, covers hair zone) -->
+      <rect x="140" y="20" width="120" height="130"
+            fill="none" stroke="none" />
+      <!-- Flowing hair - soft lavender -->
+      <!-- Head circle -->
+      <circle cx="200" cy="80" r="40" fill="#c4a7d7" />
+      <!-- Hair flowing left -->
+      <path d="M160,60 Q130,80 120,130 Q125,140 140,135
+               Q145,110 160,85 Z"
+            fill="#c4a7d7" />
+      <!-- Hair flowing right -->
+      <path d="M240,60 Q270,80 280,130 Q275,140 260,135
+               Q255,110 240,85 Z"
+            fill="#c4a7d7" />
+      <!-- Hair top wave -->
+      <path d="M165,50 Q180,25 200,30 Q220,25 235,50
+               Q225,40 200,42 Q175,40 165,50 Z"
+            fill="#b594c9" />
+      <!-- Hair strands over shoulders -->
+      <path d="M155,100 Q135,150 130,180 Q140,175 150,145
+               Q155,120 160,105 Z"
+            fill="#c4a7d7" />
+      <path d="M245,100 Q265,150 270,180 Q260,175 250,145
+               Q245,120 240,105 Z"
+            fill="#c4a7d7" />
+    </g>
+
+    <!-- BODY REGION -->
+    <g data-region="body" pointer-events="all">
+      <!-- Invisible hit-area rect (160x220, covers torso) -->
+      <rect x="120" y="120" width="160" height="230"
+            fill="none" stroke="none" />
+      <!-- Neck -->
+      <path d="M188,115 Q188,130 185,140 L215,140 Q212,130 212,115 Z"
+            fill="#f5c8a8" />
+      <!-- Torso - warm peach -->
+      <path d="M155,140 Q145,170 140,220 Q140,260 150,300
+               L155,340 Q175,355 200,358 Q225,355 245,340
+               L250,300 Q260,260 260,220 Q255,170 245,140 Z"
+            fill="#f5c8a8" />
+      <!-- Left arm -->
+      <path d="M155,155 Q130,180 120,220 Q118,235 125,240
+               Q132,235 138,215 Q145,190 155,170 Z"
+            fill="#f5c8a8" />
+      <!-- Right arm -->
+      <path d="M245,155 Q270,180 280,220 Q282,235 275,240
+               Q268,235 262,215 Q255,190 245,170 Z"
+            fill="#f5c8a8" />
+      <!-- Simple shell top accent -->
+      <ellipse cx="180" cy="175" rx="18" ry="12" fill="#f0b898" />
+      <ellipse cx="220" cy="175" rx="18" ry="12" fill="#f0b898" />
+    </g>
+
+    <!-- TAIL REGION -->
+    <g data-region="tail" pointer-events="all">
+      <!-- Invisible hit-area rect (180x310, covers tail zone) -->
+      <rect x="110" y="350" width="180" height="330"
+            fill="none" stroke="none" />
+      <!-- Upper tail - ocean teal, connects smoothly to torso -->
+      <path d="M155,340 Q140,380 135,420 Q130,470 140,510
+               Q150,540 165,560 Q180,575 200,580
+               Q220,575 235,560 Q250,540 260,510
+               Q270,470 265,420 Q260,380 245,340
+               Q225,355 200,358 Q175,355 155,340 Z"
+            fill="#7ec8c8" />
+      <!-- Tail scales pattern (subtle) -->
+      <path d="M160,400 Q180,410 200,405 Q220,410 240,400
+               M155,440 Q175,450 200,445 Q225,450 245,440
+               M160,480 Q180,490 200,485 Q220,490 240,480
+               M170,520 Q185,528 200,525 Q215,528 230,520"
+            fill="none" stroke="#6ab8b8" stroke-width="1.5"
+            stroke-linecap="round" />
+      <!-- Tail fin - wider, friendly shape -->
+      <path d="M200,575 Q170,600 130,640 Q120,660 135,665
+               Q155,660 180,640 Q190,630 200,620
+               Q210,630 220,640 Q245,660 265,665
+               Q280,660 270,640 Q230,600 200,575 Z"
+            fill="#6ab8b8" />
+      <!-- Fin detail lines -->
+      <path d="M200,580 Q175,610 155,640
+               M200,580 Q190,610 175,635
+               M200,580 Q210,610 225,635
+               M200,580 Q225,610 245,640"
+            fill="none" stroke="#5aa8a8" stroke-width="1"
+            stroke-linecap="round" />
+    </g>
+
+  </g>
+
+  <!-- Small friendly face details (outside watercolor filter for clarity) -->
+  <!-- Eyes -->
+  <ellipse cx="185" cy="75" rx="5" ry="6" fill="#4a4a6a" />
+  <ellipse cx="215" cy="75" rx="5" ry="6" fill="#4a4a6a" />
+  <!-- Eye sparkles -->
+  <circle cx="187" cy="73" r="1.5" fill="white" />
+  <circle cx="217" cy="73" r="1.5" fill="white" />
+  <!-- Happy smile -->
+  <path d="M190,90 Q200,100 210,90" fill="none" stroke="#d4838b"
+        stroke-width="2" stroke-linecap="round" />
+  <!-- Rosy cheeks -->
+  <circle cx="175" cy="88" r="6" fill="#f5c0c0" opacity="0.5" />
+  <circle cx="225" cy="88" r="6" fill="#f5c0c0" opacity="0.5" />
+
+</svg>
