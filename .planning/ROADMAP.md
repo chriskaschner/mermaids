@@ -13,7 +13,7 @@ This roadmap delivers a mermaid-themed creative activity app for a 6-year-old on
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - SVG rendering, art assets, touch interaction, navigation shell on iPad Safari (completed 2026-03-09)
-- [ ] **Phase 2: Dress-Up** - Mermaid customization with swappable parts, colors, accessories, and undo
+- [x] **Phase 2: Dress-Up** - Mermaid customization with swappable parts, colors, accessories, and undo (completed 2026-03-09)
 - [ ] **Phase 3: Coloring** - Tap-to-fill coloring pages with color palette and undo
 
 ## Phase Details
@@ -45,11 +45,11 @@ Plans:
   3. Tapping a color swatch recolors the currently selected mermaid part (8-12 color options available)
   4. Tapping an undo button reverts the last change
   5. A sparkle/bubble animation plays when the mermaid has all parts selected
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
 - [x] 02-01-PLAN.md -- Test scaffold, restructured mermaid SVG with variant system, dressup.js state module
-- [ ] 02-02-PLAN.md -- Selection panel UI, color palette, undo, celebration animation, visual verification
+- [x] 02-02-PLAN.md -- Selection panel UI, color palette, undo, celebration animation, visual verification
 
 ### Phase 3: Coloring
 **Goal**: A child can pick a mermaid coloring page, tap regions to fill them with color, and undo mistakes
@@ -73,5 +73,5 @@ Phases execute in numeric order: 1 -> 2 -> 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 3/3 | Complete   | 2026-03-09 |
-| 2. Dress-Up | 1/2 | In progress | - |
+| 2. Dress-Up | 2/2 | Complete | 2026-03-09 |
 | 3. Coloring | 0/0 | Not started | - |

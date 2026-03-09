@@ -13,9 +13,9 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **DRSS-02**: User can swap between 3-4 tail options by tapping
 - [x] **DRSS-03**: User can swap between 3-4 hair style options by tapping
 - [x] **DRSS-04**: User can add/swap crowns and accessories (3-4 options)
-- [ ] **DRSS-05**: User can recolor mermaid parts by tapping color swatches (8-12 colors)
-- [ ] **DRSS-06**: User can undo last action with a single tap
-- [ ] **DRSS-07**: Sparkle/bubble animation plays when all parts are selected
+- [x] **DRSS-05**: User can recolor mermaid parts by tapping color swatches (8-12 colors)
+- [x] **DRSS-06**: User can undo last action with a single tap
+- [x] **DRSS-07**: Sparkle/bubble animation plays when all parts are selected
 
 ### Coloring
 
@@ -98,9 +98,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DRSS-02 | Phase 2 | Complete |
 | DRSS-03 | Phase 2 | Complete |
 | DRSS-04 | Phase 2 | Complete |
-| DRSS-05 | Phase 2 | Pending |
-| DRSS-06 | Phase 2 | Pending |
-| DRSS-07 | Phase 2 | Pending |
+| DRSS-05 | Phase 2 | Complete |
+| DRSS-06 | Phase 2 | Complete |
+| DRSS-07 | Phase 2 | Complete |
 | COLR-01 | Phase 3 | Pending |
 | COLR-02 | Phase 3 | Pending |
 | COLR-03 | Phase 3 | Pending |
