@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800">
+  <!-- Ocean Mermaid Coloring Page -->
+
+  <!-- Water background section -->
+  <g data-region="water" pointer-events="all">
+    <path d="M0,0 L600,0 L600,800 L0,800 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Mermaid tail -->
+  <g data-region="tail" pointer-events="all">
+    <path d="M260,480 Q270,520 250,580 Q230,620 210,660 Q240,680 270,660 Q280,640 290,660 Q320,680 350,660 Q330,620 310,580 Q290,520 300,480 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Mermaid body -->
+  <g data-region="body" pointer-events="all">
+    <path d="M250,280 Q240,320 240,360 Q240,400 250,440 Q260,470 260,480 L300,480 Q300,470 310,440 Q320,400 320,360 Q320,320 310,280 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Mermaid hair -->
+  <g data-region="hair" pointer-events="all">
+    <path d="M230,180 Q220,200 210,240 Q200,270 220,280 L250,280 Q240,240 250,200 Q260,180 280,170 Q300,180 310,200 Q320,240 310,280 L340,280 Q360,270 350,240 Q340,200 330,180 Q310,150 280,140 Q250,150 230,180 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Mermaid crown -->
+  <g data-region="crown" pointer-events="all">
+    <path d="M245,170 L250,130 L265,160 L280,120 L295,160 L310,130 L315,170 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Seaweed group 1 (left) -->
+  <g data-region="seaweed-left" pointer-events="all">
+    <path d="M60,500 Q50,450 70,400 Q80,350 60,300 Q50,350 70,400 Q90,450 80,500 Q70,550 60,600 Q50,650 70,700 Q80,750 60,800 L80,800 Q100,750 90,700 Q80,650 100,600 Q110,550 100,500 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Seaweed group 2 (right) -->
+  <g data-region="seaweed-right" pointer-events="all">
+    <path d="M520,450 Q510,400 530,350 Q540,300 520,260 Q510,310 530,360 Q550,410 540,460 Q530,510 520,560 Q510,610 530,660 Q540,710 520,760 L540,760 Q560,710 550,660 Q540,610 560,560 Q570,510 560,460 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Fish group 1 -->
+  <g data-region="fish-1" pointer-events="all">
+    <path d="M120,200 Q150,180 180,200 Q150,220 120,200 Z M180,200 L200,185 L200,215 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Fish group 2 -->
+  <g data-region="fish-2" pointer-events="all">
+    <path d="M420,350 Q450,330 480,350 Q450,370 420,350 Z M480,350 L500,335 L500,365 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Bubbles group -->
+  <g data-region="bubbles" pointer-events="all">
+    <circle cx="400" cy="150" r="25" fill="white" stroke="#555" stroke-width="2"/>
+    <circle cx="430" cy="200" r="20" fill="white" stroke="#555" stroke-width="2"/>
+    <circle cx="450" cy="120" r="15" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Face details (non-fillable) -->
+  <g pointer-events="none">
+    <circle cx="265" cy="220" r="4" fill="none" stroke="#555" stroke-width="2"/>
+    <circle cx="295" cy="220" r="4" fill="none" stroke="#555" stroke-width="2"/>
+    <path d="M270,240 Q280,250 290,240" fill="none" stroke="#555" stroke-width="2"/>
+  </g>
+</svg>

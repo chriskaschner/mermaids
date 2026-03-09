@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800">
+  <!-- Coral Reef Coloring Page -->
+
+  <!-- Coral formation 1 (left) -->
+  <g data-region="coral-left" pointer-events="all">
+    <path d="M60,600 Q50,550 70,500 Q80,450 60,400 Q80,420 100,450 Q110,480 120,450 Q130,420 140,450 Q150,480 140,530 Q130,580 110,630 Q100,660 80,680 Q60,670 60,640 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Coral formation 2 (center) -->
+  <g data-region="coral-center" pointer-events="all">
+    <path d="M250,650 Q240,600 260,550 Q270,500 250,460 Q270,470 280,500 Q290,530 300,500 Q310,470 320,500 Q330,530 320,580 Q310,630 290,670 Q270,690 250,680 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Coral formation 3 (right) -->
+  <g data-region="coral-right" pointer-events="all">
+    <path d="M460,620 Q450,570 470,520 Q480,470 460,430 Q480,440 500,470 Q510,500 520,470 Q530,440 540,470 Q550,500 540,550 Q530,600 510,650 Q490,680 470,670 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Mermaid figure -->
+  <g data-region="mermaid" pointer-events="all">
+    <circle cx="300" cy="220" r="35" fill="white" stroke="#555" stroke-width="2"/>
+    <path d="M270,255 Q260,300 265,350 Q275,400 280,440 Q290,470 310,440 Q320,420 330,440 Q340,470 320,440 Q315,400 325,350 Q330,300 320,255 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Fish 1 -->
+  <g data-region="fish-1" pointer-events="all">
+    <path d="M140,250 Q170,230 200,250 Q170,270 140,250 Z M200,250 L220,235 L220,265 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Fish 2 -->
+  <g data-region="fish-2" pointer-events="all">
+    <path d="M400,300 Q430,280 460,300 Q430,320 400,300 Z M460,300 L480,285 L480,315 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Starfish -->
+  <g data-region="starfish" pointer-events="all">
+    <path d="M180,550 L190,510 L200,540 L240,530 L210,550 L230,580 L200,560 L190,600 L185,560 L150,580 L180,550 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Shell -->
+  <g data-region="shell" pointer-events="all">
+    <path d="M400,520 Q420,480 450,500 Q470,520 450,550 Q430,570 410,560 Q390,550 400,520 Z" fill="white" stroke="#555" stroke-width="2"/>
+    <path d="M410,530 Q420,510 435,520" fill="white" stroke="#555" stroke-width="1.5"/>
+    <path d="M415,545 Q425,525 440,535" fill="white" stroke="#555" stroke-width="1.5"/>
+  </g>
+
+  <!-- Water background -->
+  <g data-region="water" pointer-events="all">
+    <path d="M0,700 Q100,680 200,700 Q300,720 400,700 Q500,680 600,700 L600,800 L0,800 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Face details (non-fillable) -->
+  <g pointer-events="none">
+    <circle cx="290" cy="215" r="4" fill="none" stroke="#555" stroke-width="2"/>
+    <circle cx="310" cy="215" r="4" fill="none" stroke="#555" stroke-width="2"/>
+    <path d="M295,235 Q300,242 305,235" fill="none" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Decorative wave lines (non-fillable) -->
+  <g pointer-events="none">
+    <path d="M0,100 Q50,80 100,100 Q150,120 200,100 Q250,80 300,100 Q350,120 400,100 Q450,80 500,100 Q550,120 600,100" fill="none" stroke="#555" stroke-width="1"/>
+    <path d="M0,130 Q50,110 100,130 Q150,150 200,130 Q250,110 300,130 Q350,150 400,130 Q450,110 500,130 Q550,150 600,130" fill="none" stroke="#555" stroke-width="1"/>
+  </g>
+</svg>

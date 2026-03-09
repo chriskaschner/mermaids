@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800">
+  <!-- Mermaid Castle Coloring Page -->
+
+  <!-- Castle base -->
+  <g data-region="castle-base" pointer-events="all">
+    <path d="M150,400 L150,650 L450,650 L450,400 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Castle tower -->
+  <g data-region="castle-tower" pointer-events="all">
+    <path d="M230,150 L230,400 L370,400 L370,150 Z M230,150 L300,80 L370,150 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Castle door -->
+  <g data-region="castle-door" pointer-events="all">
+    <path d="M260,500 Q260,450 300,430 Q340,450 340,500 L340,650 L260,650 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Window left -->
+  <g data-region="window-left" pointer-events="all">
+    <circle cx="200" cy="480" r="30" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Window right -->
+  <g data-region="window-right" pointer-events="all">
+    <circle cx="400" cy="480" r="30" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Tower window -->
+  <g data-region="tower-window" pointer-events="all">
+    <path d="M270,220 Q270,190 300,180 Q330,190 330,220 L330,280 L270,280 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Flag -->
+  <g data-region="flag" pointer-events="all">
+    <rect x="295" y="40" width="5" height="50" fill="white" stroke="#555" stroke-width="2"/>
+    <path d="M300,40 L360,55 L300,70 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Mermaid figure (sitting near castle) -->
+  <g data-region="mermaid" pointer-events="all">
+    <circle cx="100" cy="560" r="25" fill="white" stroke="#555" stroke-width="2"/>
+    <path d="M80,585 Q75,620 80,660 Q90,680 110,660 Q120,640 130,660 Q140,680 120,660 Q115,620 120,585 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Seaweed decoration -->
+  <g data-region="seaweed" pointer-events="all">
+    <path d="M480,500 Q470,460 490,420 Q500,380 480,350 Q470,390 490,430 Q510,470 500,510 Q490,550 480,600 Q470,650 490,700 L510,700 Q530,650 520,600 Q510,550 530,510 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Face details on mermaid (non-fillable) -->
+  <g pointer-events="none">
+    <circle cx="93" cy="555" r="3" fill="none" stroke="#555" stroke-width="2"/>
+    <circle cx="107" cy="555" r="3" fill="none" stroke="#555" stroke-width="2"/>
+    <path d="M95,568 Q100,573 105,568" fill="none" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Castle detail lines (non-fillable) -->
+  <g pointer-events="none">
+    <line x1="200" y1="480" x2="200" y2="510" stroke="#555" stroke-width="1" fill="none"/>
+    <line x1="185" y1="480" x2="215" y2="480" stroke="#555" stroke-width="1" fill="none"/>
+    <line x1="400" y1="480" x2="400" y2="510" stroke="#555" stroke-width="1" fill="none"/>
+    <line x1="385" y1="480" x2="415" y2="480" stroke="#555" stroke-width="1" fill="none"/>
+  </g>
+</svg>

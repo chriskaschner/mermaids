@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800">
+  <!-- Seahorse Friend Coloring Page -->
+
+  <!-- Large seahorse body -->
+  <g data-region="seahorse-body" pointer-events="all">
+    <path d="M350,100 Q380,120 400,170 Q410,220 400,280 Q390,340 370,380 Q350,420 340,460 Q330,500 340,540 Q350,560 370,550 Q380,530 370,510 Q360,500 350,510 Q340,530 350,550 Q370,580 350,600 Q330,610 310,600 Q290,580 300,540 Q310,500 320,460 Q330,420 340,380 Q360,340 370,280 Q380,220 370,170 Q360,130 340,110 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Seahorse fin -->
+  <g data-region="seahorse-fin" pointer-events="all">
+    <path d="M370,200 Q400,180 430,200 Q440,230 430,260 Q410,240 390,250 Q380,230 370,200 Z" fill="white" stroke="#555" stroke-width="2"/>
+    <path d="M365,280 Q395,260 425,280 Q435,310 420,340 Q400,320 385,330 Q375,310 365,280 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Mermaid figure -->
+  <g data-region="mermaid" pointer-events="all">
+    <circle cx="180" cy="350" r="30" fill="white" stroke="#555" stroke-width="2"/>
+    <path d="M155,380 Q145,420 150,470 Q160,510 170,540 Q180,560 200,540 Q210,520 220,540 Q230,560 210,540 Q200,510 210,470 Q215,420 205,380 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Mermaid hair -->
+  <g data-region="mermaid-hair" pointer-events="all">
+    <path d="M150,340 Q140,320 145,300 Q155,280 175,275 Q195,280 205,300 Q210,320 205,340 Q220,350 225,370 Q210,360 195,365 Q185,340 175,330 Q165,340 155,365 Q140,360 130,370 Q135,350 150,340 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Coral formation -->
+  <g data-region="coral" pointer-events="all">
+    <path d="M80,650 Q70,600 90,560 Q100,520 80,490 Q100,500 110,530 Q120,560 130,530 Q140,500 150,530 Q160,560 140,600 Q130,640 120,680 Q110,700 80,700 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Bubbles -->
+  <g data-region="bubbles" pointer-events="all">
+    <circle cx="250" cy="150" r="25" fill="white" stroke="#555" stroke-width="2"/>
+    <circle cx="280" cy="200" r="20" fill="white" stroke="#555" stroke-width="2"/>
+    <circle cx="220" cy="220" r="18" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Seaweed -->
+  <g data-region="seaweed" pointer-events="all">
+    <path d="M480,500 Q470,450 490,400 Q500,350 480,310 Q470,350 490,400 Q510,450 500,500 Q490,550 480,600 Q470,650 490,700 L510,700 Q530,650 520,600 Q510,550 530,500 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Small fish -->
+  <g data-region="fish" pointer-events="all">
+    <path d="M450,450 Q480,430 510,450 Q480,470 450,450 Z M510,450 L530,435 L530,465 Z" fill="white" stroke="#555" stroke-width="2"/>
+  </g>
+
+  <!-- Face details (non-fillable) -->
+  <g pointer-events="none">
+    <!-- Mermaid face -->
+    <circle cx="172" cy="345" r="4" fill="none" stroke="#555" stroke-width="2"/>
+    <circle cx="192" cy="345" r="4" fill="none" stroke="#555" stroke-width="2"/>
+    <path d="M176,360 Q182,367 188,360" fill="none" stroke="#555" stroke-width="2"/>
+    <!-- Seahorse eye -->
+    <circle cx="355" cy="140" r="5" fill="none" stroke="#555" stroke-width="2"/>
+  </g>
+</svg>
