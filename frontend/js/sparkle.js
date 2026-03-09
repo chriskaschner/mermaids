@@ -9,6 +9,17 @@ const SPARKLE_COUNT = 6;
 const SPARKLE_LIFETIME_MS = 600;
 const SPARKLE_SPREAD = 20;
 
+const CELEBRATION_COLORS = ["gold", "#ff69b4", "#87ceeb", "#dda0dd"];
+const CELEBRATION_POSITIONS = [
+  { x: 200, y: 80 },  // head
+  { x: 200, y: 250 }, // body
+  { x: 200, y: 500 }, // tail
+];
+const CELEBRATION_PARTICLES = 12;
+const CELEBRATION_SPREAD = 80;
+const CELEBRATION_LIFETIME_MS = 1000;
+const CELEBRATION_STAGGER_MS = 150;
+
 /**
  * Get SVG-local coordinates from a pointer event.
  * @param {SVGSVGElement} svgRoot
@@ -55,4 +66,36 @@ export function triggerSparkle(svgRoot, event) {
       }
     }, SPARKLE_LIFETIME_MS);
   }
+}
+
+/**
+ * Multi-burst celebration sparkle across the mermaid SVG.
+ * Fires 3 staggered bursts (head, body, tail) with 12 particles each.
+ * @param {SVGElement} svgRoot - The root <svg> element to append sparkles to.
+ */
+export function triggerCelebration(svgRoot) {
+  CELEBRATION_POSITIONS.forEach((pos, i) => {
+    setTimeout(() => {
+      for (let j = 0; j < CELEBRATION_PARTICLES; j++) {
+        const circle = document.createElementNS(SVG_NS, "circle");
+        const offsetX = (Math.random() - 0.5) * CELEBRATION_SPREAD;
+        const offsetY = (Math.random() - 0.5) * CELEBRATION_SPREAD;
+        const radius = 3 + Math.random() * 5;
+
+        circle.setAttribute("cx", String(pos.x + offsetX));
+        circle.setAttribute("cy", String(pos.y + offsetY));
+        circle.setAttribute("r", String(radius));
+        circle.setAttribute("fill", CELEBRATION_COLORS[j % CELEBRATION_COLORS.length]);
+        circle.classList.add("sparkle", "celebration");
+
+        svgRoot.appendChild(circle);
+
+        setTimeout(() => {
+          if (circle.parentNode) {
+            circle.parentNode.removeChild(circle);
+          }
+        }, CELEBRATION_LIFETIME_MS);
+      }
+    }, i * CELEBRATION_STAGGER_MS);
+  });
 }

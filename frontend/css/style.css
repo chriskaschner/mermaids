@@ -130,15 +130,124 @@ html, body {
 /* Dress-up view */
 .dressup-view {
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column;
     height: 100%;
-    padding: 16px;
 }
 
-.dressup-view svg {
+.mermaid-container {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 8px;
+}
+
+.mermaid-container svg {
     max-width: 100%;
     max-height: 100%;
+}
+
+/* Selection panel */
+.selection-panel {
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.9);
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.category-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 4px 8px;
+}
+
+.cat-tab,
+.undo-btn {
+    width: 60px;
+    height: 60px;
+    min-width: 60px;
+    min-height: 60px;
+    border: 2px solid transparent;
+    border-radius: 14px;
+    background: rgba(200, 220, 240, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+    cursor: pointer;
+}
+
+.cat-tab.active {
+    border-color: #5b8fa8;
+    background: rgba(100, 200, 255, 0.2);
+}
+
+.undo-btn {
+    margin-left: auto;
+}
+
+.options-row {
+    display: flex;
+    gap: 8px;
+    padding: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    justify-content: center;
+}
+
+.option-btn {
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+    min-height: 64px;
+    border: 2px solid transparent;
+    border-radius: 14px;
+    background: rgba(200, 220, 240, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+    cursor: pointer;
+}
+
+.option-btn.selected {
+    border-color: #c47ed0;
+    background: rgba(196, 126, 208, 0.15);
+}
+
+/* Color swatches */
+.color-swatch {
+    width: 52px;
+    height: 52px;
+    min-width: 52px;
+    min-height: 52px;
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+/* Celebration sparkle animation */
+.sparkle.celebration {
+    animation: celebration-sparkle 1s ease-out forwards;
+    pointer-events: none;
+}
+
+@keyframes celebration-sparkle {
+    0% {
+        opacity: 1;
+        transform: scale(0);
+    }
+    30% {
+        opacity: 1;
+        transform: scale(1.5);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.3) translateY(-30px);
+    }
 }
 
 /* Coloring placeholder */
