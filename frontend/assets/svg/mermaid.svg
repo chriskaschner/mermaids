@@ -19,69 +19,14 @@
       <feComposite in="displaced" in2="fine-noise"
                    operator="in" />
     </filter>
-  </defs>
 
-  <!-- Mermaid art with watercolor filter applied -->
-  <g filter="url(#watercolor)">
+    <!-- ============================================================ -->
+    <!-- TAIL VARIANTS                                                -->
+    <!-- ============================================================ -->
 
-    <!-- HAIR REGION -->
-    <g data-region="hair" pointer-events="all">
-      <!-- Invisible hit-area rect (80x130, covers hair zone) -->
-      <rect x="140" y="20" width="120" height="130"
-            fill="none" stroke="none" />
-      <!-- Flowing hair - soft lavender -->
-      <!-- Head circle -->
-      <circle cx="200" cy="80" r="40" fill="#c4a7d7" />
-      <!-- Hair flowing left -->
-      <path d="M160,60 Q130,80 120,130 Q125,140 140,135
-               Q145,110 160,85 Z"
-            fill="#c4a7d7" />
-      <!-- Hair flowing right -->
-      <path d="M240,60 Q270,80 280,130 Q275,140 260,135
-               Q255,110 240,85 Z"
-            fill="#c4a7d7" />
-      <!-- Hair top wave -->
-      <path d="M165,50 Q180,25 200,30 Q220,25 235,50
-               Q225,40 200,42 Q175,40 165,50 Z"
-            fill="#b594c9" />
-      <!-- Hair strands over shoulders -->
-      <path d="M155,100 Q135,150 130,180 Q140,175 150,145
-               Q155,120 160,105 Z"
-            fill="#c4a7d7" />
-      <path d="M245,100 Q265,150 270,180 Q260,175 250,145
-               Q245,120 240,105 Z"
-            fill="#c4a7d7" />
-    </g>
-
-    <!-- BODY REGION -->
-    <g data-region="body" pointer-events="all">
-      <!-- Invisible hit-area rect (160x220, covers torso) -->
-      <rect x="120" y="120" width="160" height="230"
-            fill="none" stroke="none" />
-      <!-- Neck -->
-      <path d="M188,115 Q188,130 185,140 L215,140 Q212,130 212,115 Z"
-            fill="#f5c8a8" />
-      <!-- Torso - warm peach -->
-      <path d="M155,140 Q145,170 140,220 Q140,260 150,300
-               L155,340 Q175,355 200,358 Q225,355 245,340
-               L250,300 Q260,260 260,220 Q255,170 245,140 Z"
-            fill="#f5c8a8" />
-      <!-- Left arm -->
-      <path d="M155,155 Q130,180 120,220 Q118,235 125,240
-               Q132,235 138,215 Q145,190 155,170 Z"
-            fill="#f5c8a8" />
-      <!-- Right arm -->
-      <path d="M245,155 Q270,180 280,220 Q282,235 275,240
-               Q268,235 262,215 Q255,190 245,170 Z"
-            fill="#f5c8a8" />
-      <!-- Simple shell top accent -->
-      <ellipse cx="180" cy="175" rx="18" ry="12" fill="#f0b898" />
-      <ellipse cx="220" cy="175" rx="18" ry="12" fill="#f0b898" />
-    </g>
-
-    <!-- TAIL REGION -->
-    <g data-region="tail" pointer-events="all">
-      <!-- Invisible hit-area rect (180x310, covers tail zone) -->
+    <!-- Tail 1: Original flowing tail - ocean teal -->
+    <g id="tail-1">
+      <!-- Invisible hit-area rect (180x330, covers tail zone) -->
       <rect x="110" y="350" width="180" height="330"
             fill="none" stroke="none" />
       <!-- Upper tail - ocean teal, connects smoothly to torso -->
@@ -112,6 +57,260 @@
             fill="none" stroke="#5aa8a8" stroke-width="1"
             stroke-linecap="round" />
     </g>
+
+    <!-- Tail 2: Wide flowing tail with scalloped edges -->
+    <g id="tail-2">
+      <rect x="100" y="350" width="200" height="330"
+            fill="none" stroke="none" />
+      <!-- Wider upper tail with gentle curves -->
+      <path d="M150,340 Q130,380 120,430 Q115,480 130,520
+               Q145,550 170,570 Q185,580 200,585
+               Q215,580 230,570 Q255,550 270,520
+               Q285,480 280,430 Q270,380 250,340
+               Q225,355 200,358 Q175,355 150,340 Z"
+            fill="#7ec8c8" />
+      <!-- Scalloped scale pattern -->
+      <path d="M145,400 Q160,415 175,405 Q190,415 200,410
+               Q210,415 225,405 Q240,415 255,400
+               M140,440 Q155,455 170,445 Q185,455 200,450
+               Q215,455 230,445 Q245,455 260,440
+               M145,480 Q160,495 175,485 Q190,495 200,490
+               Q210,495 225,485 Q240,495 255,480"
+            fill="none" stroke="#6ab8b8" stroke-width="1.5"
+            stroke-linecap="round" />
+      <!-- Scalloped fin with rounded lobes -->
+      <path d="M200,580 Q165,600 140,630 Q130,645 140,655
+               Q155,660 170,650 Q180,640 190,635
+               Q195,645 200,650 Q205,645 210,635
+               Q220,640 230,650 Q245,660 260,655
+               Q270,645 260,630 Q235,600 200,580 Z"
+            fill="#6ab8b8" />
+      <!-- Scallop detail arcs -->
+      <path d="M155,640 Q165,630 175,640
+               M195,640 Q200,632 205,640
+               M225,640 Q235,630 245,640"
+            fill="none" stroke="#5aa8a8" stroke-width="1"
+            stroke-linecap="round" />
+    </g>
+
+    <!-- Tail 3: Split/forked mermaid tail -->
+    <g id="tail-3">
+      <rect x="105" y="350" width="190" height="330"
+            fill="none" stroke="none" />
+      <!-- Slender upper tail -->
+      <path d="M160,340 Q145,380 140,420 Q138,465 145,500
+               Q155,530 175,555 Q190,568 200,572
+               Q210,568 225,555 Q245,530 255,500
+               Q262,465 260,420 Q255,380 240,340
+               Q225,355 200,358 Q175,355 160,340 Z"
+            fill="#7ec8c8" />
+      <!-- Scale pattern -->
+      <path d="M162,400 Q180,410 200,405 Q220,410 238,400
+               M158,440 Q178,450 200,445 Q222,450 242,440
+               M162,480 Q180,490 200,485 Q220,490 238,480"
+            fill="none" stroke="#6ab8b8" stroke-width="1.5"
+            stroke-linecap="round" />
+      <!-- Left fork fin -->
+      <path d="M200,570 Q180,585 155,610 Q135,635 120,660
+               Q115,670 125,672 Q140,668 160,650
+               Q175,635 190,615 Q195,600 200,570 Z"
+            fill="#6ab8b8" />
+      <!-- Right fork fin -->
+      <path d="M200,570 Q220,585 245,610 Q265,635 280,660
+               Q285,670 275,672 Q260,668 240,650
+               Q225,635 210,615 Q205,600 200,570 Z"
+            fill="#6ab8b8" />
+      <!-- Fork detail lines -->
+      <path d="M200,575 Q175,600 145,640
+               M200,575 Q185,600 165,635
+               M200,575 Q215,600 235,635
+               M200,575 Q225,600 255,640"
+            fill="none" stroke="#5aa8a8" stroke-width="1"
+            stroke-linecap="round" />
+    </g>
+
+    <!-- ============================================================ -->
+    <!-- HAIR VARIANTS                                                -->
+    <!-- ============================================================ -->
+
+    <!-- Hair 1: Original flowing hair - lavender -->
+    <g id="hair-1">
+      <!-- Invisible hit-area rect (120x130, covers hair zone) -->
+      <rect x="140" y="20" width="120" height="130"
+            fill="none" stroke="none" />
+      <!-- Head circle -->
+      <circle cx="200" cy="80" r="40" fill="#c4a7d7" />
+      <!-- Hair flowing left -->
+      <path d="M160,60 Q130,80 120,130 Q125,140 140,135
+               Q145,110 160,85 Z"
+            fill="#c4a7d7" />
+      <!-- Hair flowing right -->
+      <path d="M240,60 Q270,80 280,130 Q275,140 260,135
+               Q255,110 240,85 Z"
+            fill="#c4a7d7" />
+      <!-- Hair top wave -->
+      <path d="M165,50 Q180,25 200,30 Q220,25 235,50
+               Q225,40 200,42 Q175,40 165,50 Z"
+            fill="#b594c9" />
+      <!-- Hair strands over shoulders -->
+      <path d="M155,100 Q135,150 130,180 Q140,175 150,145
+               Q155,120 160,105 Z"
+            fill="#c4a7d7" />
+      <path d="M245,100 Q265,150 270,180 Q260,175 250,145
+               Q245,120 240,105 Z"
+            fill="#c4a7d7" />
+    </g>
+
+    <!-- Hair 2: Short wavy bob style -->
+    <g id="hair-2">
+      <rect x="140" y="20" width="120" height="120"
+            fill="none" stroke="none" />
+      <!-- Head circle -->
+      <circle cx="200" cy="80" r="40" fill="#c4a7d7" />
+      <!-- Bob left side - wavy, ends at jaw -->
+      <path d="M160,60 Q140,70 135,95 Q133,110 140,118
+               Q150,122 158,115 Q155,95 160,75 Z"
+            fill="#c4a7d7" />
+      <!-- Bob right side - wavy, ends at jaw -->
+      <path d="M240,60 Q260,70 265,95 Q267,110 260,118
+               Q250,122 242,115 Q245,95 240,75 Z"
+            fill="#c4a7d7" />
+      <!-- Top volume wave -->
+      <path d="M165,50 Q175,28 200,32 Q225,28 235,50
+               Q228,38 200,40 Q172,38 165,50 Z"
+            fill="#b594c9" />
+      <!-- Wavy texture lines -->
+      <path d="M148,90 Q152,82 155,90
+               M245,82 Q248,90 252,82"
+            fill="none" stroke="#b594c9" stroke-width="1.5"
+            stroke-linecap="round" />
+    </g>
+
+    <!-- Hair 3: Long braided style with side braid -->
+    <g id="hair-3">
+      <rect x="130" y="20" width="140" height="200"
+            fill="none" stroke="none" />
+      <!-- Head circle -->
+      <circle cx="200" cy="80" r="40" fill="#c4a7d7" />
+      <!-- Main hair mass left -->
+      <path d="M160,60 Q135,75 128,110 Q125,130 130,150
+               Q135,155 142,148 Q138,125 145,100 Q150,80 160,68 Z"
+            fill="#c4a7d7" />
+      <!-- Main hair mass right -->
+      <path d="M240,60 Q265,75 272,110 Q275,130 270,150
+               Q265,155 258,148 Q262,125 255,100 Q250,80 240,68 Z"
+            fill="#c4a7d7" />
+      <!-- Hair top wave -->
+      <path d="M165,50 Q180,25 200,30 Q220,25 235,50
+               Q225,40 200,42 Q175,40 165,50 Z"
+            fill="#b594c9" />
+      <!-- Side braid (left side, flowing down) -->
+      <path d="M138,140 Q130,155 135,170 Q142,178 140,190
+               Q135,202 138,215 Q143,220 140,230"
+            fill="none" stroke="#c4a7d7" stroke-width="8"
+            stroke-linecap="round" />
+      <!-- Braid cross-hatching -->
+      <path d="M133,155 L143,160 M143,170 L133,175
+               M133,190 L143,195 M143,205 L133,210"
+            fill="none" stroke="#b594c9" stroke-width="1.5"
+            stroke-linecap="round" />
+      <!-- Braid tie -->
+      <circle cx="139" cy="232" r="4" fill="#ffd700" />
+    </g>
+
+    <!-- ============================================================ -->
+    <!-- ACCESSORY VARIANTS                                           -->
+    <!-- ============================================================ -->
+
+    <!-- Accessory: None (empty group, hit-area for tap target) -->
+    <g id="acc-none">
+      <!-- Invisible hit-area so data-region has a bounding box even with no accessory -->
+      <rect x="170" y="20" width="60" height="40"
+            fill="none" stroke="none" />
+    </g>
+
+    <!-- Accessory 1: Crown - gold -->
+    <g id="acc-1">
+      <rect x="170" y="20" width="60" height="40"
+            fill="none" stroke="none" />
+      <!-- Crown base -->
+      <path d="M175,52 L175,35 L185,45 L193,30 L200,45
+               L207,30 L215,45 L225,35 L225,52 Z"
+            fill="#ffd700" />
+      <!-- Crown band -->
+      <rect x="175" y="48" width="50" height="6" rx="2"
+            fill="#ffc800" />
+      <!-- Crown jewels -->
+      <circle cx="193" cy="38" r="2.5" fill="#ff69b4" />
+      <circle cx="207" cy="38" r="2.5" fill="#87ceeb" />
+      <circle cx="200" cy="34" r="3" fill="#ff6347" />
+    </g>
+
+    <!-- Accessory 2: Flower - pink, positioned on hair -->
+    <g id="acc-2">
+      <rect x="215" y="42" width="40" height="40"
+            fill="none" stroke="none" />
+      <!-- Flower petals -->
+      <circle cx="235" cy="58" r="7" fill="#ff69b4" />
+      <circle cx="228" cy="52" r="7" fill="#ff69b4" />
+      <circle cx="242" cy="52" r="7" fill="#ff69b4" />
+      <circle cx="228" cy="64" r="7" fill="#ff69b4" />
+      <circle cx="242" cy="64" r="7" fill="#ff69b4" />
+      <!-- Flower center -->
+      <circle cx="235" cy="58" r="4" fill="#ffd700" />
+    </g>
+
+    <!-- Accessory 3: Starfish - coral, positioned on hair -->
+    <g id="acc-3">
+      <rect x="218" y="40" width="40" height="40"
+            fill="none" stroke="none" />
+      <!-- Starfish shape (5-pointed) -->
+      <path d="M238,42 L241,52 L252,52 L243,58 L246,68
+               L238,62 L230,68 L233,58 L224,52 L235,52 Z"
+            fill="#ff6347" />
+      <!-- Starfish center dots -->
+      <circle cx="238" cy="55" r="2" fill="#ff8c69" />
+    </g>
+
+  </defs>
+
+  <!-- Mermaid art with watercolor filter applied -->
+  <g filter="url(#watercolor)">
+
+    <!-- TAIL (bottom layer) -->
+    <use id="active-tail" href="#tail-1" data-region="tail" pointer-events="all" />
+
+    <!-- BODY REGION (middle, not swappable in v1) -->
+    <g data-region="body" pointer-events="all">
+      <!-- Invisible hit-area rect (160x220, covers torso) -->
+      <rect x="120" y="120" width="160" height="230"
+            fill="none" stroke="none" />
+      <!-- Neck -->
+      <path d="M188,115 Q188,130 185,140 L215,140 Q212,130 212,115 Z"
+            fill="#f5c8a8" />
+      <!-- Torso - warm peach -->
+      <path d="M155,140 Q145,170 140,220 Q140,260 150,300
+               L155,340 Q175,355 200,358 Q225,355 245,340
+               L250,300 Q260,260 260,220 Q255,170 245,140 Z"
+            fill="#f5c8a8" />
+      <!-- Left arm -->
+      <path d="M155,155 Q130,180 120,220 Q118,235 125,240
+               Q132,235 138,215 Q145,190 155,170 Z"
+            fill="#f5c8a8" />
+      <!-- Right arm -->
+      <path d="M245,155 Q270,180 280,220 Q282,235 275,240
+               Q268,235 262,215 Q255,190 245,170 Z"
+            fill="#f5c8a8" />
+      <!-- Simple shell top accent -->
+      <ellipse cx="180" cy="175" rx="18" ry="12" fill="#f0b898" />
+      <ellipse cx="220" cy="175" rx="18" ry="12" fill="#f0b898" />
+    </g>
+
+    <!-- HAIR (above body) -->
+    <use id="active-hair" href="#hair-1" data-region="hair" pointer-events="all" />
+
+    <!-- ACCESSORY (top layer, above hair) -->
+    <use id="active-acc" href="#acc-none" data-region="accessory" pointer-events="all" />
 
   </g>
 
