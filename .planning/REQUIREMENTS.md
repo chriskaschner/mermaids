@@ -33,7 +33,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [ ] **FOUN-01**: All tap targets are 60pt+ for a 6-year-old's motor control
 - [ ] **FOUN-02**: App works in iPad Safari with touch interaction
-- [ ] **FOUN-03**: Consistent watercolor art style across all assets
+- [x] **FOUN-03**: Consistent watercolor art style across all assets
 - [ ] **FOUN-04**: All interactions provide instant visual feedback (no loading states)
 
 ## v2 Requirements
@@ -90,7 +90,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | FOUN-01 | Phase 1 | Partial (01-01: CSS foundation) |
 | FOUN-02 | Phase 1 | Partial (01-01: viewport + web-app meta) |
-| FOUN-03 | Phase 1 | Pending |
+| FOUN-03 | Phase 1 | Complete (01-02: watercolor SVG filter + mermaid SVG) |
 | FOUN-04 | Phase 1 | Pending |
 | NAVG-01 | Phase 1 | Pending |
 | NAVG-02 | Phase 1 | Pending |

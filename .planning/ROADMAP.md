@@ -32,7 +32,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 Plans:
 - [x] 01-01-PLAN.md -- Project scaffolding, FastAPI server, iPad HTML/CSS shell, test infrastructure
-- [ ] 01-02-PLAN.md -- Art pipeline (vtracer) and proof-of-concept mermaid SVG with tappable regions
+- [x] 01-02-PLAN.md -- Art pipeline (vtracer) and proof-of-concept mermaid SVG with tappable regions
 - [ ] 01-03-PLAN.md -- Hash router, touch interaction, sparkle feedback, navigation, and visual verification
 
 ### Phase 2: Dress-Up
@@ -72,6 +72,6 @@ Phases execute in numeric order: 1 -> 2 -> 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 1/3 | Executing | - |
+| 1. Foundation | 2/3 | Executing | - |
 | 2. Dress-Up | 0/0 | Not started | - |
 | 3. Coloring | 0/0 | Not started | - |
