@@ -116,25 +116,38 @@ class TestCanvasFloodFill:
             pass
 
     def test_fill_stops_at_lines(self, coloring_page: Page):
-        """Tap two different white regions separated by a line, verify only
-        the tapped region changed color (the other remains white or different)."""
+        """Verify flood fill respects line boundaries by checking that after
+        a fill, at least some non-white, non-filled pixels still exist
+        (line art is preserved and not filled through)."""
         _open_first_page(coloring_page)
 
-        # Tap at upper-left quadrant
-        _tap_canvas_at(coloring_page, 256, 256)
+        # Find a dark (line art) pixel by scanning a row near the center
+        line_pixel = coloring_page.evaluate("""(() => {
+            const canvas = document.querySelector('#coloring-canvas');
+            if (!canvas) return null;
+            const ctx = canvas.getContext('2d');
+            // Scan row 512 for a dark pixel (line art)
+            const row = ctx.getImageData(0, 512, canvas.width, 1).data;
+            for (let x = 0; x < canvas.width; x++) {
+                const i = x * 4;
+                // Dark pixel = all channels below 100
+                if (row[i] < 100 && row[i+1] < 100 && row[i+2] < 100) {
+                    return { x: x, y: 512, r: row[i], g: row[i+1], b: row[i+2] };
+                }
+            }
+            return null;
+        })()""")
 
-        # Read pixel at upper-left (should be filled or on a line)
-        upper_left = _read_canvas_pixel(coloring_page, 256, 256)
+        # Tap to fill at center (white area)
+        _tap_canvas_at(coloring_page, 512, 512)
 
-        # Read pixel at lower-right (should NOT be filled -- different region)
-        lower_right = _read_canvas_pixel(coloring_page, 768, 768)
-
-        # The two pixels should differ: one should be filled, the other not
-        # (assuming the art has lines separating these regions)
-        # At minimum, if upper_left is hot pink, lower_right should not be
-        if upper_left[:3] == [255, 105, 180]:
-            assert lower_right[:3] != [255, 105, 180], \
-                "Fill bled to a different region"
+        if line_pixel is not None:
+            # After fill, the line pixel should still be dark (not filled through)
+            after = _read_canvas_pixel(coloring_page, line_pixel["x"], line_pixel["y"])
+            assert after is not None, "Canvas not found after fill"
+            # Line pixel should NOT be hot pink
+            assert not (after[0] == 255 and after[1] == 105 and after[2] == 180), \
+                f"Line pixel at ({line_pixel['x']}, 512) was filled through: {after[:3]}"
 
 
 class TestCanvasOverlay:

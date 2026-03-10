@@ -9,11 +9,13 @@ import { initDressUp, resetState } from "./dressup.js";
 import {
   COLORING_PAGES,
   COLORS,
-  fillRegion,
+  initColoringCanvas,
+  handleCanvasTap,
   undo as coloringUndo,
+  canUndo,
+  releaseCanvas,
   setSelectedColor,
   getSelectedColor,
-  resetColoringState,
 } from "./coloring.js";
 
 const appEl = () => document.getElementById("app");
@@ -114,7 +116,7 @@ async function renderDressUp() {
 
 function renderColoring() {
   const el = appEl();
-  resetColoringState();
+  releaseCanvas();
   el.innerHTML = `
     <div class="coloring-gallery">
       ${COLORING_PAGES.map(
@@ -132,6 +134,18 @@ function renderColoring() {
   });
 }
 
+/**
+ * Update the undo button disabled state based on the undo stack.
+ */
+function _updateUndoBtn(undoBtn) {
+  if (!undoBtn) return;
+  if (canUndo()) {
+    undoBtn.classList.remove("disabled");
+  } else {
+    undoBtn.classList.add("disabled");
+  }
+}
+
 async function openColoringPage(pageId) {
   const el = appEl();
   const page = COLORING_PAGES.find((p) => p.id === pageId);
@@ -140,13 +154,10 @@ async function openColoringPage(pageId) {
   el.innerHTML = '<div class="loading">Loading...</div>';
 
   try {
-    const resp = await fetch(page.file);
-    const svgText = await resp.text();
-
+    // Build the coloring view structure
     el.innerHTML = `
       <div class="coloring-view">
-        <div class="coloring-page-container">
-          ${svgText}
+        <div class="coloring-page-container" id="coloring-container">
         </div>
         <div class="coloring-panel">
           <div class="coloring-toolbar">
@@ -155,7 +166,7 @@ async function openColoringPage(pageId) {
                 <path d="M15,4 L7,12 L15,20" fill="none" stroke="#888" stroke-width="2.5" stroke-linecap="round" />
               </svg>
             </button>
-            <button class="undo-btn" aria-label="Undo">
+            <button class="undo-btn disabled" aria-label="Undo">
               <svg width="24" height="24" viewBox="0 0 24 24">
                 <path d="M7,12 L3,8 L7,4 M3,8 L15,8 Q20,8 20,14 Q20,20 15,20 L10,20"
                       fill="none" stroke="#888" stroke-width="2.5" stroke-linecap="round" />
@@ -177,17 +188,47 @@ async function openColoringPage(pageId) {
       </div>
     `;
 
+    const container = el.querySelector("#coloring-container");
+    const undoBtn = el.querySelector(".coloring-toolbar .undo-btn");
+
     // Set default selected color (hot pink, COLORS[2])
     setSelectedColor(COLORS[2]);
 
-    // Wire back button
-    el.querySelector(".back-btn").addEventListener("click", () => {
-      renderColoring();
+    // Initialize canvas with the SVG rasterized onto it
+    const { canvas } = await initColoringCanvas(page.file, container);
+    canvas.id = "coloring-canvas";
+
+    // Fetch the SVG text and create an overlay for crisp line art
+    const svgResp = await fetch(page.file);
+    const svgText = await svgResp.text();
+    const parser = new DOMParser();
+    const svgDoc = parser.parseFromString(svgText, "image/svg+xml");
+    const svgOverlay = svgDoc.documentElement;
+    svgOverlay.classList.add("coloring-svg-overlay");
+    svgOverlay.style.pointerEvents = "none";
+    container.appendChild(svgOverlay);
+
+    // Wire canvas pointerdown for flood fill
+    canvas.addEventListener("pointerdown", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const canvasX = Math.floor((e.clientX - rect.left) * scaleX);
+      const canvasY = Math.floor((e.clientY - rect.top) * scaleY);
+      handleCanvasTap(canvasX, canvasY);
+      _updateUndoBtn(undoBtn);
     });
 
     // Wire undo button
-    el.querySelector(".undo-btn").addEventListener("click", () => {
+    undoBtn.addEventListener("click", () => {
       coloringUndo();
+      _updateUndoBtn(undoBtn);
+    });
+
+    // Wire back button: release canvas then go to gallery
+    el.querySelector(".back-btn").addEventListener("click", () => {
+      releaseCanvas();
+      renderColoring();
     });
 
     // Wire color swatch selection
@@ -200,17 +241,6 @@ async function openColoringPage(pageId) {
         swatch.classList.add("selected");
       });
     });
-
-    // Wire tap-to-fill on SVG regions via pointerdown event delegation
-    const svgRoot = el.querySelector(".coloring-page-container svg");
-    if (svgRoot) {
-      svgRoot.addEventListener("pointerdown", (event) => {
-        const region = event.target.closest("[data-region]");
-        if (region) {
-          fillRegion(region, getSelectedColor());
-        }
-      });
-    }
   } catch (err) {
     el.innerHTML = '<div class="error">Could not load coloring page.</div>';
   }
@@ -232,6 +262,9 @@ function updateNavHighlight(hash) {
 }
 
 function router() {
+  // Release any active coloring canvas before rendering a new route (CLRV-04)
+  releaseCanvas();
+
   const hash = window.location.hash.slice(2) || "home";
   const render = routes[hash];
   if (render) {
