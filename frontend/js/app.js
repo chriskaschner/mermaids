@@ -51,7 +51,7 @@ async function renderDressUp() {
   const el = appEl();
   el.innerHTML = '<div class="loading">Loading...</div>';
   try {
-    const resp = await fetch("/assets/svg/mermaid.svg");
+    const resp = await fetch("assets/svg/mermaid.svg");
     const svgText = await resp.text();
     el.innerHTML = `
       <div class="dressup-view">
@@ -108,7 +108,7 @@ async function renderDressUp() {
     // Wire touch sparkle feedback on the mermaid itself
     initTouch("#mermaid-svg");
     // Wire dress-up interaction (tabs, options, undo)
-    initDressUp();
+    await initDressUp();
   } catch (err) {
     el.innerHTML = '<div class="error">Could not load mermaid.</div>';
   }

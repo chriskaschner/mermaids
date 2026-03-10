@@ -221,6 +221,13 @@ html, body {
     background: rgba(196, 126, 208, 0.15);
 }
 
+.option-btn svg {
+    width: 48px;
+    height: 48px;
+    max-width: 48px;
+    max-height: 48px;
+}
+
 /* Color swatches */
 .color-swatch {
     width: 52px;

@@ -4,6 +4,9 @@
  *
  * Manages the mermaid SVG variant system where all part variants live in
  * <defs> and <use> elements reference the active variant per category.
+ *
+ * Previews are fetched from individual traced SVGs at runtime and displayed
+ * at 48x48 inside 64x64 option buttons. Previews reflect color overrides.
  */
 
 import { triggerCelebration } from "./sparkle.js";
@@ -45,6 +48,9 @@ let celebrated = false;
 
 // Map of original fill arrays keyed by variantId, captured on first recolor
 const originalColorsMap = {};
+
+// Cache for fetched preview SVG text (keyed by variantId)
+const previewSVGCache = new Map();
 
 // -- Core operations ----------------------------------------------------------
 
@@ -90,6 +96,7 @@ export function swapPart(category, variantId) {
  * Modifies fill attributes directly on the source <g> in <defs>.
  * Stores color override in state.colors[variantId].
  * Pushes undo that restores previous per-element fills.
+ * Also updates the visible preview button for the recolored variant.
  *
  * When the color tab is active, we recolor the part from the most recently
  * selected part category (tail/hair/acc).
@@ -123,6 +130,15 @@ export function recolorActivePart(color) {
   // Apply the new color
   applyColorToSource(variantId, color);
   state.colors[variantId] = color;
+
+  // Update the preview button SVG if it is currently visible in the options row
+  const row = document.getElementById("options-row");
+  if (row) {
+    const btn = row.querySelector(`.option-btn[data-variant="${variantId}"] svg`);
+    if (btn) {
+      applyColorToPreviewSVG(btn, color);
+    }
+  }
 
   pushUndo(() => {
     // Restore each element's previous fill
@@ -205,14 +221,42 @@ export function resetState() {
   Object.keys(originalColorsMap).forEach((key) => delete originalColorsMap[key]);
 }
 
+// -- Preview fetch and color sync ---------------------------------------------
+
+/**
+ * Fetch a variant's individual SVG file for use as a preview thumbnail.
+ * Caches the original SVG text so repeated renders don't re-fetch.
+ */
+async function fetchVariantPreview(variantId) {
+  if (previewSVGCache.has(variantId)) {
+    return previewSVGCache.get(variantId);
+  }
+  const resp = await fetch(`assets/svg/dressup/${variantId}.svg`);
+  const text = await resp.text();
+  previewSVGCache.set(variantId, text);
+  return text;
+}
+
+/**
+ * Apply a color override to all fill-bearing elements within a preview SVG.
+ * Reuses the same getFillBearingElements logic as the main defs recoloring.
+ */
+function applyColorToPreviewSVG(svgEl, color) {
+  getFillBearingElements(svgEl).forEach((el) => {
+    el.setAttribute("fill", color);
+  });
+}
+
 // -- UI wiring ----------------------------------------------------------------
 
 /**
  * Render option buttons for a given category into the #options-row.
- * For tail/hair/acc: creates .option-btn buttons with small preview SVGs.
+ * For tail/hair/acc: creates .option-btn buttons with fetched preview SVGs.
  * For color: creates .color-swatch buttons for each COLORS entry.
+ *
+ * This is async because variant preview SVGs are fetched from individual files.
  */
-function renderOptions(category) {
+async function renderOptions(category) {
   const row = document.getElementById("options-row");
   if (!row) return;
   row.innerHTML = "";
@@ -236,7 +280,8 @@ function renderOptions(category) {
   const variants = PARTS[category];
   if (!variants) return;
 
-  variants.forEach((variantId) => {
+  // Create all buttons first (synchronously) for instant layout
+  const buttons = variants.map((variantId) => {
     const btn = document.createElement("button");
     btn.className = "option-btn";
     btn.setAttribute("data-variant", variantId);
@@ -247,9 +292,6 @@ function renderOptions(category) {
       btn.classList.add("selected");
     }
 
-    // Create a small preview icon for each variant
-    btn.innerHTML = getVariantPreviewSVG(category, variantId);
-
     btn.addEventListener("click", () => {
       swapPart(category, variantId);
       // Update selected state on all option buttons
@@ -257,38 +299,54 @@ function renderOptions(category) {
         b.classList.toggle("selected", b.getAttribute("data-variant") === variantId);
       });
     });
-    row.appendChild(btn);
-  });
-}
 
-/**
- * Return a small inline SVG preview icon for a variant.
- * These are simplified 24x24 shapes, not the full variant art.
- */
-function getVariantPreviewSVG(category, variantId) {
-  const previews = {
-    "tail-1": '<svg width="24" height="24" viewBox="0 0 24 24"><path d="M12,2 Q8,10 6,16 Q10,20 12,18 Q14,20 18,16 Q16,10 12,2Z" fill="#7ec8c8"/></svg>',
-    "tail-2": '<svg width="24" height="24" viewBox="0 0 24 24"><path d="M12,2 Q6,10 5,16 Q8,19 10,17 Q11,19 12,18 Q13,19 14,17 Q16,19 19,16 Q18,10 12,2Z" fill="#7ec8c8"/></svg>',
-    "tail-3": '<svg width="24" height="24" viewBox="0 0 24 24"><path d="M12,2 Q9,10 8,14 L4,22 Q8,18 12,16 Q16,18 20,22 L16,14 Q15,10 12,2Z" fill="#7ec8c8"/></svg>',
-    "hair-1": '<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="10" r="6" fill="#c4a7d7"/><path d="M6,10 Q4,16 5,20" stroke="#c4a7d7" stroke-width="2" fill="none"/><path d="M18,10 Q20,16 19,20" stroke="#c4a7d7" stroke-width="2" fill="none"/></svg>',
-    "hair-2": '<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="10" r="6" fill="#c4a7d7"/><path d="M6,8 Q5,12 7,14" stroke="#c4a7d7" stroke-width="3" fill="none"/><path d="M18,8 Q19,12 17,14" stroke="#c4a7d7" stroke-width="3" fill="none"/></svg>',
-    "hair-3": '<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="10" r="6" fill="#c4a7d7"/><path d="M7,12 Q6,16 7,20" stroke="#c4a7d7" stroke-width="3" fill="none" stroke-dasharray="2 2"/><circle cx="7" cy="21" r="2" fill="#ffd700"/></svg>',
-    "acc-none": '<svg width="24" height="24" viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="18" stroke="#ccc" stroke-width="2" stroke-linecap="round"/><line x1="18" y1="6" x2="6" y2="18" stroke="#ccc" stroke-width="2" stroke-linecap="round"/></svg>',
-    "acc-1": '<svg width="24" height="24" viewBox="0 0 24 24"><path d="M4,16 L4,8 L8,12 L12,6 L16,12 L20,8 L20,16Z" fill="#ffd700"/></svg>',
-    "acc-2": '<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="#ff69b4"/><circle cx="8" cy="8" r="3" fill="#ff69b4"/><circle cx="16" cy="8" r="3" fill="#ff69b4"/><circle cx="8" cy="16" r="3" fill="#ff69b4"/><circle cx="16" cy="16" r="3" fill="#ff69b4"/><circle cx="12" cy="12" r="2" fill="#ffd700"/></svg>',
-    "acc-3": '<svg width="24" height="24" viewBox="0 0 24 24"><path d="M12,2 L13.5,8 L20,8 L14.5,12 L16,18 L12,14 L8,18 L9.5,12 L4,8 L10.5,8Z" fill="#ff6347"/></svg>',
-  };
-  return previews[variantId] || "";
+    row.appendChild(btn);
+    return { btn, variantId };
+  });
+
+  // Fetch and insert preview SVGs (async)
+  await Promise.all(
+    buttons.map(async ({ btn, variantId }) => {
+      if (variantId === "acc-none") {
+        // Keep a simple X icon for the "none" accessory option
+        btn.innerHTML =
+          '<svg width="48" height="48" viewBox="0 0 48 48">' +
+          '<line x1="12" y1="12" x2="36" y2="36" stroke="#ccc" stroke-width="3" stroke-linecap="round"/>' +
+          '<line x1="36" y1="12" x2="12" y2="36" stroke="#ccc" stroke-width="3" stroke-linecap="round"/>' +
+          "</svg>";
+        return;
+      }
+
+      const svgText = await fetchVariantPreview(variantId);
+      btn.innerHTML = svgText;
+
+      // Configure the SVG element for consistent sizing
+      const svgEl = btn.querySelector("svg");
+      if (svgEl) {
+        svgEl.setAttribute("width", "48");
+        svgEl.setAttribute("height", "48");
+        if (!svgEl.getAttribute("viewBox")) {
+          svgEl.setAttribute("viewBox", "0 0 1024 1024");
+        }
+
+        // Apply saved color override to the preview
+        const savedColor = state.colors[variantId];
+        if (savedColor) {
+          applyColorToPreviewSVG(svgEl, savedColor);
+        }
+      }
+    })
+  );
 }
 
 /**
  * Initialize dress-up UI event listeners on the selection panel.
  * Call AFTER the selection panel HTML is in the DOM.
  */
-export function initDressUp() {
+export async function initDressUp() {
   // Wire category tab clicks
   document.querySelectorAll(".cat-tab").forEach((tab) => {
-    tab.addEventListener("click", () => {
+    tab.addEventListener("click", async () => {
       const category = tab.getAttribute("data-category");
       state.activeCategory = category;
 
@@ -302,8 +360,8 @@ export function initDressUp() {
         t.classList.toggle("active", t === tab);
       });
 
-      // Repopulate options row
-      renderOptions(category);
+      // Repopulate options row (async for fetched previews)
+      await renderOptions(category);
     });
   });
 
@@ -329,7 +387,7 @@ export function initDressUp() {
   }
 
   // Show tail options by default on load
-  renderOptions("tail");
+  await renderOptions("tail");
 }
 
 // -- Internal helpers ---------------------------------------------------------
