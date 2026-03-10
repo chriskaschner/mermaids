@@ -1,11 +1,22 @@
 /**
- * Coloring page state management: tap-to-fill, color palette, undo stack.
+ * Canvas-based coloring state management: flood fill, color palette, undo stack.
  *
  * Pure state + operations module -- no DOM event listeners wired here.
  * Event wiring happens in app.js when the coloring UI is built (Plan 02).
  *
- * Mirrors the structure of dressup.js but with separate state lifecycle.
+ * Canvas lifecycle:
+ *   initColoringCanvas() -> handleCanvasTap() x N -> releaseCanvas()
+ *
+ * Undo via ImageData snapshots (capped at MAX_UNDO).
  */
+
+import { floodFill, hexToRgb } from "./floodfill.js";
+
+// -- Constants ----------------------------------------------------------------
+
+const MAX_UNDO = 30;
+const FILL_TOLERANCE = 32;
+const CANVAS_SIZE = 1024;
 
 // Color palette -- 10 preset swatches, child-friendly (same as dressup.js,
 // duplicated per research recommendation: separate state lifecycles)
@@ -39,77 +50,129 @@ export const state = {
 
 // -- Internal -----------------------------------------------------------------
 
+/** Module-level canvas and context references. */
+let _canvas = null;
+let _ctx = null;
+
+/** Undo stack: array of ImageData snapshots. */
 const undoStack = [];
-const MAX_UNDO = 30;
-
-/**
- * Push an undo closure onto the stack. Cap at MAX_UNDO items.
- */
-function pushUndo(fn) {
-  undoStack.push({ undo: fn });
-  if (undoStack.length > MAX_UNDO) {
-    undoStack.shift();
-  }
-}
-
-/**
- * Get fillable child elements from a region group.
- * Returns path, circle, ellipse, rect elements whose fill is not "none".
- */
-function getFillableElements(regionGroup) {
-  return Array.from(
-    regionGroup.querySelectorAll("path, circle, ellipse, rect")
-  ).filter((el) => {
-    const fill = el.getAttribute("fill");
-    return fill && fill !== "none";
-  });
-}
 
 // -- Exported operations ------------------------------------------------------
 
 /**
- * Fill all fillable children of a region group with the given color.
- * Captures previous fills and pushes an undo closure.
+ * Initialize a canvas for coloring by rasterizing an SVG onto it.
  *
- * @param {Element} regionGroup - A <g data-region="..."> SVG element
- * @param {string} color - CSS color string (e.g. "#ff69b4")
+ * Creates a canvas element (CANVAS_SIZE x CANVAS_SIZE), gets a 2d context
+ * with willReadFrequently: true, fills white, loads the SVG as an Image,
+ * and draws it onto the canvas.
+ *
+ * @param {string} svgUrl - URL of the SVG file to rasterize
+ * @param {HTMLElement} container - DOM element to append the canvas to
+ * @returns {Promise<{canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D}>}
  */
-export function fillRegion(regionGroup, color) {
-  const elements = getFillableElements(regionGroup);
-  if (elements.length === 0) return;
+export async function initColoringCanvas(svgUrl, container) {
+  // Clean up any previous canvas
+  releaseCanvas();
 
-  // Capture previous fills for undo
-  const previousFills = elements.map((el) => ({
-    element: el,
-    fill: el.getAttribute("fill"),
-  }));
+  const canvas = document.createElement("canvas");
+  canvas.width = CANVAS_SIZE;
+  canvas.height = CANVAS_SIZE;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
 
-  // Apply new color
-  elements.forEach((el) => {
-    el.setAttribute("fill", color);
+  // White background (flood fill needs a base color)
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Rasterize the SVG onto the canvas
+  const img = new Image();
+  img.src = svgUrl;
+  await new Promise((resolve, reject) => {
+    img.onload = resolve;
+    img.onerror = reject;
   });
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-  // Push undo closure that restores previous fills
-  pushUndo(() => {
-    previousFills.forEach(({ element, fill }) => {
-      element.setAttribute("fill", fill);
-    });
-  });
+  // Store module-level references
+  _canvas = canvas;
+  _ctx = ctx;
+
+  // Append to container
+  if (container) {
+    container.appendChild(canvas);
+  }
+
+  return { canvas, ctx };
 }
 
 /**
- * Pop the last command from the undo stack and execute it.
+ * Handle a tap on the coloring canvas at the given pixel coordinates.
+ *
+ * Pushes a pre-fill ImageData snapshot onto the undo stack, runs flood fill
+ * at (canvasX, canvasY) with the selected color, and puts the modified
+ * ImageData back onto the canvas.
+ *
+ * @param {number} canvasX - X coordinate in canvas pixel space
+ * @param {number} canvasY - Y coordinate in canvas pixel space
+ */
+export function handleCanvasTap(canvasX, canvasY) {
+  if (!_canvas || !_ctx) return;
+
+  // Push pre-fill snapshot for undo
+  const snapshot = _ctx.getImageData(0, 0, _canvas.width, _canvas.height);
+  undoStack.push(snapshot);
+  if (undoStack.length > MAX_UNDO) {
+    undoStack.shift();
+  }
+
+  // Get current image data, run flood fill, put it back
+  const imageData = _ctx.getImageData(0, 0, _canvas.width, _canvas.height);
+  floodFill(imageData, Math.floor(canvasX), Math.floor(canvasY), state.selectedColor, FILL_TOLERANCE);
+  _ctx.putImageData(imageData, 0, 0);
+}
+
+/**
+ * Pop the last ImageData snapshot from the undo stack and restore it.
  * No-op if the stack is empty.
  */
 export function undo() {
-  const cmd = undoStack.pop();
-  if (cmd) cmd.undo();
+  const snapshot = undoStack.pop();
+  if (snapshot && _ctx) {
+    _ctx.putImageData(snapshot, 0, 0);
+  }
+}
+
+/**
+ * Check whether there are any undo entries available.
+ *
+ * @returns {boolean} true if undo stack has entries
+ */
+export function canUndo() {
+  return undoStack.length > 0;
+}
+
+/**
+ * Release the coloring canvas to free memory.
+ *
+ * Sets canvas width/height to 0, removes it from the DOM, nulls module-level
+ * references, and clears the undo stack. Critical for iPad Safari memory safety.
+ */
+export function releaseCanvas() {
+  if (_canvas) {
+    _canvas.width = 0;
+    _canvas.height = 0;
+    if (_canvas.parentNode) {
+      _canvas.parentNode.removeChild(_canvas);
+    }
+  }
+  _canvas = null;
+  _ctx = null;
+  undoStack.length = 0;
 }
 
 /**
  * Set the currently selected color.
  *
- * @param {string} color - CSS color string
+ * @param {string} color - CSS hex color string (e.g. "#ff69b4")
  */
 export function setSelectedColor(color) {
   state.selectedColor = color;
@@ -125,11 +188,14 @@ export function getSelectedColor() {
 }
 
 /**
- * Reset all coloring state to defaults.
- * Clears undo stack, resets selected color to hot pink, clears current page.
+ * Test helper: set canvas and context directly (bypasses SVG loading).
+ * Only used by unit tests to inject a synthetic canvas.
+ *
+ * @param {HTMLCanvasElement} canvas
+ * @param {CanvasRenderingContext2D} ctx
  */
-export function resetColoringState() {
-  undoStack.length = 0;
-  state.selectedColor = COLORS[2]; // hot pink default
-  state.currentPageId = null;
+export function _setTestCanvas(canvas, ctx) {
+  releaseCanvas();
+  _canvas = canvas;
+  _ctx = ctx;
 }
