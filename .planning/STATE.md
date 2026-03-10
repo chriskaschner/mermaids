@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Art & Deploy
-status: planning
-stopped_at: Phase 4 context gathered
-last_updated: "2026-03-10T00:06:28.200Z"
-last_activity: 2026-03-09 -- Roadmap created for v1.1 Art & Deploy
+status: executing
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-03-10T00:37:40Z"
+last_activity: 2026-03-10 -- Completed 04-01 pipeline infra + coloring generation
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 2
+  completed_plans: 1
+  percent: 12
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 ## Current Position
 
 Phase: 4 of 7 (Art Pipeline) -- first phase of v1.1
-Plan: -- (not yet planned)
-Status: Ready to plan
-Last activity: 2026-03-09 -- Roadmap created for v1.1 Art & Deploy
+Plan: 1 of 2 complete
+Status: Executing
+Last activity: 2026-03-10 -- Completed 04-01 pipeline infra + coloring generation
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [##░░░░░░░░] 12%
 
 ## Performance Metrics
 
@@ -44,6 +44,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1-3 (v1.0) | 7 | ~1.8h | ~15 min |
+| 4 Plan 01 | 1 | 4min | 4 min |
 | 4-7 (v1.1) | - | - | - |
 
 *Updated after each plan completion*
@@ -60,6 +61,9 @@ Recent decisions affecting current work:
 - Single shared canvas, release on navigation (iPad Safari memory limits)
 - Edit API with masks for dress-up variant consistency
 - Relative asset paths required for GitHub Pages
+- retry_api_call wraps RateLimitError and APIError with exponential backoff (04-01)
+- Module-level cached OpenAI client via _get_client() (04-01)
+- Pipeline module pattern: config.py constants, prompts.py templates, generate.py API calls (04-01)
 
 ### Pending Todos
 
@@ -74,6 +78,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-10T00:06:28.196Z
-Stopped at: Phase 4 context gathered
-Resume file: .planning/phases/04-art-pipeline/04-CONTEXT.md
+Last session: 2026-03-10T00:37:40Z
+Stopped at: Completed 04-01-PLAN.md
+Resume file: .planning/phases/04-art-pipeline/04-01-SUMMARY.md

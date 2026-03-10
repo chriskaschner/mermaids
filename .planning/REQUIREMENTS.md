@@ -9,8 +9,8 @@ Requirements for v1.1 Art & Deploy milestone. Each maps to roadmap phases.
 
 ### Art Pipeline
 
-- [ ] **ARTP-01**: Local script generates kawaii mermaid coloring page PNGs via OpenAI gpt-image-1 API
-- [ ] **ARTP-02**: Local script traces generated PNGs to SVG via vtracer
+- [x] **ARTP-01**: Local script generates kawaii mermaid coloring page PNGs via OpenAI gpt-image-1 API
+- [x] **ARTP-02**: Local script traces generated PNGs to SVG via vtracer
 - [ ] **ARTP-03**: Local script generates dress-up mermaid variant parts (tails, hair, accessories) with consistent alignment via edit API masks
 - [ ] **ARTP-04**: Generated SVG assets are committed to frontend/assets/svg/ for static serving
 
@@ -87,8 +87,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ARTP-01 | Phase 4 | Pending |
-| ARTP-02 | Phase 4 | Pending |
+| ARTP-01 | Phase 4 | Complete (04-01) |
+| ARTP-02 | Phase 4 | Complete (04-01) |
 | ARTP-03 | Phase 4 | Pending |
 | ARTP-04 | Phase 4 | Pending |
 | CLRV-01 | Phase 5 | Pending |
@@ -110,4 +110,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-03-09*
-*Last updated: 2026-03-09 after roadmap creation*
+*Last updated: 2026-03-10 after 04-01 completion*
