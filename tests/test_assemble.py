@@ -82,70 +82,23 @@ class TestAssembleMermaidSvg:
         for variant_id in VARIANT_IDS:
             assert variant_id in g_ids, f"Missing variant group id={variant_id} in defs"
 
-    def test_assemble_has_acc_none(self, assembled_svg):
-        """Assembled SVG contains g element with id acc-none (empty with hit-area rect)."""
+    def test_assemble_has_single_use(self, assembled_svg):
+        """Assembled SVG has a single <use id='active-character'> referencing tail-1."""
         _, root = assembled_svg
 
-        defs = root.find(f"{{{SVG_NS}}}defs")
-        acc_none = None
-        for g in defs.findall(f"{{{SVG_NS}}}g"):
-            if g.get("id") == "acc-none":
-                acc_none = g
-                break
+        uses = list(root.iter(f"{{{SVG_NS}}}use"))
+        assert len(uses) == 1, f"Expected 1 <use> element, got {len(uses)}"
 
-        assert acc_none is not None, "Missing <g id='acc-none'> in defs"
-        # Should have a rect child (hit-area)
-        rect = acc_none.find(f"{{{SVG_NS}}}rect")
-        assert rect is not None, "acc-none should have a <rect> hit-area"
-
-    def test_assemble_has_use_elements(self, assembled_svg):
-        """Assembled SVG contains use elements with correct IDs and default hrefs."""
-        _, root = assembled_svg
-
-        # Find all use elements (may be nested in groups)
-        uses = root.iter(f"{{{SVG_NS}}}use")
-        use_map = {}
-        for use in uses:
-            uid = use.get("id")
-            if uid:
-                href = use.get("href") or use.get(f"{{{XLINK_NS}}}href")
-                use_map[uid] = href
-
-        assert "active-tail" in use_map, "Missing <use id='active-tail'>"
-        assert "active-hair" in use_map, "Missing <use id='active-hair'>"
-        assert "active-acc" in use_map, "Missing <use id='active-acc'>"
-
-        assert use_map["active-tail"] == "#tail-1"
-        assert use_map["active-hair"] == "#hair-1"
-        assert use_map["active-acc"] == "#acc-none"
-
-    def test_assemble_has_body_group(self, assembled_svg):
-        """Assembled SVG contains a body group with data-region='body'."""
-        _, root = assembled_svg
-
-        found = False
-        for g in root.iter(f"{{{SVG_NS}}}g"):
-            if g.get("data-region") == "body":
-                found = True
-                break
-
-        assert found, "Missing <g data-region='body'> body group"
-
-    def test_assemble_has_face_details(self, assembled_svg):
-        """Assembled SVG contains face elements (eyes, smile, cheeks) outside
-        the watercolor filter group."""
-        output, _ = assembled_svg
-        content = output.read_text()
-
-        # Should contain ellipse for eyes and circles for cheeks/sparkles
-        assert "ellipse" in content.lower() or "circle" in content.lower(), \
-            "SVG should contain face detail elements (ellipse/circle for eyes/cheeks)"
+        use = uses[0]
+        assert use.get("id") == "active-character"
+        href = use.get("href") or use.get(f"{{{XLINK_NS}}}href")
+        assert href == "#tail-1"
 
     def test_assemble_viewbox(self, assembled_svg):
-        """Assembled SVG has viewBox='0 0 400 700'."""
+        """Assembled SVG has square viewBox matching 1024x1024 traced source."""
         _, root = assembled_svg
         viewbox = root.get("viewBox")
-        assert viewbox == "0 0 400 700", f"Expected viewBox='0 0 400 700', got '{viewbox}'"
+        assert viewbox == "0 0 1024 1024", f"Expected viewBox='0 0 1024 1024', got '{viewbox}'"
 
     def test_assembled_svg_valid_xml(self, assembled_svg):
         """Output mermaid.svg parses as valid XML."""
