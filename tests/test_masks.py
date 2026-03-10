@@ -111,7 +111,7 @@ class TestGenerateBaseMermaid:
         with (
             patch("mermaids.pipeline.generate._get_client", return_value=mock_client),
             patch(
-                "mermaids.pipeline.config.GENERATED_PNG_DIR",
+                "mermaids.pipeline.edit.GENERATED_PNG_DIR",
                 tmp_path / "generated" / "png",
             ),
         ):
@@ -136,7 +136,7 @@ class TestGenerateBaseMermaid:
         with (
             patch("mermaids.pipeline.generate._get_client", return_value=mock_client),
             patch(
-                "mermaids.pipeline.config.GENERATED_PNG_DIR",
+                "mermaids.pipeline.edit.GENERATED_PNG_DIR",
                 tmp_path / "generated" / "png",
             ),
         ):
@@ -202,7 +202,7 @@ class TestGenerateDressupVariants:
             patch("mermaids.pipeline.generate._get_client", return_value=mock_client),
             patch("mermaids.pipeline.edit._get_client", return_value=mock_client),
             patch(
-                "mermaids.pipeline.config.GENERATED_PNG_DIR",
+                "mermaids.pipeline.edit.GENERATED_PNG_DIR",
                 tmp_path / "generated" / "png",
             ),
         ):
