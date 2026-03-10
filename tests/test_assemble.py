@@ -212,3 +212,139 @@ class TestCopyFunctions:
         assert result.exists()
         assert result == dst_dir / "mermaid.svg"
         assert result.read_text() == "<svg>assembled</svg>"
+
+
+# -------------------------------------------------------
+# Copy dressup parts tests
+# -------------------------------------------------------
+
+
+class TestCopyDressupParts:
+    """Tests for copy_dressup_parts_to_frontend()."""
+
+    def test_copies_all_nine_variants(self, tmp_path):
+        """copy_dressup_parts_to_frontend() copies 9 SVGs from generated
+        dressup dir to frontend/assets/svg/dressup/."""
+        from mermaids.pipeline.assemble import copy_dressup_parts_to_frontend
+
+        # Set up source SVGs
+        src_dir = tmp_path / "svg" / "dressup"
+        src_dir.mkdir(parents=True)
+        for variant_id in VARIANT_IDS:
+            (src_dir / f"{variant_id}.svg").write_text(
+                f'<svg xmlns="{SVG_NS}"><path d="M1 1" fill="#abc"/></svg>'
+            )
+
+        # Set up destination
+        dst_dir = tmp_path / "frontend" / "assets" / "svg"
+        dst_dir.mkdir(parents=True)
+
+        with (
+            patch("mermaids.pipeline.assemble.GENERATED_SVG_DIR", tmp_path / "svg"),
+            patch("mermaids.pipeline.assemble.FRONTEND_SVG_DIR", dst_dir),
+        ):
+            results = copy_dressup_parts_to_frontend()
+
+        assert len(results) == 9
+        for r in results:
+            assert r.exists()
+        for variant_id in VARIANT_IDS:
+            assert (dst_dir / "dressup" / f"{variant_id}.svg").exists()
+
+    def test_copies_no_source_dir(self, tmp_path):
+        """copy_dressup_parts_to_frontend() returns empty list when source
+        dir does not exist."""
+        from mermaids.pipeline.assemble import copy_dressup_parts_to_frontend
+
+        # Point to a non-existent source directory
+        fake_src = tmp_path / "nonexistent"
+        dst_dir = tmp_path / "frontend" / "assets" / "svg"
+        dst_dir.mkdir(parents=True)
+
+        with (
+            patch("mermaids.pipeline.assemble.GENERATED_SVG_DIR", fake_src),
+            patch("mermaids.pipeline.assemble.FRONTEND_SVG_DIR", dst_dir),
+        ):
+            results = copy_dressup_parts_to_frontend()
+
+        assert results == []
+
+
+# -------------------------------------------------------
+# Background rect stripping tests
+# -------------------------------------------------------
+
+
+class TestBackgroundStrip:
+    """Tests for background-rect stripping in _make_variant_group()."""
+
+    @pytest.fixture
+    def traced_with_bg_dir(self, tmp_path) -> Path:
+        """Create traced SVGs with a near-white background path as first child."""
+        parts_dir = tmp_path / "traced_bg"
+        parts_dir.mkdir()
+
+        for variant_id in VARIANT_IDS:
+            svg_content = (
+                f'<svg xmlns="{SVG_NS}" viewBox="0 0 1024 1024">'
+                f'<path d="M0 0 C337.92 0 675.84 0 1024 0 '
+                f'C1024 337.92 1024 675.84 1024 1024 '
+                f'C686.08 1024 348.16 1024 0 1024 '
+                f'C0 686.08 0 348.16 0 0 Z" fill="#FEFEFE" />'
+                f'<path d="M10,10 L100,100 L10,100 Z" fill="#aabbcc" />'
+                f'<path d="M20,20 L200,200 L20,200 Z" fill="#dd3344" />'
+                f'</svg>'
+            )
+            (parts_dir / f"{variant_id}.svg").write_text(svg_content)
+
+        return parts_dir
+
+    def test_first_path_stripped(self, traced_with_bg_dir, tmp_path):
+        """assemble_mermaid_svg() strips the near-white background path from
+        variant groups in defs."""
+        from mermaids.pipeline.assemble import assemble_mermaid_svg
+
+        output = tmp_path / "mermaid_bg.svg"
+        assemble_mermaid_svg(traced_with_bg_dir, output)
+
+        tree = ET.parse(output)
+        root = tree.getroot()
+        defs = root.find(f"{{{SVG_NS}}}defs")
+
+        for g in defs.findall(f"{{{SVG_NS}}}g"):
+            gid = g.get("id", "")
+            if gid in VARIANT_IDS:
+                first_child = list(g)[0]
+                fill = first_child.get("fill", "").upper()
+                assert not fill.startswith(("#FE", "#FF", "#FD")), (
+                    f"Background rect not stripped in {gid}: "
+                    f"first child fill={fill}"
+                )
+
+    def test_non_background_paths_preserved(self, traced_with_bg_dir, tmp_path):
+        """Variant groups retain all non-background path elements."""
+        from mermaids.pipeline.assemble import assemble_mermaid_svg
+
+        output = tmp_path / "mermaid_bg.svg"
+        assemble_mermaid_svg(traced_with_bg_dir, output)
+
+        tree = ET.parse(output)
+        root = tree.getroot()
+        defs = root.find(f"{{{SVG_NS}}}defs")
+
+        for g in defs.findall(f"{{{SVG_NS}}}g"):
+            gid = g.get("id", "")
+            if gid in VARIANT_IDS:
+                children = list(g)
+                # Should have 2 remaining paths (bg stripped, 2 content paths remain)
+                assert len(children) == 2, (
+                    f"Expected 2 children in {gid} after bg strip, "
+                    f"got {len(children)}"
+                )
+                fills = [c.get("fill", "").lower() for c in children]
+                assert "#aabbcc" in fills, (
+                    f"Missing content path fill=#aabbcc in {gid}"
+                )
+                assert "#dd3344" in fills, (
+                    f"Missing content path fill=#dd3344 in {gid}"
+                )
