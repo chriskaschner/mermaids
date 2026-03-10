@@ -170,23 +170,19 @@ async function openColoringPage(pageId) {
               </svg>
             </button>
             <button class="tool-btn selected" data-tool="fill" aria-label="Fill tool">
-              <svg width="24" height="24" viewBox="0 0 24 24">
-                <path d="M6 3Q6 3 18 3Q19 3 19 4L19 7" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round"/>
-                <path d="M12 1A7 7 0 0 1 19 7" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round"/>
-                <rect x="5" y="7" width="14" height="14" rx="2" fill="none" stroke="#888" stroke-width="2"/>
-                <path d="M14 7Q15 10 14 12Q13 14 14 16" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round"/>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7 2 A5 5 0 0 1 17 2"/>
+                <rect x="5" y="8" width="14" height="13" rx="1.5"/>
+                <line x1="5" y1="8" x2="19" y2="8"/>
+                <path d="M15 8 Q16.5 11 15.5 13 Q14.5 15 15.5 17" stroke-width="1.8"/>
               </svg>
             </button>
             <button class="tool-btn" data-tool="brush" aria-label="Brush tool">
-              <svg width="24" height="24" viewBox="0 0 512 512">
-                <path d="M.7 389.87C3.16 369.41 18.77 352.38 38.23 346.22c11.93-3.77 24.72-3.1 37.1-2.87 5.26.1 10.63.34 15.54 2.16 10.17 3.77 17.05 13.14 22.3 22.63l45.08 81.45c1.93 3.49 3.89 7.09 4.48 11.05 1.13 7.59-3.08 14.89-8.56 20.37S141.6 490 134.02 491.16c-6.7 1.02-13.6-.46-20.07-2.33-22.46-6.49-42.87-18.85-60.22-34.26C37.37 439.92 23.2 423 12.63 404.16c-3.53-6.29-7.79-14.24-11.93-14.29z"
-                      fill="none" stroke="#888" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M108.81 367.56L218.6 257.77M148.58 407.33L258.37 297.54"
-                      fill="none" stroke="#888" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M178.63 337.51c17.68-17.68 17.68-46.34 0-64.03l-2.11-2.11c-17.68-17.68-46.34-17.68-64.03 0"
-                      fill="none" stroke="#888" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M238.49 277.66c90.01-90.01 148.74-171.93 199.87-220.2 12.46-11.76 33.87-14.52 46.98-1.41 13.11 13.11 10.35 34.52-1.41 46.98-48.27 51.13-130.19 109.86-220.2 199.87"
-                      fill="none" stroke="#888" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 21 Q2 17 5 15 Q7 14 8.5 12.5 L10.5 10.5"/>
+                <line x1="9" y1="13" x2="13" y2="9"/>
+                <line x1="7.5" y1="14.5" x2="11.5" y2="10.5"/>
+                <path d="M12 10 C15 7 18 4 20 2.5 Q21.5 1.5 22 2 Q22.5 2.5 21.5 4 C20 6 17 9 14 12"/>
               </svg>
             </button>
             <button class="undo-btn disabled" aria-label="Undo">
