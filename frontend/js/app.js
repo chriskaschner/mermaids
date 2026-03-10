@@ -232,20 +232,40 @@ async function openColoringPage(pageId) {
       ];
     }
 
-    // Wire canvas pointer events for brush painting
+    // Wire canvas pointer events: tap = flood fill, drag = brush paint
+    let _tapStart = null;
+    const TAP_MOVE_THRESHOLD = 10; // px in canvas coords
+
     canvas.addEventListener("pointerdown", (e) => {
       canvas.setPointerCapture(e.pointerId);
-      strokeStart(..._toCanvas(e));
+      const [cx, cy] = _toCanvas(e);
+      _tapStart = { x: cx, y: cy, moved: false };
+      strokeStart(cx, cy);
     });
     canvas.addEventListener("pointermove", (e) => {
-      strokeMove(..._toCanvas(e));
+      const [cx, cy] = _toCanvas(e);
+      if (_tapStart && !_tapStart.moved) {
+        const dx = cx - _tapStart.x;
+        const dy = cy - _tapStart.y;
+        if (Math.sqrt(dx * dx + dy * dy) > TAP_MOVE_THRESHOLD) {
+          _tapStart.moved = true;
+        }
+      }
+      strokeMove(cx, cy);
     });
     canvas.addEventListener("pointerup", (e) => {
       strokeEnd();
+      if (_tapStart && !_tapStart.moved) {
+        // Undo the brush dot, then flood fill instead
+        coloringUndo();
+        handleCanvasTap(_tapStart.x, _tapStart.y);
+      }
+      _tapStart = null;
       _updateUndoBtn(undoBtn);
     });
     canvas.addEventListener("pointercancel", () => {
       strokeEnd();
+      _tapStart = null;
       _updateUndoBtn(undoBtn);
     });
 
