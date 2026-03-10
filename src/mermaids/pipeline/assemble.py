@@ -31,10 +31,51 @@ SCALE_X = 400 / 1024
 SCALE_Y = 700 / 1024
 
 
+def _is_background_path(element: ET.Element) -> bool:
+    """Check if an SVG element is a vtracer background rectangle.
+
+    vtracer always generates a full-canvas background path as the first
+    child of traced SVGs. It covers 0,0 to 1024,1024 with a near-white
+    fill (#FEFEFE typically). This must be stripped to prevent solid color
+    blocks when the variant group is recolored in the dress-up UI.
+
+    Heuristic: path starts with "M0 0" or "M 0 0" and fill is near-white
+    (any component >= 0xF0).
+    """
+    tag = element.tag
+    if not tag.endswith("path"):
+        return False
+
+    fill = element.get("fill", "").strip().upper()
+    if not fill.startswith("#") or len(fill) != 7:
+        return False
+
+    # Parse RGB hex components
+    try:
+        r = int(fill[1:3], 16)
+        g = int(fill[3:5], 16)
+        b = int(fill[5:7], 16)
+    except ValueError:
+        return False
+
+    # Near-white: all components >= 0xF0
+    if r < 0xF0 or g < 0xF0 or b < 0xF0:
+        return False
+
+    # Check d-attribute starts at origin (full-canvas background)
+    d = element.get("d", "").strip()
+    if not (d.startswith("M0 0") or d.startswith("M 0 0")):
+        return False
+
+    return True
+
+
 def _make_variant_group(variant_id: str, traced_svg_path: Path) -> ET.Element:
     """Parse a traced SVG and wrap its path/shape elements in a <g> with id.
 
     Applies a scaling transform to fit the 400x700 viewBox.
+    Strips the vtracer background rectangle (first near-white path covering
+    the full canvas) to prevent solid color blocks when recoloring.
     """
     g = ET.SubElement(ET.Element("temp"), "g")
     g = ET.Element(f"{{{SVG_NS}}}g")
@@ -47,8 +88,13 @@ def _make_variant_group(variant_id: str, traced_svg_path: Path) -> ET.Element:
         tree = ET.parse(traced_svg_path)
         root = tree.getroot()
 
-        # Copy all child elements (paths, shapes, etc.)
+        # Copy child elements, skipping the first-child background rect
+        first_child = True
         for child in root:
+            if first_child and _is_background_path(child):
+                first_child = False
+                continue
+            first_child = False
             g.append(child)
     except ET.ParseError:
         # If the traced SVG is malformed, create empty group
@@ -290,6 +336,32 @@ def copy_coloring_pages_to_frontend() -> list[Path]:
         dst = dst_dir / svg_file.name
         shutil.copy2(svg_file, dst)
         print(f"  Copied: {svg_file.name} -> {dst}")
+        results.append(dst)
+
+    return results
+
+
+def copy_dressup_parts_to_frontend() -> list[Path]:
+    """Copy individual dressup variant SVGs to frontend/assets/svg/dressup/.
+
+    These are the individual traced SVGs used for preview thumbnails in the
+    dress-up UI. Copies from assets/generated/svg/dressup/ to the frontend
+    serving directory.
+
+    Returns:
+        List of destination Path objects for each copied file.
+    """
+    src_dir = GENERATED_SVG_DIR / "dressup"
+    dst_dir = FRONTEND_SVG_DIR / "dressup"
+    dst_dir.mkdir(parents=True, exist_ok=True)
+
+    results = []
+    if not src_dir.exists():
+        return results
+
+    for svg_file in sorted(src_dir.glob("*.svg")):
+        dst = dst_dir / svg_file.name
+        shutil.copy2(svg_file, dst)
         results.append(dst)
 
     return results
