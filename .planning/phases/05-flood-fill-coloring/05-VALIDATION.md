@@ -2,12 +2,12 @@
 phase: 5
 slug: flood-fill-coloring
 status: draft
-nyquist_compliant: false
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-03-09
 ---
 
-# Phase 5 — Validation Strategy
+# Phase 5 -- Validation Strategy
 
 > Per-phase validation contract for feedback sampling during execution.
 
@@ -36,13 +36,14 @@ created: 2026-03-09
 
 ## Per-Task Verification Map
 
+Note: This phase has no dedicated Wave 0 plan. Plan 01 (Wave 1) creates the algorithm modules with their own unit tests. Plan 02 (Wave 2) rewrites the E2E tests as Task 1 (RED), then implements app.js integration as Task 2 (GREEN).
+
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 05-01-01 | 01 | 0 | CLRV-01 | E2E (Playwright) | `uv run pytest tests/test_coloring.py::TestCanvasFloodFill::test_tap_fills_region -x` | No -- Wave 0 | pending |
-| 05-01-02 | 01 | 0 | CLRV-02 | E2E (Playwright) | `uv run pytest tests/test_coloring.py::TestCanvasOverlay::test_svg_overlay_present -x` | No -- Wave 0 | pending |
-| 05-01-03 | 01 | 0 | CLRV-03 | E2E (Playwright) | `uv run pytest tests/test_coloring.py::TestCanvasFloodFill::test_fill_stops_at_lines -x` | No -- Wave 0 | pending |
-| 05-01-04 | 01 | 0 | CLRV-04 | E2E (Playwright) | `uv run pytest tests/test_coloring.py::TestCanvasMemory::test_canvas_released_on_nav -x` | No -- Wave 0 | pending |
-| 05-01-05 | 01 | 0 | CLRV-05 | E2E (Playwright) | `uv run pytest tests/test_coloring.py::TestCanvasUndo::test_undo_reverts_fill -x` | No -- Wave 0 | pending |
+| 05-01-01 | 01 | 1 | CLRV-01, CLRV-03 | Unit (Playwright) | `uv run pytest tests/test_floodfill_unit.py -x` | No -- created by Plan 01 Task 1 | pending |
+| 05-01-02 | 01 | 1 | CLRV-05 | Unit (Playwright) | `uv run pytest tests/test_floodfill_unit.py -x` | No -- created by Plan 01 Task 1 | pending |
+| 05-02-01 | 02 | 2 | CLRV-01..05 | E2E (Playwright) | `python -c "import ast; ast.parse(open('tests/test_coloring.py').read())"` | Yes -- rewritten (RED state) | pending |
+| 05-02-02 | 02 | 2 | CLRV-01..05 | E2E (Playwright) | `uv run pytest tests/test_coloring.py tests/test_floodfill_unit.py -x` | Yes -- tests go GREEN | pending |
 
 *Status: pending / green / red / flaky*
 
@@ -50,7 +51,10 @@ created: 2026-03-09
 
 ## Wave 0 Requirements
 
-- [ ] `tests/test_coloring.py` -- FULL REWRITE: existing tests use SVG data-region pattern; new tests must verify canvas flood fill, SVG overlay, ImageData undo, canvas cleanup
+This phase has no Wave 0 plan. The E2E test rewrite happens as Plan 02 Task 1 (first task of Wave 2), establishing test expectations before the implementation in Plan 02 Task 2. Plan 01's unit tests (`test_floodfill_unit.py`) are created alongside the algorithm modules in Wave 1.
+
+- [ ] `tests/test_floodfill_unit.py` -- created by Plan 01 Task 1 (TDD: tests + algorithm together)
+- [ ] `tests/test_coloring.py` -- FULL REWRITE in Plan 02 Task 1 (RED), validated GREEN in Plan 02 Task 2
 - [ ] Existing test structure (conftest.py with live_server, iPad emulation, Playwright) is reusable as-is
 
 ---
@@ -67,11 +71,11 @@ created: 2026-03-09
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave structure accurately reflected in verification map
 - [ ] No watch-mode flags
-- [ ] Feedback latency < 15s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] Feedback latency < 15s
+- [x] `nyquist_compliant: true` set in frontmatter
 
 **Approval:** pending
