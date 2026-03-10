@@ -36,7 +36,11 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
   2. Running the tracing script converts generated PNGs to clean SVG line art via vtracer
   3. Running the variant generation script produces dress-up part variants (tails, hair, accessories) with consistent spatial alignment using edit API masks
   4. All generated SVG assets exist in frontend/assets/svg/ and render correctly in a browser
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 04-01-PLAN.md -- Shared pipeline infra + coloring page generation and tracing (ARTP-01, ARTP-02)
+- [ ] 04-02-PLAN.md -- Dress-up variant generation via edit API + SVG assembly to frontend (ARTP-03, ARTP-04)
 
 ### Phase 5: Flood-Fill Coloring
 **Goal**: Child can color any AI-generated mermaid page by tapping to flood-fill regions, with crisp outlines and undo support
@@ -79,7 +83,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 | 1. Foundation | v1.0 | 3/3 | Complete | 2026-03-09 |
 | 2. Dress-Up | v1.0 | 2/2 | Complete | 2026-03-09 |
 | 3. Coloring | v1.0 | 2/2 | Complete | 2026-03-09 |
-| 4. Art Pipeline | v1.1 | 0/? | Not started | - |
+| 4. Art Pipeline | v1.1 | 0/2 | Planning | - |
 | 5. Flood-Fill Coloring | v1.1 | 0/? | Not started | - |
 | 6. Dress-Up Art Swap | v1.1 | 0/? | Not started | - |
 | 7. GitHub Pages Deployment | v1.1 | 0/? | Not started | - |
