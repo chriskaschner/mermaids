@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Art & Deploy
-status: completed
-stopped_at: Phase 6 context gathered
-last_updated: "2026-03-10T02:26:37.540Z"
-last_activity: 2026-03-10 -- Completed 05-02 canvas+SVG hybrid coloring integration
+status: in-progress
+stopped_at: Completed 06-01-PLAN.md
+last_updated: "2026-03-10T02:43:17.348Z"
+last_activity: 2026-03-10 -- Completed 06-01 deploy AI-generated kawaii SVGs to frontend
 progress:
   total_phases: 4
   completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
-  percent: 100
+  total_plans: 6
+  completed_plans: 5
+  percent: 83
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-09)
 
 **Core value:** A 6-year-old can open this on an iPad, build her own mermaid, and color mermaid pages -- with zero friction and pure delight.
-**Current focus:** Phase 5 complete -- Flood-Fill Coloring (canvas flood fill + SVG overlay)
+**Current focus:** Phase 6 in progress -- Dress-Up Art Swap (deploy AI SVGs to frontend)
 
 ## Current Position
 
-Phase: 5 of 7 (Flood-Fill Coloring)
-Plan: 2 of 2 complete
-Status: Phase 5 Complete
-Last activity: 2026-03-10 -- Completed 05-02 canvas+SVG hybrid coloring integration
+Phase: 6 of 7 (Dress-Up Art Swap)
+Plan: 1 of 2 complete
+Status: Phase 6 In Progress
+Last activity: 2026-03-10 -- Completed 06-01 deploy AI-generated kawaii SVGs to frontend
 
-Progress: [##########] 100%
+Progress: [████████░░] 83%
 
 ## Performance Metrics
 
@@ -48,6 +48,7 @@ Progress: [##########] 100%
 | 4 Plan 02 | 1 | 5min | 5 min |
 | 5 Plan 01 | 1 | 4min | 4 min |
 | 5 Plan 02 | 1 | 6min | 6 min |
+| 6 Plan 01 | 1 | 3min | 3 min |
 | 4-7 (v1.1) | - | - | - |
 
 *Updated after each plan completion*
@@ -78,6 +79,8 @@ Recent decisions affecting current work:
 - SVG overlay parsed via DOMParser for clean DOM injection (05-02)
 - releaseCanvas() in router() before every route render for reliable memory cleanup (05-02)
 - Undo button starts .disabled, toggled after each fill/undo (05-02)
+- Near-white background detection uses RGB >= 0xF0 threshold, not prefix match (06-01)
+- Only 2/9 traced SVGs had near-white bg rects; dark first paths are real content (06-01)
 
 ### Pending Todos
 
@@ -92,6 +95,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-10T02:26:37.533Z
-Stopped at: Phase 6 context gathered
-Resume file: .planning/phases/06-dress-up-art-swap/06-CONTEXT.md
+Last session: 2026-03-10T02:42:30Z
+Stopped at: Completed 06-01-PLAN.md
+Resume file: .planning/phases/06-dress-up-art-swap/06-01-SUMMARY.md
