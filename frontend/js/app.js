@@ -169,6 +169,19 @@ async function openColoringPage(pageId) {
                 <path d="M15,4 L7,12 L15,20" fill="none" stroke="#888" stroke-width="2.5" stroke-linecap="round" />
               </svg>
             </button>
+            <button class="tool-btn selected" data-tool="fill" aria-label="Fill tool">
+              <svg width="24" height="24" viewBox="0 0 24 24">
+                <path d="M7 3L4 6L14 16L17 13L7 3Z" fill="#888" stroke="#888" stroke-width="1"/>
+                <path d="M3 17L4 16L17 13L14 16L3 17Z" fill="#888"/>
+                <path d="M19 15Q22 18 19 21Q16 18 19 15Z" fill="#5b8fa8"/>
+              </svg>
+            </button>
+            <button class="tool-btn" data-tool="brush" aria-label="Brush tool">
+              <svg width="24" height="24" viewBox="0 0 24 24">
+                <path d="M3 21Q4 14 8 12Q6 10 10 4Q12 6 11 9Q14 6 16 3Q15 8 13 10Q16 9 18 10Q12 12 10 16Q14 14 21 13"
+                      fill="none" stroke="#888" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </button>
             <button class="undo-btn disabled" aria-label="Undo">
               <svg width="24" height="24" viewBox="0 0 24 24">
                 <path d="M7,12 L3,8 L7,4 M3,8 L15,8 Q20,8 20,14 Q20,20 15,20 L10,20"
@@ -193,6 +206,16 @@ async function openColoringPage(pageId) {
 
     const container = el.querySelector("#coloring-container");
     const undoBtn = el.querySelector(".coloring-toolbar .undo-btn");
+    let activeTool = "fill"; // "fill" or "brush"
+
+    // Wire tool toggle buttons
+    el.querySelectorAll(".tool-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        activeTool = btn.dataset.tool;
+        el.querySelectorAll(".tool-btn").forEach((b) => b.classList.remove("selected"));
+        btn.classList.add("selected");
+      });
+    });
 
     // Set default selected color (hot pink, COLORS[2])
     setSelectedColor(COLORS[2]);
@@ -232,48 +255,32 @@ async function openColoringPage(pageId) {
       ];
     }
 
-    // Wire canvas pointer events: tap = flood fill, drag = brush paint.
-    // Don't paint anything on pointerdown -- wait to see if the user
-    // drags (brush) or releases (tap = flood fill).
-    let _pointer = null;
-    const TAP_MOVE_THRESHOLD = 20; // CSS pixels on screen
-
+    // Wire canvas pointer events based on active tool
     canvas.addEventListener("pointerdown", (e) => {
       canvas.setPointerCapture(e.pointerId);
       const [cx, cy] = _toCanvas(e);
-      _pointer = { cx, cy, screenX: e.clientX, screenY: e.clientY, dragging: false };
+      if (activeTool === "fill") {
+        handleCanvasTap(cx, cy);
+        _updateUndoBtn(undoBtn);
+      } else {
+        strokeStart(cx, cy);
+      }
     });
     canvas.addEventListener("pointermove", (e) => {
-      if (!_pointer) return;
-      const [cx, cy] = _toCanvas(e);
-      if (!_pointer.dragging) {
-        const dx = e.clientX - _pointer.screenX;
-        const dy = e.clientY - _pointer.screenY;
-        if (Math.sqrt(dx * dx + dy * dy) > TAP_MOVE_THRESHOLD) {
-          _pointer.dragging = true;
-          // Start brush stroke from original touch point
-          strokeStart(_pointer.cx, _pointer.cy);
-        }
-      }
-      if (_pointer.dragging) {
-        strokeMove(cx, cy);
+      if (activeTool === "brush") {
+        strokeMove(..._toCanvas(e));
       }
     });
-    canvas.addEventListener("pointerup", (e) => {
-      if (_pointer && !_pointer.dragging) {
-        // No drag detected -- this is a tap, flood fill
-        handleCanvasTap(_pointer.cx, _pointer.cy);
-      } else {
+    canvas.addEventListener("pointerup", () => {
+      if (activeTool === "brush") {
         strokeEnd();
       }
-      _pointer = null;
       _updateUndoBtn(undoBtn);
     });
     canvas.addEventListener("pointercancel", () => {
-      if (_pointer && _pointer.dragging) {
+      if (activeTool === "brush") {
         strokeEnd();
       }
-      _pointer = null;
       _updateUndoBtn(undoBtn);
     });
 
