@@ -66,7 +66,11 @@ Plans:
   1. Dress-up screen displays AI-generated kawaii mermaid (replaces hand-crafted SVG)
   2. Tapping a part variant in the selection panel swaps the mermaid part on screen (defs+use mechanism works with new assets)
   3. Tapping a color swatch recolors the selected part across the kawaii flat-color art style
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 06-01-PLAN.md -- Asset pipeline: deploy variant SVGs to frontend, strip background rects, regenerate mermaid.svg (DRSV-01, DRSV-02)
+- [ ] 06-02-PLAN.md -- Frontend art swap: async preview thumbnails, color sync, relative paths, E2E tests (DRSV-01, DRSV-02, DRSV-03)
 
 ### Phase 7: GitHub Pages Deployment
 **Goal**: The app is live on GitHub Pages and usable on her iPad without running a local server
@@ -89,5 +93,5 @@ Plans:
 | 3. Coloring | v1.0 | 2/2 | Complete | 2026-03-09 |
 | 4. Art Pipeline | v1.1 | 2/2 | Complete | 2026-03-10 |
 | 5. Flood-Fill Coloring | v1.1 | 2/2 | Complete | 2026-03-10 |
-| 6. Dress-Up Art Swap | v1.1 | 0/? | Not started | - |
+| 6. Dress-Up Art Swap | v1.1 | 0/2 | Not started | - |
 | 7. GitHub Pages Deployment | v1.1 | 0/? | Not started | - |
