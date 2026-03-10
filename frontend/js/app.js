@@ -170,19 +170,18 @@ async function openColoringPage(pageId) {
               </svg>
             </button>
             <button class="tool-btn selected" data-tool="fill" aria-label="Fill tool">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M7 2 A5 5 0 0 1 17 2"/>
-                <rect x="5" y="8" width="14" height="13" rx="1.5"/>
-                <line x1="5" y1="8" x2="19" y2="8"/>
-                <path d="M15 8 Q16.5 11 15.5 13 Q14.5 15 15.5 17" stroke-width="1.8"/>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 8 C8 4 16 4 16 8"/>
+                <path d="M5 8 L19 8 L19 20 Q19 22 17 22 L7 22 Q5 22 5 20 Z"/>
+                <path d="M16 8 Q17.5 11 16 13.5 Q15 15.5 16 18"/>
               </svg>
             </button>
             <button class="tool-btn" data-tool="brush" aria-label="Brush tool">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 21 Q2 17 5 15 Q7 14 8.5 12.5 L10.5 10.5"/>
-                <line x1="9" y1="13" x2="13" y2="9"/>
-                <line x1="7.5" y1="14.5" x2="11.5" y2="10.5"/>
-                <path d="M12 10 C15 7 18 4 20 2.5 Q21.5 1.5 22 2 Q22.5 2.5 21.5 4 C20 6 17 9 14 12"/>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2.5 21.5 C1 18 3.5 14.5 6.5 15.5 C5 18 4 20.5 2.5 21.5Z"/>
+                <line x1="7" y1="14" x2="10.5" y2="17.5"/>
+                <line x1="8.5" y1="12.5" x2="12" y2="16"/>
+                <path d="M9.5 12.5 C13 9 16.5 5.5 19.5 3 C20.5 2.2 21.5 2.5 21.8 3 C22 3.5 21.5 4.5 20.5 5.5 C17.5 8.5 14 12 11.5 14.5"/>
               </svg>
             </button>
             <button class="undo-btn disabled" aria-label="Undo">
