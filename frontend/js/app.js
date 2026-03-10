@@ -171,9 +171,10 @@ async function openColoringPage(pageId) {
             </button>
             <button class="tool-btn selected" data-tool="fill" aria-label="Fill tool">
               <svg width="24" height="24" viewBox="0 0 24 24">
-                <path d="M7 3L4 6L14 16L17 13L7 3Z" fill="#888" stroke="#888" stroke-width="1"/>
-                <path d="M3 17L4 16L17 13L14 16L3 17Z" fill="#888"/>
-                <path d="M19 15Q22 18 19 21Q16 18 19 15Z" fill="#5b8fa8"/>
+                <path d="M6 3Q6 3 18 3Q19 3 19 4L19 7" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round"/>
+                <path d="M12 1A7 7 0 0 1 19 7" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round"/>
+                <rect x="5" y="7" width="14" height="14" rx="2" fill="none" stroke="#888" stroke-width="2"/>
+                <path d="M14 7Q15 10 14 12Q13 14 14 16" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round"/>
               </svg>
             </button>
             <button class="tool-btn" data-tool="brush" aria-label="Brush tool">
