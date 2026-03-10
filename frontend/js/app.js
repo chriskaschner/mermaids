@@ -170,18 +170,18 @@ async function openColoringPage(pageId) {
               </svg>
             </button>
             <button class="tool-btn selected" data-tool="fill" aria-label="Fill tool">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M8 8 C8 4 16 4 16 8"/>
-                <path d="M5 8 L19 8 L19 20 Q19 22 17 22 L7 22 Q5 22 5 20 Z"/>
-                <path d="M16 8 Q17.5 11 16 13.5 Q15 15.5 16 18"/>
+              <svg width="24" height="24" viewBox="0 0 100 100" fill="none" stroke="#888" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 42 A30 30 0 0 1 80 42"/>
+                <path d="M15 42 L85 42 L85 88 Q85 95 78 95 L22 95 Q15 95 15 88 Z"/>
+                <path d="M72 42 C80 52 68 60 76 72" stroke-width="6"/>
               </svg>
             </button>
             <button class="tool-btn" data-tool="brush" aria-label="Brush tool">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M2.5 21.5 C1 18 3.5 14.5 6.5 15.5 C5 18 4 20.5 2.5 21.5Z"/>
-                <line x1="7" y1="14" x2="10.5" y2="17.5"/>
-                <line x1="8.5" y1="12.5" x2="12" y2="16"/>
-                <path d="M9.5 12.5 C13 9 16.5 5.5 19.5 3 C20.5 2.2 21.5 2.5 21.8 3 C22 3.5 21.5 4.5 20.5 5.5 C17.5 8.5 14 12 11.5 14.5"/>
+              <svg width="24" height="24" viewBox="0 0 100 100" fill="none" stroke="#888" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 94 C0 82 2 68 12 60 C20 54 30 56 32 66 C34 76 22 92 8 94Z"/>
+                <line x1="24" y1="54" x2="36" y2="66"/>
+                <line x1="30" y1="48" x2="42" y2="60"/>
+                <path d="M34 50 C46 38 62 22 78 10 Q84 6 86 8 Q88 10 84 16 C70 30 54 46 42 58"/>
               </svg>
             </button>
             <button class="undo-btn disabled" aria-label="Undo">
