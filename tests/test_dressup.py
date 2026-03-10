@@ -1,4 +1,4 @@
-"""End-to-end Playwright tests for dress-up requirements (DRSS-01 through DRSS-07).
+"""End-to-end Playwright tests for dress-up requirements (DRSS-01 through DRSS-07, DRSV-01 through DRSV-03).
 
 Tests run with iPad emulation (1024x1366, touch, WebKit) via conftest.py fixtures.
 All tests exercise the UI buttons in the selection panel, not JS functions directly.
@@ -25,6 +25,17 @@ class TestDressUpView:
         expect(svg).to_be_visible()
         regions = dressup_page.locator("[data-region]")
         assert regions.count() >= 3, f"Expected >= 3 data-region elements, got {regions.count()}"
+
+    def test_mermaid_has_ai_art(self, dressup_page: Page):
+        """DRSV-01: Variant defs groups contain >50 path elements (AI-generated, not hand-crafted)."""
+        path_count = dressup_page.evaluate("""
+            (() => {
+                const group = document.getElementById('tail-1');
+                if (!group) return 0;
+                return group.querySelectorAll('path').length;
+            })()
+        """)
+        assert path_count > 50, f"Expected >50 paths in tail-1 (AI art), got {path_count}"
 
     def test_base_mermaid_has_default_parts(self, dressup_page: Page):
         """Default parts: active-tail href=#tail-1, active-hair href=#hair-1, active-acc href=#acc-none."""
@@ -276,3 +287,95 @@ class TestSelectionPanel:
             assert box is not None, f"Option {i} has no bounding box"
             assert box["width"] >= 60, f"Option {i} width {box['width']} < 60"
             assert box["height"] >= 60, f"Option {i} height {box['height']} < 60"
+
+
+class TestPreviewThumbnails:
+    """DRSV-02: Preview thumbnails show actual traced SVGs fetched at runtime."""
+
+    def test_preview_contains_svg(self, dressup_page: Page):
+        """Option buttons for tail category contain an SVG element with viewBox."""
+        # Wait for async previews to load
+        dressup_page.wait_for_selector(".option-btn svg", timeout=5000)
+        has_svg = dressup_page.evaluate("""
+            (() => {
+                const btn = document.querySelector('.option-btn');
+                if (!btn) return false;
+                const svg = btn.querySelector('svg');
+                return svg !== null && svg.hasAttribute('viewBox');
+            })()
+        """)
+        assert has_svg, "Expected .option-btn to contain an SVG element with viewBox"
+
+    def test_preview_svg_is_48x48(self, dressup_page: Page):
+        """SVG inside option buttons has width=48 and height=48."""
+        dressup_page.wait_for_selector(".option-btn svg", timeout=5000)
+        dims = dressup_page.evaluate("""
+            (() => {
+                const btn = document.querySelector('.option-btn');
+                if (!btn) return null;
+                const svg = btn.querySelector('svg');
+                if (!svg) return null;
+                return {
+                    width: svg.getAttribute('width'),
+                    height: svg.getAttribute('height')
+                };
+            })()
+        """)
+        assert dims is not None, "No SVG found in option button"
+        assert dims["width"] == "48", f"Expected width=48, got {dims['width']}"
+        assert dims["height"] == "48", f"Expected height=48, got {dims['height']}"
+
+    def test_preview_fetched_not_inline(self, dressup_page: Page):
+        """Option button SVG has >10 path elements (fetched traced SVG, not simplified inline icon)."""
+        dressup_page.wait_for_selector(".option-btn svg", timeout=5000)
+        path_count = dressup_page.evaluate("""
+            (() => {
+                const btn = document.querySelector('.option-btn');
+                if (!btn) return 0;
+                const svg = btn.querySelector('svg');
+                if (!svg) return 0;
+                return svg.querySelectorAll('path').length;
+            })()
+        """)
+        assert path_count > 10, f"Expected >10 paths in preview SVG (fetched art), got {path_count}"
+
+
+class TestPreviewColorSync:
+    """DRSV-03: Preview thumbnails reflect applied color overrides."""
+
+    def test_preview_reflects_color_after_recolor(self, dressup_page: Page):
+        """After recoloring tail-1 pink, switching tabs and back shows pink preview."""
+        # Wait for previews to load
+        dressup_page.wait_for_selector(".option-btn svg", timeout=5000)
+
+        # Select tail tab (should already be active, but be explicit)
+        dressup_page.locator('.cat-tab[data-category="tail"]').click()
+        dressup_page.wait_for_timeout(300)
+
+        # Switch to color tab and click pink swatch
+        dressup_page.locator('.cat-tab[data-category="color"]').click()
+        dressup_page.wait_for_timeout(300)
+        dressup_page.locator('.options-row .color-swatch[data-color="#ff69b4"]').click()
+        dressup_page.wait_for_timeout(300)
+
+        # Switch to hair tab (forces re-render of options row)
+        dressup_page.locator('.cat-tab[data-category="hair"]').click()
+        dressup_page.wait_for_timeout(500)
+
+        # Switch back to tail tab -- previews should reflect the pink color
+        dressup_page.locator('.cat-tab[data-category="tail"]').click()
+        dressup_page.wait_for_selector(".option-btn svg", timeout=5000)
+        dressup_page.wait_for_timeout(500)
+
+        # Check fill on the first path inside the tail-1 option button SVG
+        fill = dressup_page.evaluate("""
+            (() => {
+                const btn = document.querySelector('.option-btn[data-variant="tail-1"]');
+                if (!btn) return null;
+                const svg = btn.querySelector('svg');
+                if (!svg) return null;
+                const path = svg.querySelector('path[fill]:not([fill="none"])');
+                return path ? path.getAttribute('fill') : null;
+            })()
+        """)
+        assert fill == "#ff69b4", f"Expected preview fill #ff69b4 after recolor, got {fill}"
