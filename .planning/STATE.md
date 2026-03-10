@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Art & Deploy
 status: executing
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-03-10T00:37:40Z"
-last_activity: 2026-03-10 -- Completed 04-01 pipeline infra + coloring generation
+stopped_at: Completed 04-02-PLAN.md
+last_updated: "2026-03-10T00:45:12Z"
+last_activity: 2026-03-10 -- Completed 04-02 dress-up generation + SVG assembly
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
-  percent: 12
+  completed_plans: 2
+  percent: 25
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 ## Current Position
 
 Phase: 4 of 7 (Art Pipeline) -- first phase of v1.1
-Plan: 1 of 2 complete
+Plan: 2 of 2 complete (Phase 4 DONE)
 Status: Executing
-Last activity: 2026-03-10 -- Completed 04-01 pipeline infra + coloring generation
+Last activity: 2026-03-10 -- Completed 04-02 dress-up generation + SVG assembly
 
-Progress: [##░░░░░░░░] 12%
+Progress: [###░░░░░░░] 25%
 
 ## Performance Metrics
 
@@ -45,6 +45,7 @@ Progress: [##░░░░░░░░] 12%
 |-------|-------|-------|----------|
 | 1-3 (v1.0) | 7 | ~1.8h | ~15 min |
 | 4 Plan 01 | 1 | 4min | 4 min |
+| 4 Plan 02 | 1 | 5min | 5 min |
 | 4-7 (v1.1) | - | - | - |
 
 *Updated after each plan completion*
@@ -64,6 +65,10 @@ Recent decisions affecting current work:
 - retry_api_call wraps RateLimitError and APIError with exponential backoff (04-01)
 - Module-level cached OpenAI client via _get_client() (04-01)
 - Pipeline module pattern: config.py constants, prompts.py templates, generate.py API calls (04-01)
+- Separate _get_client() in edit.py for independent mocking (04-02)
+- Skip watercolor filter for kawaii style -- flat cell-shaded output (04-02)
+- Body/face hardcoded in SVG assembly; only tail/hair/acc vary (04-02)
+- Variant groups get scale transform (400/1024, 700/1024) for viewBox mapping (04-02)
 
 ### Pending Todos
 
@@ -78,6 +83,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-10T00:37:40Z
-Stopped at: Completed 04-01-PLAN.md
-Resume file: .planning/phases/04-art-pipeline/04-01-SUMMARY.md
+Last session: 2026-03-10T00:45:12Z
+Stopped at: Completed 04-02-PLAN.md
+Resume file: .planning/phases/04-art-pipeline/04-02-SUMMARY.md
