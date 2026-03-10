@@ -52,7 +52,11 @@ Plans:
   3. Fill correctly stops at anti-aliased edges without bleeding through lines
   4. Tapping undo reverts the last fill operation, restoring the previous state
   5. Navigating away from coloring and back does not crash or degrade performance on iPad Safari
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 05-01-PLAN.md -- Flood fill algorithm + canvas coloring module (CLRV-01, CLRV-03, CLRV-05)
+- [ ] 05-02-PLAN.md -- App integration with canvas+SVG hybrid + E2E tests (CLRV-01, CLRV-02, CLRV-03, CLRV-04, CLRV-05)
 
 ### Phase 6: Dress-Up Art Swap
 **Goal**: Child can mix and match kawaii mermaid parts with the same dress-up interaction, now using AI-generated art
@@ -84,6 +88,6 @@ Plans:
 | 2. Dress-Up | v1.0 | 2/2 | Complete | 2026-03-09 |
 | 3. Coloring | v1.0 | 2/2 | Complete | 2026-03-09 |
 | 4. Art Pipeline | v1.1 | 2/2 | Complete | 2026-03-10 |
-| 5. Flood-Fill Coloring | v1.1 | 0/? | Not started | - |
+| 5. Flood-Fill Coloring | v1.1 | 0/2 | Planned | - |
 | 6. Dress-Up Art Swap | v1.1 | 0/? | Not started | - |
 | 7. GitHub Pages Deployment | v1.1 | 0/? | Not started | - |
