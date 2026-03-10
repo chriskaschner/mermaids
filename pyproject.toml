@@ -8,6 +8,7 @@ dependencies = [
     "uvicorn>=0.34",
     "vtracer>=0.6.12",
     "pillow>=11",
+    "openai>=2.0",
 ]
 
 [project.optional-dependencies]
