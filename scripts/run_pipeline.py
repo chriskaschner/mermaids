@@ -26,7 +26,13 @@ from mermaids.pipeline.assemble import (
 from mermaids.pipeline.config import GENERATED_SVG_DIR
 from mermaids.pipeline.edit import generate_dressup_variants
 from mermaids.pipeline.generate import generate_coloring_pages
-from scripts.trace_all import trace_coloring_pages, trace_dressup_parts
+import sys
+from pathlib import Path
+
+# Allow importing sibling scripts when run as `python scripts/run_pipeline.py`
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from trace_all import trace_coloring_pages, trace_dressup_parts
 
 
 def run_full_pipeline():
