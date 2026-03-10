@@ -1,8 +1,8 @@
-"""Unit tests for floodfill.js -- scanline flood fill algorithm.
+"""Unit tests for floodfill.js and coloring.js canvas-based modules.
 
-Uses Playwright to load a minimal test harness that imports floodfill.js as an
-ES module, creates synthetic canvas ImageData, and exercises floodFill/hexToRgb
-through the browser JS engine.
+Uses Playwright to load a minimal test harness that imports the ES modules,
+creates synthetic canvas ImageData, and exercises the APIs through the browser
+JS engine.
 
 Tests verify:
 - hexToRgb parses hex color strings to [r, g, b] arrays
@@ -10,6 +10,10 @@ Tests verify:
 - Flood fill stops at black line edges with tolerance=32
 - Flood fill is a no-op when start pixel already matches fill color
 - Flood fill handles out-of-bounds / line-pixel start gracefully
+- Coloring module exports expected canvas-based API
+- Undo stack stores and restores ImageData snapshots (capped at 30)
+- releaseCanvas clears canvas and undo stack
+- COLORS and COLORING_PAGES arrays are preserved
 """
 
 import pytest
@@ -255,3 +259,254 @@ class TestFloodFillBasic:
             })()
         """)
         assert result == 32
+
+
+class TestColoringModuleExports:
+    """coloring.js exports the expected canvas-based API."""
+
+    def test_exports_colors_array(self, js_page: Page):
+        """COLORS is an array of 10 hex color strings."""
+        result = js_page.evaluate("""
+            (async () => {
+                const mod = await import('./js/coloring.js');
+                return { length: mod.COLORS.length, first: mod.COLORS[0], third: mod.COLORS[2] };
+            })()
+        """)
+        assert result["length"] == 10
+        assert result["first"] == "#7ec8c8"
+        assert result["third"] == "#ff69b4"
+
+    def test_exports_coloring_pages_array(self, js_page: Page):
+        """COLORING_PAGES is an array of 4 page metadata objects."""
+        result = js_page.evaluate("""
+            (async () => {
+                const mod = await import('./js/coloring.js');
+                return {
+                    length: mod.COLORING_PAGES.length,
+                    firstId: mod.COLORING_PAGES[0].id,
+                    firstLabel: mod.COLORING_PAGES[0].label,
+                };
+            })()
+        """)
+        assert result["length"] == 4
+        assert result["firstId"] == "page-1-ocean"
+        assert result["firstLabel"] == "Ocean Mermaid"
+
+    def test_exports_canvas_api_functions(self, js_page: Page):
+        """Module exports initColoringCanvas, handleCanvasTap, undo, canUndo, releaseCanvas."""
+        result = js_page.evaluate("""
+            (async () => {
+                const mod = await import('./js/coloring.js');
+                return {
+                    initColoringCanvas: typeof mod.initColoringCanvas,
+                    handleCanvasTap: typeof mod.handleCanvasTap,
+                    undo: typeof mod.undo,
+                    canUndo: typeof mod.canUndo,
+                    releaseCanvas: typeof mod.releaseCanvas,
+                    setSelectedColor: typeof mod.setSelectedColor,
+                    getSelectedColor: typeof mod.getSelectedColor,
+                };
+            })()
+        """)
+        assert result["initColoringCanvas"] == "function"
+        assert result["handleCanvasTap"] == "function"
+        assert result["undo"] == "function"
+        assert result["canUndo"] == "function"
+        assert result["releaseCanvas"] == "function"
+        assert result["setSelectedColor"] == "function"
+        assert result["getSelectedColor"] == "function"
+
+    def test_removed_old_svg_exports(self, js_page: Page):
+        """fillRegion and resetColoringState are no longer exported."""
+        result = js_page.evaluate("""
+            (async () => {
+                const mod = await import('./js/coloring.js');
+                return {
+                    fillRegion: typeof mod.fillRegion,
+                    resetColoringState: typeof mod.resetColoringState,
+                };
+            })()
+        """)
+        assert result["fillRegion"] == "undefined"
+        assert result["resetColoringState"] == "undefined"
+
+    def test_state_default_color(self, js_page: Page):
+        """state.selectedColor defaults to COLORS[2] (hot pink)."""
+        result = js_page.evaluate("""
+            (async () => {
+                const mod = await import('./js/coloring.js');
+                return mod.state.selectedColor;
+            })()
+        """)
+        assert result == "#ff69b4"
+
+
+class TestColoringUndoStack:
+    """Undo stack stores ImageData snapshots and restores them."""
+
+    def test_can_undo_false_initially(self, js_page: Page):
+        """canUndo() returns false when no fills have been made."""
+        result = js_page.evaluate("""
+            (async () => {
+                const mod = await import('./js/coloring.js');
+                // Ensure clean state
+                mod.releaseCanvas();
+                return mod.canUndo();
+            })()
+        """)
+        assert result is False
+
+    def test_handle_canvas_tap_pushes_undo(self, js_page: Page):
+        """After a handleCanvasTap call, canUndo() returns true."""
+        result = js_page.evaluate("""
+            (async () => {
+                const mod = await import('./js/coloring.js');
+                // Set up a small test canvas
+                const canvas = document.createElement('canvas');
+                canvas.width = 10;
+                canvas.height = 10;
+                const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, 10, 10);
+                document.body.appendChild(canvas);
+
+                // Use internal setup -- we need to call _setCanvasForTest
+                // Actually, we test via the public API by calling initColoringCanvas
+                // But that loads an SVG. Instead, test the module's exported state.
+                // We will test via a different approach: directly manipulate
+                mod._setTestCanvas(canvas, ctx);
+                mod.handleCanvasTap(5, 5);
+                const canUndoAfter = mod.canUndo();
+                mod.releaseCanvas();
+                return canUndoAfter;
+            })()
+        """)
+        assert result is True
+
+    def test_undo_restores_previous_state(self, js_page: Page):
+        """After fill + undo, canvas pixel data matches pre-fill state."""
+        result = js_page.evaluate("""
+            (async () => {
+                const mod = await import('./js/coloring.js');
+                const canvas = document.createElement('canvas');
+                canvas.width = 10;
+                canvas.height = 10;
+                const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, 10, 10);
+                document.body.appendChild(canvas);
+
+                mod._setTestCanvas(canvas, ctx);
+
+                // Record pre-fill pixel
+                const before = ctx.getImageData(5, 5, 1, 1).data;
+                const beforeColor = [before[0], before[1], before[2]];
+
+                // Fill with hot pink
+                mod.setSelectedColor('#ff69b4');
+                mod.handleCanvasTap(5, 5);
+
+                // Verify it changed
+                const afterFill = ctx.getImageData(5, 5, 1, 1).data;
+                const afterColor = [afterFill[0], afterFill[1], afterFill[2]];
+
+                // Undo
+                mod.undo();
+                const afterUndo = ctx.getImageData(5, 5, 1, 1).data;
+                const undoColor = [afterUndo[0], afterUndo[1], afterUndo[2]];
+
+                mod.releaseCanvas();
+                return { beforeColor, afterColor, undoColor };
+            })()
+        """)
+        assert result["beforeColor"] == [255, 255, 255], "Should start white"
+        assert result["afterColor"] == [255, 105, 180], "Should be hot pink after fill"
+        assert result["undoColor"] == [255, 255, 255], "Should be white after undo"
+
+    def test_undo_stack_capped_at_30(self, js_page: Page):
+        """After 35 fills, undo stack has at most 30 entries."""
+        result = js_page.evaluate("""
+            (async () => {
+                const mod = await import('./js/coloring.js');
+                const canvas = document.createElement('canvas');
+                canvas.width = 10;
+                canvas.height = 10;
+                const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, 10, 10);
+                document.body.appendChild(canvas);
+
+                mod._setTestCanvas(canvas, ctx);
+
+                // Do 35 fills alternating colors
+                const colors = ['#ff69b4', '#7ec8c8'];
+                for (let i = 0; i < 35; i++) {
+                    mod.setSelectedColor(colors[i % 2]);
+                    // Reset canvas to white before each fill so fill actually does something
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, 10, 10);
+                    mod.handleCanvasTap(5, 5);
+                }
+
+                // Count how many undos we can do
+                let undoCount = 0;
+                while (mod.canUndo()) {
+                    mod.undo();
+                    undoCount++;
+                }
+                mod.releaseCanvas();
+                return undoCount;
+            })()
+        """)
+        assert result <= 30, f"Undo stack exceeded cap: {result}"
+        assert result == 30, f"Expected exactly 30 undo entries after 35 fills, got {result}"
+
+
+class TestReleaseCanvas:
+    """releaseCanvas clears canvas, ctx, and undo stack."""
+
+    def test_release_clears_canvas_dimensions(self, js_page: Page):
+        """After releaseCanvas, canvas width/height are 0."""
+        result = js_page.evaluate("""
+            (async () => {
+                const mod = await import('./js/coloring.js');
+                const canvas = document.createElement('canvas');
+                canvas.width = 10;
+                canvas.height = 10;
+                const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                document.body.appendChild(canvas);
+
+                mod._setTestCanvas(canvas, ctx);
+                mod.releaseCanvas();
+
+                return { width: canvas.width, height: canvas.height, inDom: !!canvas.parentNode };
+            })()
+        """)
+        assert result["width"] == 0
+        assert result["height"] == 0
+        assert result["inDom"] is False
+
+    def test_release_clears_undo_stack(self, js_page: Page):
+        """After releaseCanvas, canUndo() returns false."""
+        result = js_page.evaluate("""
+            (async () => {
+                const mod = await import('./js/coloring.js');
+                const canvas = document.createElement('canvas');
+                canvas.width = 10;
+                canvas.height = 10;
+                const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, 10, 10);
+                document.body.appendChild(canvas);
+
+                mod._setTestCanvas(canvas, ctx);
+                mod.handleCanvasTap(5, 5);
+                // Should have undo entry
+                const beforeRelease = mod.canUndo();
+                mod.releaseCanvas();
+                const afterRelease = mod.canUndo();
+                return { beforeRelease, afterRelease };
+            })()
+        """)
+        assert result["beforeRelease"] is True
+        assert result["afterRelease"] is False
