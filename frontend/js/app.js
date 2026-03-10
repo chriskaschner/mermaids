@@ -233,20 +233,22 @@ async function openColoringPage(pageId) {
     }
 
     // Wire canvas pointer events: tap = flood fill, drag = brush paint
+    // Track movement in screen pixels (not canvas coords) so finger
+    // wobble on touch screens doesn't falsely trigger drag mode.
     let _tapStart = null;
-    const TAP_MOVE_THRESHOLD = 10; // px in canvas coords
+    const TAP_MOVE_THRESHOLD = 20; // CSS pixels on screen
 
     canvas.addEventListener("pointerdown", (e) => {
       canvas.setPointerCapture(e.pointerId);
       const [cx, cy] = _toCanvas(e);
-      _tapStart = { x: cx, y: cy, moved: false };
+      _tapStart = { x: cx, y: cy, screenX: e.clientX, screenY: e.clientY, moved: false };
       strokeStart(cx, cy);
     });
     canvas.addEventListener("pointermove", (e) => {
       const [cx, cy] = _toCanvas(e);
       if (_tapStart && !_tapStart.moved) {
-        const dx = cx - _tapStart.x;
-        const dy = cy - _tapStart.y;
+        const dx = e.clientX - _tapStart.screenX;
+        const dy = e.clientY - _tapStart.screenY;
         if (Math.sqrt(dx * dx + dy * dy) > TAP_MOVE_THRESHOLD) {
           _tapStart.moved = true;
         }
