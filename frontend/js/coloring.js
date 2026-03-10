@@ -15,7 +15,7 @@ import { floodFill, hexToRgb } from "./floodfill.js";
 // -- Constants ----------------------------------------------------------------
 
 const MAX_UNDO = 30;
-const FILL_TOLERANCE = 32;
+const FILL_TOLERANCE = 48;
 const CANVAS_SIZE = 1024;
 const BRUSH_RADIUS = 30;
 
