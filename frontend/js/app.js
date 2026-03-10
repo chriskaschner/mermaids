@@ -232,42 +232,48 @@ async function openColoringPage(pageId) {
       ];
     }
 
-    // Wire canvas pointer events: tap = flood fill, drag = brush paint
-    // Track movement in screen pixels (not canvas coords) so finger
-    // wobble on touch screens doesn't falsely trigger drag mode.
-    let _tapStart = null;
+    // Wire canvas pointer events: tap = flood fill, drag = brush paint.
+    // Don't paint anything on pointerdown -- wait to see if the user
+    // drags (brush) or releases (tap = flood fill).
+    let _pointer = null;
     const TAP_MOVE_THRESHOLD = 20; // CSS pixels on screen
 
     canvas.addEventListener("pointerdown", (e) => {
       canvas.setPointerCapture(e.pointerId);
       const [cx, cy] = _toCanvas(e);
-      _tapStart = { x: cx, y: cy, screenX: e.clientX, screenY: e.clientY, moved: false };
-      strokeStart(cx, cy);
+      _pointer = { cx, cy, screenX: e.clientX, screenY: e.clientY, dragging: false };
     });
     canvas.addEventListener("pointermove", (e) => {
+      if (!_pointer) return;
       const [cx, cy] = _toCanvas(e);
-      if (_tapStart && !_tapStart.moved) {
-        const dx = e.clientX - _tapStart.screenX;
-        const dy = e.clientY - _tapStart.screenY;
+      if (!_pointer.dragging) {
+        const dx = e.clientX - _pointer.screenX;
+        const dy = e.clientY - _pointer.screenY;
         if (Math.sqrt(dx * dx + dy * dy) > TAP_MOVE_THRESHOLD) {
-          _tapStart.moved = true;
+          _pointer.dragging = true;
+          // Start brush stroke from original touch point
+          strokeStart(_pointer.cx, _pointer.cy);
         }
       }
-      strokeMove(cx, cy);
+      if (_pointer.dragging) {
+        strokeMove(cx, cy);
+      }
     });
     canvas.addEventListener("pointerup", (e) => {
-      strokeEnd();
-      if (_tapStart && !_tapStart.moved) {
-        // Undo the brush dot, then flood fill instead
-        coloringUndo();
-        handleCanvasTap(_tapStart.x, _tapStart.y);
+      if (_pointer && !_pointer.dragging) {
+        // No drag detected -- this is a tap, flood fill
+        handleCanvasTap(_pointer.cx, _pointer.cy);
+      } else {
+        strokeEnd();
       }
-      _tapStart = null;
+      _pointer = null;
       _updateUndoBtn(undoBtn);
     });
     canvas.addEventListener("pointercancel", () => {
-      strokeEnd();
-      _tapStart = null;
+      if (_pointer && _pointer.dragging) {
+        strokeEnd();
+      }
+      _pointer = null;
       _updateUndoBtn(undoBtn);
     });
 
