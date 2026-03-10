@@ -21,7 +21,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 ### v1.1 Art & Deploy
 
 - [x] **Phase 4: Art Pipeline** - Generate kawaii mermaid SVG assets via OpenAI gpt-image-1 and vtracer
-- [ ] **Phase 5: Flood-Fill Coloring** - Replace region-based coloring with canvas flood fill and SVG overlay
+- [x] **Phase 5: Flood-Fill Coloring** - Replace region-based coloring with canvas flood fill and SVG overlay
 - [ ] **Phase 6: Dress-Up Art Swap** - Replace hand-crafted mermaid with AI-generated kawaii art and variants
 - [ ] **Phase 7: GitHub Pages Deployment** - Deploy static site with relative paths, accessible on iPad
 
@@ -55,8 +55,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 05-01-PLAN.md -- Flood fill algorithm + canvas coloring module (CLRV-01, CLRV-03, CLRV-05)
-- [ ] 05-02-PLAN.md -- App integration with canvas+SVG hybrid + E2E tests (CLRV-01, CLRV-02, CLRV-03, CLRV-04, CLRV-05)
+- [x] 05-01-PLAN.md -- Flood fill algorithm + canvas coloring module (CLRV-01, CLRV-03, CLRV-05)
+- [x] 05-02-PLAN.md -- App integration with canvas+SVG hybrid + E2E tests (CLRV-01, CLRV-02, CLRV-03, CLRV-04, CLRV-05)
 
 ### Phase 6: Dress-Up Art Swap
 **Goal**: Child can mix and match kawaii mermaid parts with the same dress-up interaction, now using AI-generated art
@@ -88,6 +88,6 @@ Plans:
 | 2. Dress-Up | v1.0 | 2/2 | Complete | 2026-03-09 |
 | 3. Coloring | v1.0 | 2/2 | Complete | 2026-03-09 |
 | 4. Art Pipeline | v1.1 | 2/2 | Complete | 2026-03-10 |
-| 5. Flood-Fill Coloring | v1.1 | 0/2 | Planned | - |
+| 5. Flood-Fill Coloring | v1.1 | 2/2 | Complete | 2026-03-10 |
 | 6. Dress-Up Art Swap | v1.1 | 0/? | Not started | - |
 | 7. GitHub Pages Deployment | v1.1 | 0/? | Not started | - |
