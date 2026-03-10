@@ -46,21 +46,23 @@ def _read_canvas_pixel(page: Page, x: int, y: int):
 def _tap_canvas_at(page: Page, canvas_x: int, canvas_y: int):
     """Tap at canvas pixel coordinates (mapped to CSS display coords).
 
-    Dispatches a pointerdown event at the correct CSS position so the
-    app.js handler can map it back to canvas pixel coordinates.
+    Dispatches pointerdown + pointerup events at the correct CSS position so the
+    app.js handler can map it back to canvas pixel coordinates and complete the stroke.
     """
     page.evaluate(f"""(() => {{
         const canvas = document.querySelector('#coloring-canvas');
         const rect = canvas.getBoundingClientRect();
         const cssX = {canvas_x} * rect.width / canvas.width;
         const cssY = {canvas_y} * rect.height / canvas.height;
-        canvas.dispatchEvent(new PointerEvent('pointerdown', {{
+        const opts = {{
             clientX: rect.left + cssX,
             clientY: rect.top + cssY,
             bubbles: true,
             pointerId: 1,
             pointerType: 'touch'
-        }}));
+        }};
+        canvas.dispatchEvent(new PointerEvent('pointerdown', opts));
+        canvas.dispatchEvent(new PointerEvent('pointerup', opts));
     }})()""")
     page.wait_for_timeout(200)
 
@@ -148,6 +150,51 @@ class TestCanvasFloodFill:
             # Line pixel should NOT be hot pink
             assert not (after[0] == 255 and after[1] == 105 and after[2] == 180), \
                 f"Line pixel at ({line_pixel['x']}, 512) was filled through: {after[:3]}"
+
+
+class TestCanvasLayout:
+    """Canvas and SVG overlay are sized with margins, not edge-to-edge."""
+
+    def test_canvas_has_margins(self, coloring_page: Page):
+        """Canvas should not fill the entire viewport width -- it needs
+        breathing room so the coloring page doesn't appear zoomed in."""
+        _open_first_page(coloring_page)
+
+        info = coloring_page.evaluate("""(() => {
+            const container = document.querySelector('.coloring-page-container');
+            const canvas = document.getElementById('coloring-canvas');
+            const cr = container.getBoundingClientRect();
+            const cvr = canvas.getBoundingClientRect();
+            return {
+                margin_left: cvr.left - cr.left,
+                margin_right: (cr.left + cr.width) - (cvr.left + cvr.width),
+            };
+        })()""")
+        assert info["margin_left"] >= 8, \
+            f"Canvas should have left margin >= 8px, got {info['margin_left']}"
+        assert info["margin_right"] >= 8, \
+            f"Canvas should have right margin >= 8px, got {info['margin_right']}"
+
+    def test_canvas_and_overlay_aligned(self, coloring_page: Page):
+        """Canvas and SVG overlay should have identical size and position."""
+        _open_first_page(coloring_page)
+
+        info = coloring_page.evaluate("""(() => {
+            const canvas = document.getElementById('coloring-canvas');
+            const overlay = document.querySelector('.coloring-svg-overlay');
+            if (!canvas || !overlay) return null;
+            const cvr = canvas.getBoundingClientRect();
+            const ovr = overlay.getBoundingClientRect();
+            return {
+                canvas: {w: Math.round(cvr.width), h: Math.round(cvr.height),
+                         t: Math.round(cvr.top), l: Math.round(cvr.left)},
+                overlay: {w: Math.round(ovr.width), h: Math.round(ovr.height),
+                          t: Math.round(ovr.top), l: Math.round(ovr.left)},
+            };
+        })()""")
+        assert info is not None, "Canvas or overlay not found"
+        assert info["canvas"] == info["overlay"], \
+            f"Canvas {info['canvas']} and overlay {info['overlay']} should match"
 
 
 class TestCanvasOverlay:

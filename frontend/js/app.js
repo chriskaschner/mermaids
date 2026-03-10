@@ -11,6 +11,9 @@ import {
   COLORS,
   initColoringCanvas,
   handleCanvasTap,
+  strokeStart,
+  strokeMove,
+  strokeEnd,
   undo as coloringUndo,
   canUndo,
   releaseCanvas,
@@ -206,16 +209,43 @@ async function openColoringPage(pageId) {
     const svgOverlay = svgDoc.documentElement;
     svgOverlay.classList.add("coloring-svg-overlay");
     svgOverlay.style.pointerEvents = "none";
+    // Add viewBox for scalability, then remove explicit width/height so CSS
+    // can size the SVG to match the canvas (inline SVGs with explicit w/h
+    // don't maintain aspect ratio under CSS max-width constraints).
+    if (!svgOverlay.getAttribute("viewBox")) {
+      const w = svgOverlay.getAttribute("width") || "1024";
+      const h = svgOverlay.getAttribute("height") || "1024";
+      svgOverlay.setAttribute("viewBox", `0 0 ${w} ${h}`);
+    }
+    svgOverlay.removeAttribute("width");
+    svgOverlay.removeAttribute("height");
     container.appendChild(svgOverlay);
 
-    // Wire canvas pointerdown for flood fill
-    canvas.addEventListener("pointerdown", (e) => {
+    // Map pointer CSS coordinates to canvas pixel coordinates
+    function _toCanvas(e) {
       const rect = canvas.getBoundingClientRect();
       const scaleX = canvas.width / rect.width;
       const scaleY = canvas.height / rect.height;
-      const canvasX = Math.floor((e.clientX - rect.left) * scaleX);
-      const canvasY = Math.floor((e.clientY - rect.top) * scaleY);
-      handleCanvasTap(canvasX, canvasY);
+      return [
+        Math.floor((e.clientX - rect.left) * scaleX),
+        Math.floor((e.clientY - rect.top) * scaleY),
+      ];
+    }
+
+    // Wire canvas pointer events for brush painting
+    canvas.addEventListener("pointerdown", (e) => {
+      canvas.setPointerCapture(e.pointerId);
+      strokeStart(..._toCanvas(e));
+    });
+    canvas.addEventListener("pointermove", (e) => {
+      strokeMove(..._toCanvas(e));
+    });
+    canvas.addEventListener("pointerup", (e) => {
+      strokeEnd();
+      _updateUndoBtn(undoBtn);
+    });
+    canvas.addEventListener("pointercancel", () => {
+      strokeEnd();
       _updateUndoBtn(undoBtn);
     });
 

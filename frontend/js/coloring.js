@@ -1,11 +1,11 @@
 /**
- * Canvas-based coloring state management: flood fill, color palette, undo stack.
+ * Canvas-based coloring state management: brush painting, color palette, undo stack.
  *
  * Pure state + operations module -- no DOM event listeners wired here.
- * Event wiring happens in app.js when the coloring UI is built (Plan 02).
+ * Event wiring happens in app.js when the coloring UI is built.
  *
  * Canvas lifecycle:
- *   initColoringCanvas() -> handleCanvasTap() x N -> releaseCanvas()
+ *   initColoringCanvas() -> stroke start/move/end x N -> releaseCanvas()
  *
  * Undo via ImageData snapshots (capped at MAX_UNDO).
  */
@@ -17,6 +17,7 @@ import { floodFill, hexToRgb } from "./floodfill.js";
 const MAX_UNDO = 30;
 const FILL_TOLERANCE = 32;
 const CANVAS_SIZE = 1024;
+const BRUSH_RADIUS = 30;
 
 // Color palette -- 10 preset swatches, child-friendly (same as dressup.js,
 // duplicated per research recommendation: separate state lifecycles)
@@ -56,6 +57,13 @@ let _ctx = null;
 
 /** Undo stack: array of ImageData snapshots. */
 const undoStack = [];
+
+/** Whether a stroke is in progress. */
+let _stroking = false;
+
+/** Previous point for interpolating between move events. */
+let _lastX = -1;
+let _lastY = -1;
 
 // -- Exported operations ------------------------------------------------------
 
@@ -105,14 +113,64 @@ export async function initColoringCanvas(svgUrl, container) {
 }
 
 /**
+ * Begin a paint stroke at the given canvas pixel coordinates.
+ * Pushes a pre-stroke ImageData snapshot for undo.
+ */
+export function strokeStart(canvasX, canvasY) {
+  if (!_canvas || !_ctx) return;
+
+  // Push pre-stroke snapshot for undo
+  const snapshot = _ctx.getImageData(0, 0, _canvas.width, _canvas.height);
+  undoStack.push(snapshot);
+  if (undoStack.length > MAX_UNDO) {
+    undoStack.shift();
+  }
+
+  _stroking = true;
+  _lastX = canvasX;
+  _lastY = canvasY;
+  _paintCircle(canvasX, canvasY);
+}
+
+/**
+ * Continue a paint stroke to the given canvas pixel coordinates.
+ * Interpolates between the previous point and this one to avoid gaps.
+ */
+export function strokeMove(canvasX, canvasY) {
+  if (!_stroking || !_ctx) return;
+
+  // Interpolate between last point and current to avoid gaps during fast swipes
+  const dx = canvasX - _lastX;
+  const dy = canvasY - _lastY;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  const step = Math.max(1, BRUSH_RADIUS / 3);
+
+  if (dist > step) {
+    const steps = Math.ceil(dist / step);
+    for (let i = 1; i <= steps; i++) {
+      const t = i / steps;
+      _paintCircle(_lastX + dx * t, _lastY + dy * t);
+    }
+  } else {
+    _paintCircle(canvasX, canvasY);
+  }
+
+  _lastX = canvasX;
+  _lastY = canvasY;
+}
+
+/**
+ * End the current paint stroke.
+ */
+export function strokeEnd() {
+  _stroking = false;
+  _lastX = -1;
+  _lastY = -1;
+}
+
+/**
  * Handle a tap on the coloring canvas at the given pixel coordinates.
- *
- * Pushes a pre-fill ImageData snapshot onto the undo stack, runs flood fill
- * at (canvasX, canvasY) with the selected color, and puts the modified
- * ImageData back onto the canvas.
- *
- * @param {number} canvasX - X coordinate in canvas pixel space
- * @param {number} canvasY - Y coordinate in canvas pixel space
+ * Uses flood fill for taps (backward compat with tests).
  */
 export function handleCanvasTap(canvasX, canvasY) {
   if (!_canvas || !_ctx) return;
@@ -166,6 +224,9 @@ export function releaseCanvas() {
   }
   _canvas = null;
   _ctx = null;
+  _stroking = false;
+  _lastX = -1;
+  _lastY = -1;
   undoStack.length = 0;
 }
 
@@ -198,4 +259,16 @@ export function _setTestCanvas(canvas, ctx) {
   releaseCanvas();
   _canvas = canvas;
   _ctx = ctx;
+}
+
+// -- Private helpers ----------------------------------------------------------
+
+/**
+ * Paint a filled circle at the given canvas coordinates using the selected color.
+ */
+function _paintCircle(x, y) {
+  _ctx.fillStyle = state.selectedColor;
+  _ctx.beginPath();
+  _ctx.arc(x, y, BRUSH_RADIUS, 0, Math.PI * 2);
+  _ctx.fill();
 }
