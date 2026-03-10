@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Art & Deploy
 status: executing
-stopped_at: Phase 5 context gathered
-last_updated: "2026-03-10T01:25:26.230Z"
-last_activity: 2026-03-10 -- Completed 04-02 dress-up generation + SVG assembly
+stopped_at: Completed 05-01-PLAN.md
+last_updated: "2026-03-10T01:51:00Z"
+last_activity: 2026-03-10 -- Completed 05-01 flood fill core modules
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
-  percent: 25
+  total_plans: 4
+  completed_plans: 3
+  percent: 75
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-09)
 
 **Core value:** A 6-year-old can open this on an iPad, build her own mermaid, and color mermaid pages -- with zero friction and pure delight.
-**Current focus:** Phase 4 -- Art Pipeline (generate kawaii mermaid SVGs)
+**Current focus:** Phase 5 -- Flood-Fill Coloring (canvas flood fill + SVG overlay)
 
 ## Current Position
 
-Phase: 4 of 7 (Art Pipeline) -- first phase of v1.1
-Plan: 2 of 2 complete (Phase 4 DONE)
+Phase: 5 of 7 (Flood-Fill Coloring)
+Plan: 1 of 2 complete
 Status: Executing
-Last activity: 2026-03-10 -- Completed 04-02 dress-up generation + SVG assembly
+Last activity: 2026-03-10 -- Completed 05-01 flood fill core modules
 
-Progress: [###░░░░░░░] 25%
+Progress: [########░░] 75%
 
 ## Performance Metrics
 
@@ -46,6 +46,7 @@ Progress: [###░░░░░░░] 25%
 | 1-3 (v1.0) | 7 | ~1.8h | ~15 min |
 | 4 Plan 01 | 1 | 4min | 4 min |
 | 4 Plan 02 | 1 | 5min | 5 min |
+| 5 Plan 01 | 1 | 4min | 4 min |
 | 4-7 (v1.1) | - | - | - |
 
 *Updated after each plan completion*
@@ -69,6 +70,9 @@ Recent decisions affecting current work:
 - Skip watercolor filter for kawaii style -- flat cell-shaded output (04-02)
 - Body/face hardcoded in SVG assembly; only tail/hair/acc vary (04-02)
 - Variant groups get scale transform (400/1024, 700/1024) for viewBox mapping (04-02)
+- _setTestCanvas helper for unit testing canvas module without SVG loading (05-01)
+- FILL_TOLERANCE=32 for vtracer anti-aliased edge detection (05-01)
+- CANVAS_SIZE=1024: fills don't need retina, SVG overlay handles line crispness (05-01)
 
 ### Pending Todos
 
@@ -83,6 +87,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-10T01:25:26.227Z
-Stopped at: Phase 5 context gathered
-Resume file: .planning/phases/05-flood-fill-coloring/05-CONTEXT.md
+Last session: 2026-03-10T01:51:00Z
+Stopped at: Completed 05-01-PLAN.md
+Resume file: .planning/phases/05-flood-fill-coloring/05-01-SUMMARY.md

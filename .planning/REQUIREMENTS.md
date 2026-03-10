@@ -16,11 +16,11 @@ Requirements for v1.1 Art & Deploy milestone. Each maps to roadmap phases.
 
 ### Coloring
 
-- [ ] **CLRV-01**: Coloring pages use canvas-based flood fill at tap point (replaces region-based fill)
+- [x] **CLRV-01**: Coloring pages use canvas-based flood fill at tap point (replaces region-based fill)
 - [ ] **CLRV-02**: SVG line art overlays canvas for crisp retina-quality outlines
-- [ ] **CLRV-03**: Flood fill handles anti-aliased edges with configurable tolerance
+- [x] **CLRV-03**: Flood fill handles anti-aliased edges with configurable tolerance
 - [ ] **CLRV-04**: Canvas memory is released when navigating away from coloring (iPad Safari safety)
-- [ ] **CLRV-05**: Undo reverts last flood-fill operation via ImageData snapshots
+- [x] **CLRV-05**: Undo reverts last flood-fill operation via ImageData snapshots
 
 ### Dress-Up
 
@@ -91,11 +91,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ARTP-02 | Phase 4 | Complete (04-01) |
 | ARTP-03 | Phase 4 | Complete |
 | ARTP-04 | Phase 4 | Complete |
-| CLRV-01 | Phase 5 | Pending |
+| CLRV-01 | Phase 5 | Complete |
 | CLRV-02 | Phase 5 | Pending |
-| CLRV-03 | Phase 5 | Pending |
+| CLRV-03 | Phase 5 | Complete |
 | CLRV-04 | Phase 5 | Pending |
-| CLRV-05 | Phase 5 | Pending |
+| CLRV-05 | Phase 5 | Complete |
 | DRSV-01 | Phase 6 | Pending |
 | DRSV-02 | Phase 6 | Pending |
 | DRSV-03 | Phase 6 | Pending |
