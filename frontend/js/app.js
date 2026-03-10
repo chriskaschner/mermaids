@@ -177,9 +177,15 @@ async function openColoringPage(pageId) {
               </svg>
             </button>
             <button class="tool-btn" data-tool="brush" aria-label="Brush tool">
-              <svg width="24" height="24" viewBox="0 0 24 24">
-                <path d="M3 21Q4 14 8 12Q6 10 10 4Q12 6 11 9Q14 6 16 3Q15 8 13 10Q16 9 18 10Q12 12 10 16Q14 14 21 13"
-                      fill="none" stroke="#888" stroke-width="1.5" stroke-linecap="round"/>
+              <svg width="24" height="24" viewBox="0 0 512 512">
+                <path d="M.7 389.87C3.16 369.41 18.77 352.38 38.23 346.22c11.93-3.77 24.72-3.1 37.1-2.87 5.26.1 10.63.34 15.54 2.16 10.17 3.77 17.05 13.14 22.3 22.63l45.08 81.45c1.93 3.49 3.89 7.09 4.48 11.05 1.13 7.59-3.08 14.89-8.56 20.37S141.6 490 134.02 491.16c-6.7 1.02-13.6-.46-20.07-2.33-22.46-6.49-42.87-18.85-60.22-34.26C37.37 439.92 23.2 423 12.63 404.16c-3.53-6.29-7.79-14.24-11.93-14.29z"
+                      fill="none" stroke="#888" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M108.81 367.56L218.6 257.77M148.58 407.33L258.37 297.54"
+                      fill="none" stroke="#888" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M178.63 337.51c17.68-17.68 17.68-46.34 0-64.03l-2.11-2.11c-17.68-17.68-46.34-17.68-64.03 0"
+                      fill="none" stroke="#888" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M238.49 277.66c90.01-90.01 148.74-171.93 199.87-220.2 12.46-11.76 33.87-14.52 46.98-1.41 13.11 13.11 10.35 34.52-1.41 46.98-48.27 51.13-130.19 109.86-220.2 199.87"
+                      fill="none" stroke="#888" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </button>
             <button class="undo-btn disabled" aria-label="Undo">
