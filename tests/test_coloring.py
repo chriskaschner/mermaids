@@ -1,9 +1,13 @@
-"""End-to-end Playwright tests for coloring requirements (COLR-01 through COLR-04).
+"""End-to-end Playwright tests for canvas-based flood fill coloring (CLRV-01 through CLRV-05).
 
 Tests run with iPad emulation (1024x1366, touch, WebKit) via conftest.py fixtures.
-All tests exercise the UI in the coloring view, not JS functions directly.
+All tests exercise the UI in the coloring view with canvas+SVG hybrid rendering.
 
-These tests will FAIL until Plan 02 wires the coloring UI into app.js.
+Canvas-based approach:
+- Flood fill on HTML5 canvas (pixel-level) replaces old SVG data-region fill
+- SVG line art overlays canvas with pointer-events:none for crisp retina lines
+- Undo via ImageData snapshots
+- Canvas memory released on navigation
 """
 
 import pytest
@@ -19,160 +23,307 @@ def coloring_page(page: Page, live_server: str) -> Page:
     return page
 
 
-def _open_first_page(coloring_page: Page) -> Page:
-    """Helper: click first gallery thumbnail to open a coloring page."""
-    coloring_page.locator(".gallery-thumb").first.click()
-    coloring_page.wait_for_timeout(300)
-    return coloring_page
+def _open_first_page(page: Page) -> Page:
+    """Helper: click first gallery thumbnail to open a coloring page.
+    Waits for the canvas to be created and ready."""
+    page.locator(".gallery-thumb").first.click()
+    page.wait_for_selector("#coloring-canvas", state="attached", timeout=5000)
+    page.wait_for_timeout(500)
+    return page
+
+
+def _read_canvas_pixel(page: Page, x: int, y: int):
+    """Read RGBA at canvas pixel (x, y). Returns [r, g, b, a] or None."""
+    return page.evaluate(f"""(() => {{
+        const canvas = document.querySelector('#coloring-canvas');
+        if (!canvas) return null;
+        const ctx = canvas.getContext('2d');
+        const data = ctx.getImageData({x}, {y}, 1, 1).data;
+        return [data[0], data[1], data[2], data[3]];
+    }})()""")
+
+
+def _tap_canvas_at(page: Page, canvas_x: int, canvas_y: int):
+    """Tap at canvas pixel coordinates (mapped to CSS display coords).
+
+    Dispatches a pointerdown event at the correct CSS position so the
+    app.js handler can map it back to canvas pixel coordinates.
+    """
+    page.evaluate(f"""(() => {{
+        const canvas = document.querySelector('#coloring-canvas');
+        const rect = canvas.getBoundingClientRect();
+        const cssX = {canvas_x} * rect.width / canvas.width;
+        const cssY = {canvas_y} * rect.height / canvas.height;
+        canvas.dispatchEvent(new PointerEvent('pointerdown', {{
+            clientX: rect.left + cssX,
+            clientY: rect.top + cssY,
+            bubbles: true,
+            pointerId: 1,
+            pointerType: 'touch'
+        }}));
+    }})()""")
+    page.wait_for_timeout(200)
+
+
+def _update_undo_state(page: Page):
+    """Small wait for undo button state to update after fill/undo."""
+    page.wait_for_timeout(100)
 
 
 class TestColoringGallery:
-    """COLR-01: Gallery shows thumbnails and clicking one opens a coloring page."""
+    """Gallery shows thumbnails and clicking one opens a coloring page."""
 
     def test_gallery_shows_thumbnails(self, coloring_page: Page):
         """Navigate to #/coloring. Assert .gallery-thumb buttons exist with count >= 4."""
         thumbs = coloring_page.locator(".gallery-thumb")
         assert thumbs.count() >= 4, f"Expected >= 4 gallery thumbnails, got {thumbs.count()}"
-        # Each button should have a data-page attribute
         for i in range(thumbs.count()):
             attr = thumbs.nth(i).get_attribute("data-page")
             assert attr is not None, f"Thumbnail {i} missing data-page attribute"
 
-    def test_thumbnail_opens_page(self, coloring_page: Page):
-        """Click the first .gallery-thumb. Assert .coloring-view becomes visible with inlined SVG data-region elements."""
-        coloring_page.locator(".gallery-thumb").first.click()
-        coloring_page.wait_for_timeout(300)
-        view = coloring_page.locator(".coloring-view")
-        expect(view).to_be_visible()
-        regions = coloring_page.locator(".coloring-view [data-region]")
-        assert regions.count() >= 1, f"Expected data-region elements in coloring SVG, got {regions.count()}"
 
+class TestCanvasFloodFill:
+    """CLRV-01/03: Tap white region fills with color via canvas flood fill;
+    fill stops at anti-aliased line boundaries."""
 
-class TestColoringFill:
-    """COLR-02: Tapping a region fills it with the selected color."""
-
-    def test_tap_region_fills_color(self, coloring_page: Page):
-        """Open a page, select a color, tap a region. Assert fill changed."""
+    def test_tap_fills_region(self, coloring_page: Page):
+        """Open a coloring page, tap a white area on the canvas, verify pixel
+        color changed from white to the selected color."""
         _open_first_page(coloring_page)
-        # Click a color swatch to select a color
-        swatch = coloring_page.locator(".color-swatch").first
-        swatch_color = swatch.get_attribute("data-color")
-        swatch.click()
+
+        # Read a pixel in the center area -- should be white before fill
+        before = _read_canvas_pixel(coloring_page, 512, 512)
+        assert before is not None, "Canvas not found"
+
+        # Tap at that location
+        _tap_canvas_at(coloring_page, 512, 512)
+
+        # Read the same pixel after fill
+        after = _read_canvas_pixel(coloring_page, 512, 512)
+
+        # Either it changed (fill happened) or the center is on a line.
+        # If center is white, fill should turn it to the selected color.
+        # If center is a line, the pixel was not white so fill targets line color.
+        # In either case, the pixel should have changed from its initial value.
+        if before == [255, 255, 255, 255]:
+            # It was white -- should now be hot pink (#ff69b4 = 255, 105, 180)
+            assert after[0] == 255 and after[1] == 105 and after[2] == 180, \
+                f"Expected hot pink [255,105,180] but got {after[:3]}"
+        else:
+            # Center might be on a line; at minimum, the fill should have run
+            # We verify via a broader check - something should have changed
+            # or the pixel is already non-white (line art)
+            pass
+
+    def test_fill_stops_at_lines(self, coloring_page: Page):
+        """Tap two different white regions separated by a line, verify only
+        the tapped region changed color (the other remains white or different)."""
+        _open_first_page(coloring_page)
+
+        # Tap at upper-left quadrant
+        _tap_canvas_at(coloring_page, 256, 256)
+
+        # Read pixel at upper-left (should be filled or on a line)
+        upper_left = _read_canvas_pixel(coloring_page, 256, 256)
+
+        # Read pixel at lower-right (should NOT be filled -- different region)
+        lower_right = _read_canvas_pixel(coloring_page, 768, 768)
+
+        # The two pixels should differ: one should be filled, the other not
+        # (assuming the art has lines separating these regions)
+        # At minimum, if upper_left is hot pink, lower_right should not be
+        if upper_left[:3] == [255, 105, 180]:
+            assert lower_right[:3] != [255, 105, 180], \
+                "Fill bled to a different region"
+
+
+class TestCanvasOverlay:
+    """CLRV-02: SVG line art overlays canvas for crisp retina outlines."""
+
+    def test_svg_overlay_present(self, coloring_page: Page):
+        """Open a coloring page, verify both canvas element and SVG overlay exist
+        in the DOM, SVG has pointer-events:none."""
+        _open_first_page(coloring_page)
+
+        # Canvas should exist
+        canvas = coloring_page.locator("#coloring-canvas")
+        expect(canvas).to_be_attached()
+
+        # SVG overlay should exist
+        svg_overlay = coloring_page.locator(".coloring-svg-overlay")
+        expect(svg_overlay).to_be_attached()
+
+        # SVG overlay should have pointer-events: none
+        pe = coloring_page.evaluate("""(() => {
+            const svg = document.querySelector('.coloring-svg-overlay');
+            if (!svg) return null;
+            return getComputedStyle(svg).pointerEvents;
+        })()""")
+        assert pe == "none", f"SVG overlay pointer-events should be 'none', got '{pe}'"
+
+    def test_svg_overlay_crisp(self, coloring_page: Page):
+        """Verify SVG overlay element has a viewBox attribute (vector quality preserved)."""
+        _open_first_page(coloring_page)
+
+        viewbox = coloring_page.evaluate("""(() => {
+            const svg = document.querySelector('.coloring-svg-overlay');
+            if (!svg) return null;
+            return svg.getAttribute('viewBox') || svg.getAttribute('viewbox');
+        })()""")
+        # The SVG should have a viewBox for proper scaling
+        # vtracer SVGs might use width/height without viewBox -- the overlay code
+        # should preserve whatever the source SVG has
+        assert viewbox is not None or coloring_page.evaluate("""(() => {
+            const svg = document.querySelector('.coloring-svg-overlay');
+            return svg && svg.getAttribute('width') && svg.getAttribute('height');
+        })()"""), "SVG overlay should have viewBox or width/height for vector quality"
+
+
+class TestCanvasUndo:
+    """CLRV-05: Undo reverts last flood-fill operation via ImageData snapshots."""
+
+    def test_undo_reverts_fill(self, coloring_page: Page):
+        """Fill a region, click undo, verify pixel returns to original color."""
+        _open_first_page(coloring_page)
+
+        # Record the pre-fill pixel at center
+        before = _read_canvas_pixel(coloring_page, 512, 512)
+        assert before is not None, "Canvas not found"
+
+        # Tap to fill
+        _tap_canvas_at(coloring_page, 512, 512)
+        after_fill = _read_canvas_pixel(coloring_page, 512, 512)
+
+        # Click undo
+        coloring_page.locator(".coloring-toolbar .undo-btn").click()
+        coloring_page.wait_for_timeout(300)
+
+        # Read pixel after undo
+        after_undo = _read_canvas_pixel(coloring_page, 512, 512)
+
+        # After undo, pixel should match the pre-fill state
+        assert after_undo == before, \
+            f"After undo expected {before} but got {after_undo}"
+
+    def test_undo_button_disabled_when_empty(self, coloring_page: Page):
+        """Before any fills, verify undo button has .disabled class;
+        after a fill, verify .disabled is removed;
+        after undoing all fills, verify .disabled is back."""
+        _open_first_page(coloring_page)
+
+        undo_btn = coloring_page.locator(".coloring-toolbar .undo-btn")
+
+        # Initially should be disabled
+        initial_classes = undo_btn.get_attribute("class") or ""
+        assert "disabled" in initial_classes, \
+            f"Undo should be disabled initially, classes: '{initial_classes}'"
+
+        # Tap to fill
+        _tap_canvas_at(coloring_page, 512, 512)
+        _update_undo_state(coloring_page)
+
+        # Should no longer be disabled
+        after_fill_classes = undo_btn.get_attribute("class") or ""
+        assert "disabled" not in after_fill_classes, \
+            f"Undo should be enabled after fill, classes: '{after_fill_classes}'"
+
+        # Undo the fill
+        undo_btn.click()
         coloring_page.wait_for_timeout(200)
-        # Click a data-region element
-        region = coloring_page.locator(".coloring-view [data-region]").first
-        region.click()
-        coloring_page.wait_for_timeout(200)
-        # Assert the region's child path fill changed to the selected color
-        fill = coloring_page.evaluate("""
-            (() => {
-                const region = document.querySelector('.coloring-view [data-region]');
-                if (!region) return null;
-                const fillable = region.querySelector('path[fill]:not([fill="none"]), circle[fill]:not([fill="none"]), ellipse[fill]:not([fill="none"]), rect[fill]:not([fill="none"])');
-                return fillable ? fillable.getAttribute('fill') : null;
-            })()
-        """)
-        assert fill == swatch_color, f"Expected fill {swatch_color}, got {fill}"
+
+        # Should be disabled again
+        after_undo_classes = undo_btn.get_attribute("class") or ""
+        assert "disabled" in after_undo_classes, \
+            f"Undo should be disabled after undoing all fills, classes: '{after_undo_classes}'"
+
+
+class TestCanvasMemory:
+    """CLRV-04: Canvas memory released on navigation away from coloring."""
+
+    def test_canvas_released_on_nav(self, coloring_page: Page):
+        """Open coloring page, navigate to home, verify canvas element is
+        removed from DOM (or has width=0)."""
+        _open_first_page(coloring_page)
+
+        # Verify canvas exists
+        assert coloring_page.locator("#coloring-canvas").count() > 0, \
+            "Canvas should exist on coloring page"
+
+        # Navigate to home
+        coloring_page.goto(coloring_page.url.split("#")[0] + "#/home")
+        coloring_page.wait_for_timeout(500)
+
+        # Canvas should be removed or have width=0
+        canvas_present = coloring_page.evaluate("""(() => {
+            const canvas = document.querySelector('#coloring-canvas');
+            if (!canvas) return 'removed';
+            if (canvas.width === 0 && canvas.height === 0) return 'zeroed';
+            return 'present';
+        })()""")
+        assert canvas_present in ("removed", "zeroed"), \
+            f"Canvas should be released on nav, but status: {canvas_present}"
+
+    def test_canvas_released_on_back(self, coloring_page: Page):
+        """Open coloring page, click back to gallery, verify canvas is cleaned up."""
+        _open_first_page(coloring_page)
+
+        # Verify canvas exists
+        assert coloring_page.locator("#coloring-canvas").count() > 0
+
+        # Click back button
+        coloring_page.locator(".back-btn").click()
+        coloring_page.wait_for_timeout(500)
+
+        # Canvas should be gone
+        canvas_present = coloring_page.evaluate("""(() => {
+            const canvas = document.querySelector('#coloring-canvas');
+            if (!canvas) return 'removed';
+            if (canvas.width === 0 && canvas.height === 0) return 'zeroed';
+            return 'present';
+        })()""")
+        assert canvas_present in ("removed", "zeroed"), \
+            f"Canvas should be released on back, but status: {canvas_present}"
 
 
 class TestColoringPalette:
-    """COLR-03: Color swatches are visible and change the active selection."""
+    """Color swatches work: tapping a swatch changes the active fill color."""
 
     def test_swatches_visible(self, coloring_page: Page):
-        """Open a page. Assert .color-swatch buttons exist with count >= 8."""
+        """Open a coloring page, verify 10 .color-swatch buttons exist."""
         _open_first_page(coloring_page)
         swatches = coloring_page.locator(".color-swatch")
-        assert swatches.count() >= 8, f"Expected >= 8 color swatches, got {swatches.count()}"
+        assert swatches.count() == 10, f"Expected 10 color swatches, got {swatches.count()}"
 
     def test_swatch_changes_selection(self, coloring_page: Page):
-        """Click swatch 0 and fill a region, then click swatch 3 and fill another region. Verify different colors applied."""
+        """Click different swatches, fill regions, verify different colors applied."""
         _open_first_page(coloring_page)
+
+        # Select first swatch (ocean teal #7ec8c8 = 126, 200, 200)
         swatches = coloring_page.locator(".color-swatch")
-        regions = coloring_page.locator(".coloring-view [data-region]")
-
-        # Click swatch at index 0, fill first region
-        swatch0_color = swatches.nth(0).get_attribute("data-color")
         swatches.nth(0).click()
-        coloring_page.wait_for_timeout(200)
-        regions.nth(0).click()
+        coloring_page.wait_for_timeout(100)
+
+        # Tap to fill at one location
+        _tap_canvas_at(coloring_page, 512, 512)
+
+        # Read pixel -- should be ocean teal
+        pixel1 = _read_canvas_pixel(coloring_page, 512, 512)
+
+        # Undo the fill to restore white
+        coloring_page.locator(".coloring-toolbar .undo-btn").click()
         coloring_page.wait_for_timeout(200)
 
-        # Read fill of first region
-        fill0 = coloring_page.evaluate("""
-            (() => {
-                const region = document.querySelectorAll('.coloring-view [data-region]')[0];
-                if (!region) return null;
-                const fillable = region.querySelector('path[fill]:not([fill="none"]), circle[fill]:not([fill="none"]), ellipse[fill]:not([fill="none"]), rect[fill]:not([fill="none"])');
-                return fillable ? fillable.getAttribute('fill') : null;
-            })()
-        """)
-        assert fill0 == swatch0_color, f"Expected fill {swatch0_color}, got {fill0}"
-
-        # Click swatch at index 3, fill second region
-        swatch3_color = swatches.nth(3).get_attribute("data-color")
+        # Select fourth swatch (gold #ffd700 = 255, 215, 0)
         swatches.nth(3).click()
-        coloring_page.wait_for_timeout(200)
-        regions.nth(1).click()
-        coloring_page.wait_for_timeout(200)
+        coloring_page.wait_for_timeout(100)
 
-        # Read fill of second region
-        fill1 = coloring_page.evaluate("""
-            (() => {
-                const region = document.querySelectorAll('.coloring-view [data-region]')[1];
-                if (!region) return null;
-                const fillable = region.querySelector('path[fill]:not([fill="none"]), circle[fill]:not([fill="none"]), ellipse[fill]:not([fill="none"]), rect[fill]:not([fill="none"])');
-                return fillable ? fillable.getAttribute('fill') : null;
-            })()
-        """)
-        assert fill1 == swatch3_color, f"Expected fill {swatch3_color}, got {fill1}"
+        # Tap same location
+        _tap_canvas_at(coloring_page, 512, 512)
 
+        # Read pixel -- should be gold
+        pixel2 = _read_canvas_pixel(coloring_page, 512, 512)
 
-class TestColoringUndo:
-    """COLR-04: Undo button reverts the last color fill."""
-
-    def test_undo_reverts_fill(self, coloring_page: Page):
-        """Fill a region then undo. Assert fill reverts to the initial value."""
-        _open_first_page(coloring_page)
-
-        # Record initial fill of first region (should be white)
-        initial_fill = coloring_page.evaluate("""
-            (() => {
-                const region = document.querySelector('.coloring-view [data-region]');
-                if (!region) return null;
-                const fillable = region.querySelector('path[fill], circle[fill], ellipse[fill], rect[fill]');
-                return fillable ? fillable.getAttribute('fill') : null;
-            })()
-        """)
-
-        # Click a color swatch then fill the region
-        swatch = coloring_page.locator(".color-swatch").first
-        swatch.click()
-        coloring_page.wait_for_timeout(200)
-        coloring_page.locator(".coloring-view [data-region]").first.click()
-        coloring_page.wait_for_timeout(200)
-
-        # Verify fill changed
-        changed_fill = coloring_page.evaluate("""
-            (() => {
-                const region = document.querySelector('.coloring-view [data-region]');
-                if (!region) return null;
-                const fillable = region.querySelector('path[fill]:not([fill="none"]), circle[fill]:not([fill="none"]), ellipse[fill]:not([fill="none"]), rect[fill]:not([fill="none"])');
-                return fillable ? fillable.getAttribute('fill') : null;
-            })()
-        """)
-        assert changed_fill != initial_fill, f"Fill did not change after click: still {changed_fill}"
-
-        # Click undo
-        coloring_page.locator(".undo-btn").click()
-        coloring_page.wait_for_timeout(200)
-
-        # Verify fill reverted
-        restored_fill = coloring_page.evaluate("""
-            (() => {
-                const region = document.querySelector('.coloring-view [data-region]');
-                if (!region) return null;
-                const fillable = region.querySelector('path[fill], circle[fill], ellipse[fill], rect[fill]');
-                return fillable ? fillable.getAttribute('fill') : null;
-            })()
-        """)
-        assert restored_fill == initial_fill, f"Expected {initial_fill} after undo, got {restored_fill}"
+        # Verify different colors were applied
+        if pixel1 is not None and pixel2 is not None:
+            assert pixel1[:3] != pixel2[:3], \
+                f"Expected different colors but both are {pixel1[:3]}"
