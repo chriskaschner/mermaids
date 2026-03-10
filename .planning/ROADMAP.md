@@ -22,7 +22,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 
 - [x] **Phase 4: Art Pipeline** - Generate kawaii mermaid SVG assets via OpenAI gpt-image-1 and vtracer
 - [x] **Phase 5: Flood-Fill Coloring** - Replace region-based coloring with canvas flood fill and SVG overlay
-- [ ] **Phase 6: Dress-Up Art Swap** - Replace hand-crafted mermaid with AI-generated kawaii art and variants
+- [x] **Phase 6: Dress-Up Art Swap** - Replace hand-crafted mermaid with AI-generated kawaii art and variants
 - [ ] **Phase 7: GitHub Pages Deployment** - Deploy static site with relative paths, accessible on iPad
 
 ## Phase Details
@@ -69,8 +69,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 06-01-PLAN.md -- Asset pipeline: deploy variant SVGs to frontend, strip background rects, regenerate mermaid.svg (DRSV-01, DRSV-02)
-- [ ] 06-02-PLAN.md -- Frontend art swap: async preview thumbnails, color sync, relative paths, E2E tests (DRSV-01, DRSV-02, DRSV-03)
+- [x] 06-01-PLAN.md -- Asset pipeline: deploy variant SVGs to frontend, strip background rects, regenerate mermaid.svg (DRSV-01, DRSV-02)
+- [x] 06-02-PLAN.md -- Frontend art swap: async preview thumbnails, color sync, relative paths, E2E tests (DRSV-01, DRSV-02, DRSV-03)
 
 ### Phase 7: GitHub Pages Deployment
 **Goal**: The app is live on GitHub Pages and usable on her iPad without running a local server
@@ -93,5 +93,5 @@ Plans:
 | 3. Coloring | v1.0 | 2/2 | Complete | 2026-03-09 |
 | 4. Art Pipeline | v1.1 | 2/2 | Complete | 2026-03-10 |
 | 5. Flood-Fill Coloring | v1.1 | 2/2 | Complete | 2026-03-10 |
-| 6. Dress-Up Art Swap | v1.1 | 0/2 | Not started | - |
+| 6. Dress-Up Art Swap | v1.1 | 2/2 | Complete | 2026-03-10 |
 | 7. GitHub Pages Deployment | v1.1 | 0/? | Not started | - |

@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Art & Deploy
 status: in-progress
-stopped_at: Completed 06-01-PLAN.md
-last_updated: "2026-03-10T02:43:17.348Z"
-last_activity: 2026-03-10 -- Completed 06-01 deploy AI-generated kawaii SVGs to frontend
+stopped_at: Completed 06-02-PLAN.md
+last_updated: "2026-03-10T02:50:32Z"
+last_activity: 2026-03-10 -- Completed 06-02 async preview thumbnails with color sync
 progress:
   total_phases: 4
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 6
-  completed_plans: 5
-  percent: 83
+  completed_plans: 6
+  percent: 100
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-09)
 
 **Core value:** A 6-year-old can open this on an iPad, build her own mermaid, and color mermaid pages -- with zero friction and pure delight.
-**Current focus:** Phase 6 in progress -- Dress-Up Art Swap (deploy AI SVGs to frontend)
+**Current focus:** Phase 6 complete -- Dress-Up Art Swap (all AI SVGs deployed and wired)
 
 ## Current Position
 
 Phase: 6 of 7 (Dress-Up Art Swap)
-Plan: 1 of 2 complete
-Status: Phase 6 In Progress
-Last activity: 2026-03-10 -- Completed 06-01 deploy AI-generated kawaii SVGs to frontend
+Plan: 2 of 2 complete
+Status: Phase 6 Complete
+Last activity: 2026-03-10 -- Completed 06-02 async preview thumbnails with color sync
 
-Progress: [████████░░] 83%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -49,6 +49,7 @@ Progress: [████████░░] 83%
 | 5 Plan 01 | 1 | 4min | 4 min |
 | 5 Plan 02 | 1 | 6min | 6 min |
 | 6 Plan 01 | 1 | 3min | 3 min |
+| 6 Plan 02 | 1 | 5min | 5 min |
 | 4-7 (v1.1) | - | - | - |
 
 *Updated after each plan completion*
@@ -81,6 +82,9 @@ Recent decisions affecting current work:
 - Undo button starts .disabled, toggled after each fill/undo (05-02)
 - Near-white background detection uses RGB >= 0xF0 threshold, not prefix match (06-01)
 - Only 2/9 traced SVGs had near-white bg rects; dark first paths are real content (06-01)
+- Preview SVG cache stores original text, colors applied to DOM after insertion -- cache never needs clearing (06-02)
+- acc-none keeps inline X icon since no traced SVG exists for "no accessory" (06-02)
+- Relative asset paths (no leading /) for GitHub Pages deployment compatibility (06-02)
 
 ### Pending Todos
 
@@ -95,6 +99,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-10T02:42:30Z
-Stopped at: Completed 06-01-PLAN.md
-Resume file: .planning/phases/06-dress-up-art-swap/06-01-SUMMARY.md
+Last session: 2026-03-10T02:50:32Z
+Stopped at: Completed 06-02-PLAN.md
+Resume file: .planning/phases/06-dress-up-art-swap/06-02-SUMMARY.md

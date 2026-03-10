@@ -26,7 +26,7 @@ Requirements for v1.1 Art & Deploy milestone. Each maps to roadmap phases.
 
 - [x] **DRSV-01**: Dress-up mermaid uses AI-generated kawaii art (replaces hand-crafted SVG)
 - [x] **DRSV-02**: SVG defs+use variant swap works with new AI-generated part assets
-- [ ] **DRSV-03**: Color recoloring works on kawaii flat-color style parts
+- [x] **DRSV-03**: Color recoloring works on kawaii flat-color style parts
 
 ### Deployment
 
@@ -98,7 +98,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CLRV-05 | Phase 5 | Complete |
 | DRSV-01 | Phase 6 | Complete |
 | DRSV-02 | Phase 6 | Complete |
-| DRSV-03 | Phase 6 | Pending |
+| DRSV-03 | Phase 6 | Complete |
 | DPLY-01 | Phase 7 | Pending |
 | DPLY-02 | Phase 7 | Pending |
 | DPLY-03 | Phase 7 | Pending |
