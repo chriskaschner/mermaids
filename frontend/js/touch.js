@@ -5,7 +5,7 @@
  * triggering sparkle feedback and a brief opacity pulse.
  */
 
-import { triggerSparkle } from "./sparkle.js";
+import { triggerSparkle } from "./sparkle.js?v=13";
 
 const PULSE_DURATION_MS = 200;
 

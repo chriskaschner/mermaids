@@ -4,8 +4,8 @@
  * Routes: #/home (default), #/dressup, #/coloring
  */
 
-import { initTouch } from "./touch.js";
-import { initDressUp, resetState } from "./dressup.js";
+import { initTouch } from "./touch.js?v=13";
+import { initDressUp, resetState } from "./dressup.js?v=13";
 import {
   COLORING_PAGES,
   COLORS,
@@ -19,7 +19,7 @@ import {
   releaseCanvas,
   setSelectedColor,
   getSelectedColor,
-} from "./coloring.js";
+} from "./coloring.js?v=13";
 
 const appEl = () => document.getElementById("app");
 
