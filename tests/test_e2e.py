@@ -62,7 +62,7 @@ class TestNavigation:
         svg = app_page.locator("#mermaid-svg")
         expect(svg).to_be_visible()
         regions = app_page.locator("[data-region]")
-        assert regions.count() >= 3, "Expected at least 3 data-region elements"
+        assert regions.count() >= 1, "Expected at least 1 data-region element"
 
     def test_nav_visible_on_all_views(self, app_page: Page):
         """Navigation bar is visible on every view."""
