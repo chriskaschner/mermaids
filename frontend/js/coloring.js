@@ -265,10 +265,26 @@ export function _setTestCanvas(canvas, ctx) {
 
 /**
  * Paint a filled circle at the given canvas coordinates using the selected color.
+ *
+ * Uses horizontal 1px-tall fillRect scanlines instead of arc() to avoid
+ * anti-aliased fringe pixels that cause white halos when flood-filling later.
  */
 function _paintCircle(x, y) {
+  const cx = Math.round(x);
+  const cy = Math.round(y);
+  const r = BRUSH_RADIUS;
+  const r2 = r * r;
+
   _ctx.fillStyle = state.selectedColor;
-  _ctx.beginPath();
-  _ctx.arc(x, y, BRUSH_RADIUS, 0, Math.PI * 2);
-  _ctx.fill();
+
+  for (let dy = -r; dy <= r; dy++) {
+    const py = cy + dy;
+    if (py < 0 || py >= CANVAS_SIZE) continue;
+    const maxDx = Math.floor(Math.sqrt(r2 - dy * dy));
+    const left = Math.max(0, cx - maxDx);
+    const right = Math.min(CANVAS_SIZE, cx + maxDx + 1);
+    if (right > left) {
+      _ctx.fillRect(left, py, right - left, 1);
+    }
+  }
 }

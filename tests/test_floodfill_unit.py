@@ -106,8 +106,8 @@ class TestFloodFillBasic:
                 }
                 const imageData = new ImageData(data, w, h);
 
-                // Fill center (5,5) with hot pink
-                mod.floodFill(imageData, 5, 5, '#ff69b4', 32);
+                // Fill center (5,5) with hot pink (maxFillRatio=1 to avoid leak guard on tiny canvas)
+                mod.floodFill(imageData, 5, 5, '#ff69b4', 32, 1.0);
 
                 // Check center pixel is hot pink
                 const ci = (5 * w + 5) * 4;
@@ -148,8 +148,8 @@ class TestFloodFillBasic:
                 }
                 const imageData = new ImageData(data, w, h);
 
-                // Fill at (2, 5) -- left side of the gray line
-                mod.floodFill(imageData, 2, 5, '#ff69b4', 32);
+                // Fill at (2, 5) -- left side of the gray line (maxFillRatio=1 to avoid leak guard on tiny canvas)
+                mod.floodFill(imageData, 2, 5, '#ff69b4', 32, 1.0);
 
                 // Left side pixel should be filled
                 const li = (5 * w + 2) * 4;
@@ -361,21 +361,19 @@ class TestColoringUndoStack:
         result = js_page.evaluate("""
             (async () => {
                 const mod = await import('./js/coloring.js');
-                // Set up a small test canvas
+                // 100x100 canvas with small white patch so fill stays under 25% leak guard
                 const canvas = document.createElement('canvas');
-                canvas.width = 10;
-                canvas.height = 10;
+                canvas.width = 100;
+                canvas.height = 100;
                 const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(0, 0, 100, 100);
                 ctx.fillStyle = '#ffffff';
-                ctx.fillRect(0, 0, 10, 10);
+                ctx.fillRect(45, 45, 10, 10);
                 document.body.appendChild(canvas);
 
-                // Use internal setup -- we need to call _setCanvasForTest
-                // Actually, we test via the public API by calling initColoringCanvas
-                // But that loads an SVG. Instead, test the module's exported state.
-                // We will test via a different approach: directly manipulate
                 mod._setTestCanvas(canvas, ctx);
-                mod.handleCanvasTap(5, 5);
+                mod.handleCanvasTap(50, 50);
                 const canUndoAfter = mod.canUndo();
                 mod.releaseCanvas();
                 return canUndoAfter;
@@ -388,31 +386,34 @@ class TestColoringUndoStack:
         result = js_page.evaluate("""
             (async () => {
                 const mod = await import('./js/coloring.js');
+                // 100x100 canvas with small white patch so fill stays under 25% leak guard
                 const canvas = document.createElement('canvas');
-                canvas.width = 10;
-                canvas.height = 10;
+                canvas.width = 100;
+                canvas.height = 100;
                 const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(0, 0, 100, 100);
                 ctx.fillStyle = '#ffffff';
-                ctx.fillRect(0, 0, 10, 10);
+                ctx.fillRect(45, 45, 10, 10);
                 document.body.appendChild(canvas);
 
                 mod._setTestCanvas(canvas, ctx);
 
                 // Record pre-fill pixel
-                const before = ctx.getImageData(5, 5, 1, 1).data;
+                const before = ctx.getImageData(50, 50, 1, 1).data;
                 const beforeColor = [before[0], before[1], before[2]];
 
                 // Fill with hot pink
                 mod.setSelectedColor('#ff69b4');
-                mod.handleCanvasTap(5, 5);
+                mod.handleCanvasTap(50, 50);
 
                 // Verify it changed
-                const afterFill = ctx.getImageData(5, 5, 1, 1).data;
+                const afterFill = ctx.getImageData(50, 50, 1, 1).data;
                 const afterColor = [afterFill[0], afterFill[1], afterFill[2]];
 
                 // Undo
                 mod.undo();
-                const afterUndo = ctx.getImageData(5, 5, 1, 1).data;
+                const afterUndo = ctx.getImageData(50, 50, 1, 1).data;
                 const undoColor = [afterUndo[0], afterUndo[1], afterUndo[2]];
 
                 mod.releaseCanvas();
@@ -428,12 +429,11 @@ class TestColoringUndoStack:
         result = js_page.evaluate("""
             (async () => {
                 const mod = await import('./js/coloring.js');
+                // 100x100 canvas with small white patch so fill stays under 25% leak guard
                 const canvas = document.createElement('canvas');
-                canvas.width = 10;
-                canvas.height = 10;
+                canvas.width = 100;
+                canvas.height = 100;
                 const ctx = canvas.getContext('2d', { willReadFrequently: true });
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(0, 0, 10, 10);
                 document.body.appendChild(canvas);
 
                 mod._setTestCanvas(canvas, ctx);
@@ -442,10 +442,12 @@ class TestColoringUndoStack:
                 const colors = ['#ff69b4', '#7ec8c8'];
                 for (let i = 0; i < 35; i++) {
                     mod.setSelectedColor(colors[i % 2]);
-                    // Reset canvas to white before each fill so fill actually does something
+                    // Reset canvas: black bg with small white patch so fill works
+                    ctx.fillStyle = '#000000';
+                    ctx.fillRect(0, 0, 100, 100);
                     ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(0, 0, 10, 10);
-                    mod.handleCanvasTap(5, 5);
+                    ctx.fillRect(45, 45, 10, 10);
+                    mod.handleCanvasTap(50, 50);
                 }
 
                 // Count how many undos we can do
@@ -491,16 +493,19 @@ class TestReleaseCanvas:
         result = js_page.evaluate("""
             (async () => {
                 const mod = await import('./js/coloring.js');
+                // 100x100 canvas with small white patch so fill stays under 25% leak guard
                 const canvas = document.createElement('canvas');
-                canvas.width = 10;
-                canvas.height = 10;
+                canvas.width = 100;
+                canvas.height = 100;
                 const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(0, 0, 100, 100);
                 ctx.fillStyle = '#ffffff';
-                ctx.fillRect(0, 0, 10, 10);
+                ctx.fillRect(45, 45, 10, 10);
                 document.body.appendChild(canvas);
 
                 mod._setTestCanvas(canvas, ctx);
-                mod.handleCanvasTap(5, 5);
+                mod.handleCanvasTap(50, 50);
                 // Should have undo entry
                 const beforeRelease = mod.canUndo();
                 mod.releaseCanvas();
@@ -510,3 +515,63 @@ class TestReleaseCanvas:
         """)
         assert result["beforeRelease"] is True
         assert result["afterRelease"] is False
+
+
+class TestBrushThenFillNoHalo:
+    """Painting a brush circle then flood-filling must not leave white fringe pixels."""
+
+    def test_no_white_halo_after_brush_then_fill(self, js_page: Page):
+        """Paint a brush dot on white canvas, then fill the surrounding white area
+        with the same color. Every non-white pixel should be the fill color --
+        no anti-aliased fringe pixels should remain."""
+        result = js_page.evaluate("""
+            (async () => {
+                const mod = await import('./js/coloring.js');
+                const SIZE = 200;
+                const canvas = document.createElement('canvas');
+                canvas.width = SIZE;
+                canvas.height = SIZE;
+                const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, SIZE, SIZE);
+                document.body.appendChild(canvas);
+
+                mod._setTestCanvas(canvas, ctx);
+                mod.setSelectedColor('#ff69b4');
+
+                // Paint a brush dot in the center
+                mod.strokeStart(100, 100);
+                mod.strokeEnd();
+
+                // Now fill the white area around the dot with the same color
+                mod.handleCanvasTap(5, 5);
+
+                // Scan all pixels: every pixel should be either
+                // exactly #ff69b4 (255,105,180) or exactly white (255,255,255 -- only if unreachable)
+                // There should be NO intermediate/fringe pixels.
+                const imgData = ctx.getImageData(0, 0, SIZE, SIZE);
+                const d = imgData.data;
+                let fringeCount = 0;
+                let fringeExamples = [];
+                for (let i = 0; i < d.length; i += 4) {
+                    const r = d[i], g = d[i+1], b = d[i+2];
+                    const isWhite = (r === 255 && g === 255 && b === 255);
+                    const isPink = (r === 255 && g === 105 && b === 180);
+                    if (!isWhite && !isPink) {
+                        fringeCount++;
+                        if (fringeExamples.length < 5) {
+                            const px = (i / 4) % SIZE;
+                            const py = Math.floor((i / 4) / SIZE);
+                            fringeExamples.push({x: px, y: py, r, g, b});
+                        }
+                    }
+                }
+
+                mod.releaseCanvas();
+                return { fringeCount, fringeExamples };
+            })()
+        """)
+        assert result["fringeCount"] == 0, (
+            f"Found {result['fringeCount']} fringe pixels (white halo). "
+            f"Examples: {result['fringeExamples']}"
+        )
