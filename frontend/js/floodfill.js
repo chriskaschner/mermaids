@@ -36,9 +36,8 @@ export function hexToRgb(hex) {
  * @param {number} startY - Y coordinate of fill start point
  * @param {string} fillColor - Hex color to fill with (e.g. "#ff69b4")
  * @param {number} tolerance - Per-channel tolerance (0-255), default 32
- * @param {number} [maxFillRatio=0.25] - Max fraction of canvas pixels to fill (leak guard)
  */
-export function floodFill(imageData, startX, startY, fillColor, tolerance, maxFillRatio = 0.25) {
+export function floodFill(imageData, startX, startY, fillColor, tolerance) {
   const { data, width, height } = imageData;
 
   // Bounds check
@@ -84,13 +83,6 @@ export function floodFill(imageData, startX, startY, fillColor, tolerance, maxFi
     );
   }
 
-  // Pixel budget: abort fill if it exceeds maxFillRatio of total pixels
-  // (indicates a leak through an open path). Save original data to restore.
-  const totalPixels = width * height;
-  const pixelBudget = Math.floor(totalPixels * maxFillRatio);
-  let filledCount = 0;
-  const backup = new Uint8ClampedArray(data);
-
   // Scanline stack: each entry is [x, y]
   const stack = [[startX, startY]];
 
@@ -123,13 +115,6 @@ export function floodFill(imageData, startX, startY, fillColor, tolerance, maxFi
       data[i + 2] = fb;
       data[i + 3] = 255;
       visited[pixIdx] = 1;
-      filledCount++;
-
-      // Leak guard: if we've filled too many pixels, revert everything
-      if (filledCount > pixelBudget) {
-        data.set(backup);
-        return;
-      }
 
       // Check pixel above
       if (y > 0) {

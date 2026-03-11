@@ -9,7 +9,7 @@
  * Previews are fetched from individual traced SVGs and shown at 48x48.
  */
 
-import { triggerCelebration } from "./sparkle.js?v=13";
+import { triggerCelebration } from "./sparkle.js?v=14";
 
 // Character variant definitions -- each is a complete character
 export const PARTS = {

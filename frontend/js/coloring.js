@@ -10,7 +10,7 @@
  * Undo via ImageData snapshots (capped at MAX_UNDO).
  */
 
-import { floodFill, hexToRgb } from "./floodfill.js?v=13";
+import { floodFill, hexToRgb } from "./floodfill.js?v=14";
 
 // -- Constants ----------------------------------------------------------------
 

@@ -106,8 +106,8 @@ class TestFloodFillBasic:
                 }
                 const imageData = new ImageData(data, w, h);
 
-                // Fill center (5,5) with hot pink (maxFillRatio=1 to avoid leak guard on tiny canvas)
-                mod.floodFill(imageData, 5, 5, '#ff69b4', 32, 1.0);
+                // Fill center (5,5) with hot pink
+                mod.floodFill(imageData, 5, 5, '#ff69b4', 32);
 
                 // Check center pixel is hot pink
                 const ci = (5 * w + 5) * 4;
@@ -148,8 +148,8 @@ class TestFloodFillBasic:
                 }
                 const imageData = new ImageData(data, w, h);
 
-                // Fill at (2, 5) -- left side of the gray line (maxFillRatio=1 to avoid leak guard on tiny canvas)
-                mod.floodFill(imageData, 2, 5, '#ff69b4', 32, 1.0);
+                // Fill at (2, 5) -- left side of the gray line
+                mod.floodFill(imageData, 2, 5, '#ff69b4', 32);
 
                 // Left side pixel should be filled
                 const li = (5 * w + 2) * 4;
