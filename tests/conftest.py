@@ -1,5 +1,6 @@
 """Shared test fixtures for FastAPI and Playwright."""
 
+import os
 import socket
 import threading
 
@@ -28,8 +29,16 @@ def _get_free_port() -> int:
 def live_server():
     """Start a uvicorn server in a background thread for E2E tests.
 
+    If BASE_URL env var is set, yields it directly (for CI static server testing).
+    Otherwise starts uvicorn as usual (for local development).
+
     Returns the base URL (e.g., http://127.0.0.1:PORT).
     """
+    base_url = os.environ.get("BASE_URL")
+    if base_url:
+        yield base_url
+        return
+
     port = _get_free_port()
     config = uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning")
     server = uvicorn.Server(config)
