@@ -313,6 +313,101 @@ async function openColoringPage(pageId) {
   }
 }
 
+// -- Debug overlay -----------------------------------------------------------
+
+/**
+ * Diagnostic overlay for iPad Safari event debugging.
+ * Activated via ?debug=1 query param or triple-tap on home nav icon.
+ * Shows the last 15 touch/click/pointerdown event targets in real-time.
+ * Remove this section once DPLY-03 is resolved on real device.
+ */
+function _initDebug() {
+  // Remove any existing overlay
+  const existing = document.getElementById("debug-overlay");
+  if (existing) {
+    existing.remove();
+    return; // toggle off if already visible
+  }
+
+  const overlay = document.createElement("div");
+  overlay.id = "debug-overlay";
+  Object.assign(overlay.style, {
+    position: "fixed",
+    top: "0",
+    left: "0",
+    width: "100%",
+    maxHeight: "30%",
+    overflowY: "auto",
+    background: "rgba(0,0,0,0.85)",
+    color: "#0f0",
+    fontFamily: "monospace",
+    fontSize: "11px",
+    padding: "8px",
+    zIndex: "9999",
+    pointerEvents: "none",
+  });
+
+  const closeBtn = document.createElement("button");
+  closeBtn.textContent = "X";
+  Object.assign(closeBtn.style, {
+    position: "absolute",
+    top: "4px",
+    right: "4px",
+    background: "rgba(255,255,255,0.2)",
+    color: "#fff",
+    border: "none",
+    borderRadius: "4px",
+    padding: "2px 6px",
+    cursor: "pointer",
+    pointerEvents: "auto",
+    fontSize: "11px",
+  });
+  closeBtn.addEventListener("click", () => overlay.remove());
+  overlay.appendChild(closeBtn);
+
+  const log = document.createElement("div");
+  log.id = "debug-log";
+  overlay.appendChild(log);
+
+  document.body.appendChild(overlay);
+
+  const events = [];
+
+  function _logEvent(type, target) {
+    const tag = target.tagName || "?";
+    const cls = (target.className && typeof target.className === "string")
+      ? target.className.trim().replace(/\s+/g, ".")
+      : "";
+    const id = target.id || "-";
+    const closestInteractive = target.closest
+      ? (target.closest("button,a")?.tagName || "none")
+      : "?";
+    const entry = `[${type}] ${tag}${cls ? "." + cls : ""} id=${id} closest=${closestInteractive}`;
+    events.unshift(entry);
+    if (events.length > 15) events.pop();
+    log.textContent = events.join("\n");
+  }
+
+  ["click", "pointerdown", "touchstart"].forEach((type) => {
+    document.addEventListener(type, (e) => {
+      _logEvent(type, e.target);
+    }, { capture: true });
+  });
+
+  window.addEventListener("error", (e) => {
+    _logEvent("ERROR", { tagName: "window", className: "", id: "-", closest: null });
+    events.unshift("[onerror] " + (e.message || "unknown"));
+    if (events.length > 15) events.pop();
+    log.textContent = events.join("\n");
+  });
+
+  window.addEventListener("unhandledrejection", (e) => {
+    events.unshift("[unhandledrejection] " + (e.reason || "unknown"));
+    if (events.length > 15) events.pop();
+    log.textContent = events.join("\n");
+  });
+}
+
 // -- Router ------------------------------------------------------------------
 
 const routes = {
@@ -346,6 +441,29 @@ function router() {
 
 window.addEventListener("hashchange", router);
 window.addEventListener("DOMContentLoaded", () => {
+  // Activate debug overlay via ?debug=1 query param
+  if (window.location.search.includes("debug=1")) {
+    _initDebug();
+  }
+
+  // Wire triple-tap on home nav icon to toggle debug overlay
+  const homeNavIcon = document.querySelector(".nav-icon[data-view='home']");
+  if (homeNavIcon) {
+    let tapCount = 0;
+    let tapTimer = null;
+    homeNavIcon.addEventListener("click", () => {
+      tapCount += 1;
+      if (tapCount === 3) {
+        tapCount = 0;
+        clearTimeout(tapTimer);
+        _initDebug();
+      } else {
+        clearTimeout(tapTimer);
+        tapTimer = setTimeout(() => { tapCount = 0; }, 1000);
+      }
+    }, { capture: true });
+  }
+
   if (!window.location.hash) {
     window.location.hash = "#/home";
   } else {
