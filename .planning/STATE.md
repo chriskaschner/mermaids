@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Art & Deploy
-status: completed
-stopped_at: Completed 07-04-PLAN.md -- DPLY-03 verified on real iPad Safari, HTTPS enforcement enabled, Phase 7 complete
-last_updated: "2026-03-12T13:45:33.904Z"
-last_activity: 2026-03-12 -- Completed 07-04 gap closure; DPLY-03 verified on real iPad Safari, HTTPS enforcement enabled
+status: archived
+stopped_at: Milestone v1.1 completed and archived
+last_updated: "2026-03-12"
+last_activity: 2026-03-12 -- Milestone v1.1 archived
 progress:
   total_phases: 4
   completed_phases: 4
@@ -18,96 +18,21 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-09)
+See: .planning/PROJECT.md (updated 2026-03-12)
 
 **Core value:** A 6-year-old can open this on an iPad, build her own mermaid, and color mermaid pages -- with zero friction and pure delight.
-**Current focus:** v1.1 Art & Deploy milestone complete -- all phases done, app live at https://mermaids.chriskaschner.com
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 7 of 7 (GitHub Pages Deployment)
-Plan: 4 of 4 executed (all requirements satisfied)
-Status: Phase 7 complete -- all gaps closed, DPLY-03 satisfied
-Last activity: 2026-03-12 -- Completed 07-04 gap closure; DPLY-03 verified on real iPad Safari, HTTPS enforcement enabled
-
-Progress: [██████████] 100%
-
-## Verification Gaps
-
-None -- all gaps closed.
-
-## Performance Metrics
-
-**Velocity:**
-- Total plans completed: 7 (v1.0)
-- Average duration: ~15 min (v1.0)
-- Total execution time: ~1.8 hours (v1.0)
-
-**By Phase:**
-
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| 1-3 (v1.0) | 7 | ~1.8h | ~15 min |
-| 4 Plan 01 | 1 | 4min | 4 min |
-| 4 Plan 02 | 1 | 5min | 5 min |
-| 5 Plan 01 | 1 | 4min | 4 min |
-| 5 Plan 02 | 1 | 6min | 6 min |
-| 6 Plan 01 | 1 | 3min | 3 min |
-| 6 Plan 02 | 1 | 5min | 5 min |
-| 7 Plan 01 | 1 | 8min | 8 min |
-| 7 Plan 02 | 1 | ~15min | ~15 min |
-| 4-7 (v1.1) | - | - | - |
-
-*Updated after each plan completion*
-| Phase 07 P02 | 15min | 3 tasks | 1 files |
-| Phase 07 P03 | 5min | 2 tasks | 3 files |
-| Phase 07 P04 | 5min | 2 tasks | 0 files |
+Milestone v1.1 Art & Deploy archived. App live at https://mermaids.chriskaschner.com.
+Next step: `/gsd:new-milestone` to define v1.2 or v2.0.
 
 ## Accumulated Context
 
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
-
-- Use gpt-image-1 (DALL-E 3 deprecated May 2026)
-- Canvas+SVG hybrid for coloring (canvas for flood fill, SVG overlay for crisp lines)
-- Single shared canvas, release on navigation (iPad Safari memory limits)
-- Edit API with masks for dress-up variant consistency
-- Relative asset paths required for GitHub Pages
-- retry_api_call wraps RateLimitError and APIError with exponential backoff (04-01)
-- Module-level cached OpenAI client via _get_client() (04-01)
-- Pipeline module pattern: config.py constants, prompts.py templates, generate.py API calls (04-01)
-- Separate _get_client() in edit.py for independent mocking (04-02)
-- Skip watercolor filter for kawaii style -- flat cell-shaded output (04-02)
-- Body/face hardcoded in SVG assembly; only tail/hair/acc vary (04-02)
-- Variant groups get scale transform (400/1024, 700/1024) for viewBox mapping (04-02)
-- _setTestCanvas helper for unit testing canvas module without SVG loading (05-01)
-- FILL_TOLERANCE=32 for vtracer anti-aliased edge detection (05-01)
-- CANVAS_SIZE=1024: fills don't need retina, SVG overlay handles line crispness (05-01)
-- Skip spread animation -- instant fill, performance wins over animation (05-02)
-- SVG overlay parsed via DOMParser for clean DOM injection (05-02)
-- releaseCanvas() in router() before every route render for reliable memory cleanup (05-02)
-- Undo button starts .disabled, toggled after each fill/undo (05-02)
-- Near-white background detection uses RGB >= 0xF0 threshold, not prefix match (06-01)
-- Only 2/9 traced SVGs had near-white bg rects; dark first paths are real content (06-01)
-- Preview SVG cache stores original text, colors applied to DOM after insertion -- cache never needs clearing (06-02)
-- acc-none keeps inline X icon since no traced SVG exists for "no accessory" (06-02)
-- Relative asset paths (no leading /) for GitHub Pages deployment compatibility (06-02)
-- BASE_URL env var causes live_server fixture to yield URL directly without starting uvicorn (07-01)
-- CI test job uses python -m http.server 8080 + readiness poll before Playwright E2E run (07-01)
-- deploy job gated on test job via needs: [test] in deploy.yml (07-01)
-- DPLY-03 not satisfied: iPad Safari dress-up touch interaction broken on live site (07-02)
-- Part swap broken: tapping part shows full mermaid list not part swap (07-02)
-- Color recolor broken: swatch recolors most of mermaid not selected part only (07-02)
-- [Phase 07]: DPLY-03 not satisfied: iPad Safari dress-up touch interaction broken on live site (07-02)
-- [Phase 07]: Part swap broken on GitHub Pages: tapping part shows full mermaid list not part swap (07-02)
-- [Phase 07]: Color recolor broken: swatch recolors most of mermaid not selected part only (07-02)
-- [Phase 07]: z-index layering: nav-bar=5, dressup-view=10, selection-panel=20 ensures selection panel above nav on iOS Safari
-- [Phase 07]: stopPropagation added defensively to all dressup interaction handlers to prevent tap-through to nav links on iPad
-- [Phase 07]: Debug overlay uses capture-phase listeners with no stopPropagation/preventDefault; activated via ?debug=1 or triple-tap home nav icon
-- [Phase 07]: DPLY-03 satisfied: iPad Safari verification confirmed tapping tabs, option buttons, color swatches, tap-to-fill, and undo all work on real device
-- [Phase 07]: HTTPS enforcement enabled via GitHub Pages Settings checkbox -- redirect activates within 24h
 
 ### Pending Todos
 
@@ -115,12 +40,10 @@ None.
 
 ### Blockers/Concerns
 
-- OpenAI API key needed for art generation pipeline
-- AI art consistency across separate generations is unreliable -- edit API with masks is mitigation
-- vtracer settings may need tuning for AI-generated images (different detail level than hand-drawn)
+None active.
 
 ## Session Continuity
 
-Last session: 2026-03-12T13:04:51.333Z
-Stopped at: Completed 07-04-PLAN.md -- DPLY-03 verified on real iPad Safari, HTTPS enforcement enabled, Phase 7 complete
+Last session: 2026-03-12
+Stopped at: Milestone v1.1 completed and archived
 Resume file: None

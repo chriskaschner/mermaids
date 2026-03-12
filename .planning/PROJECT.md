@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A web-based creative activity app for a 6-year-old, themed entirely around mermaids. Two activities: dress-up (mix and match tails, hair, accessories, and colors on a mermaid character) and coloring (tap-to-fill mermaid-themed pages). Built with a dreamy watercolor aesthetic, designed for iPad Safari with 60pt+ touch targets and zero-instruction usability.
+A web-based creative activity app for a 6-year-old, themed entirely around mermaids. Two activities: dress-up (mix and match AI-generated kawaii mermaid parts with color customization) and coloring (canvas flood-fill on AI-generated mermaid pages with crisp SVG overlays). Live at mermaids.chriskaschner.com, designed for iPad Safari with 60pt+ touch targets and zero-instruction usability.
 
 ## Core Value
 
@@ -16,13 +16,14 @@ A 6-year-old can open this on an iPad, build her own mermaid, and color mermaid 
 - [x] Coloring pages: mermaid-themed outlines to color digitally -- v1.0
 - [x] Watercolor art style: dreamy, soft, painterly visual aesthetic throughout -- v1.0
 - [x] Touch-friendly: designed for iPad touch interaction, big tap targets, no tiny UI -- v1.0
+- [x] AI art generation pipeline (OpenAI API + kawaii mermaid prompts + vtracer tracing) -- v1.1
+- [x] Upgraded coloring pages with AI-generated art and flood-fill interaction -- v1.1
+- [x] Upgraded dress-up mermaid with AI-generated kawaii art and variant parts -- v1.1
+- [x] GitHub Pages deployment (static site, accessible on iPad) -- v1.1
 
 ### Active
 
-- [ ] AI art generation pipeline (OpenAI API + kawaii mermaid prompts + vtracer tracing)
-- [ ] Upgraded coloring pages with AI-generated art and flood-fill interaction
-- [ ] Upgraded dress-up mermaid with AI-generated kawaii art and variant parts
-- [ ] GitHub Pages deployment (static site, accessible on iPad)
+(None -- define next milestone requirements via `/gsd:new-milestone`)
 
 ### Future
 
@@ -45,25 +46,16 @@ A 6-year-old can open this on an iPad, build her own mermaid, and color mermaid 
 - Onboarding tutorial -- if the app needs a tutorial, it's too complex
 - Text input / labels -- a 6-year-old reads at beginner level
 
-## Current Milestone: v1.1 Art & Deploy
-
-**Goal:** Replace basic hand-crafted SVGs with AI-generated kawaii mermaid art, switch coloring to flood-fill, and deploy to GitHub Pages so she can use it on her iPad.
-
-**Target features:**
-- Automated art generation pipeline (OpenAI API + kawaii prompts + vtracer)
-- AI-generated coloring pages with flood-fill interaction
-- AI-generated dress-up mermaid with variant parts
-- Static site deployment to GitHub Pages
-
 ## Context
 
-Shipped v1.0 MVP with 2,172 LOC across Python, JavaScript, HTML, CSS.
-Tech stack: FastAPI + vanilla JS, no framework, no build step.
-SVG-first rendering with vtracer art pipeline for raster-to-SVG conversion.
-37 Playwright E2E tests across 5 suites, all passing.
-Two complete activities: dress-up (7 requirements) and coloring (4 requirements).
-Platform: iPad Safari (web app).
-Art style pivot: moving from watercolor filter on basic SVGs to kawaii-style AI-generated illustrations.
+Shipped v1.1 with 5,382 LOC across Python, JavaScript, HTML, CSS.
+Tech stack: vanilla JS frontend (no framework, no build step), Python pipeline for AI art generation.
+SVG-first rendering with OpenAI gpt-image-1 + vtracer art pipeline.
+62 Playwright E2E tests across multiple suites (60 passing, 2 pre-existing WebKit sparkle failures).
+Two complete activities: dress-up (AI-generated kawaii art, 9 variants, color recoloring) and coloring (canvas flood fill, SVG overlay, undo).
+Platform: iPad Safari via GitHub Pages (mermaids.chriskaschner.com).
+CI/CD: GitHub Actions with E2E test gate before deploy.
+Art style: kawaii flat-color mermaid illustrations (pivoted from watercolor in v1.0).
 
 ## Constraints
 
@@ -78,20 +70,20 @@ Art style pivot: moving from watercolor filter on basic SVGs to kawaii-style AI-
 |----------|-----------|---------|
 | Web app over native | Faster to build, no App Store, Python backend | Good -- shipped in 1 day |
 | AI-generated art | No budget for commissioned art, faster iteration | Good -- watercolor SVGs look great |
-| Watercolor style | Daughter's preference, dreamy mermaid aesthetic | Revisit -- pivoting to kawaii style for v1.1 |
+| Watercolor style | Daughter's preference, dreamy mermaid aesthetic | Revisit -- pivoted to kawaii style for v1.1 |
 | SVG-first rendering | Interactive regions, scalable, touch-friendly | Good -- enables dress-up and coloring |
 | Vanilla JS, no framework | Weekend scope, no build step complexity | Good -- 893 LOC JS, fast iteration |
-| vtracer for art pipeline | Raster-to-SVG conversion for future assets | Good -- works but PoC SVG was hand-crafted |
+| vtracer for art pipeline | Raster-to-SVG conversion for future assets | Good -- works for both hand-crafted and AI-generated |
 | SVG defs+use for variants | Single setAttribute to swap parts | Good -- clean, performant pattern |
 | Pointer event delegation | Single listener, works on SVG regions | Good -- consistent touch handling |
-| Duplicated COLORS array | Separate state lifecycles for dress-up and coloring | OK -- minor duplication, clear separation |
-| Scene builder deferred to v2 | Weekend scope constraint | Pending |
-| Print support deferred to v2 | Weekend scope constraint | Pending |
-
-| Kawaii art style | User preference, cuter and more appealing for 6-year-old | -- Pending |
-| Flood fill for coloring | Works with any AI-generated image, no manual region tagging | -- Pending |
-| GitHub Pages deployment | Free static hosting, accessible on iPad anywhere | -- Pending |
-| OpenAI API for art generation | Automate art pipeline, consistent kawaii style | -- Pending |
+| Kawaii art style | User preference, cuter and more appealing for 6-year-old | Good -- AI-generated kawaii parts look cohesive |
+| Flood fill for coloring | Works with any AI-generated image, no manual region tagging | Good -- eliminates manual SVG region prep |
+| GitHub Pages deployment | Free static hosting, accessible on iPad anywhere | Good -- live at custom domain with HTTPS |
+| OpenAI API for art generation | Automate art pipeline, consistent kawaii style | Good -- 9 variant parts + 4 coloring pages generated |
+| Canvas+SVG hybrid for coloring | Canvas for flood fill, SVG overlay for crisp lines | Good -- retina-quality outlines with pixel-level fill |
+| Edit API with masks for variants | Consistent spatial alignment across generated parts | Good -- all 9 variants fit within 400x700 viewBox |
+| z-index + stopPropagation for iPad | iOS Safari fixed-position layering quirk | Good -- resolved touch interaction issues on live site |
+| CI test gate before deploy | Prevent broken builds from reaching production | Good -- caught real issues |
 
 ---
-*Last updated: 2026-03-09 after v1.1 milestone start*
+*Last updated: 2026-03-12 after v1.1 milestone*
