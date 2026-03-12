@@ -92,10 +92,10 @@ class TestTouchInteraction:
         base = app_page.url.split("#")[0]
         app_page.goto(base + "#/dressup")
         app_page.wait_for_timeout(500)
-        # Tap the tail region
-        tail = app_page.locator('[data-region="tail"]')
-        expect(tail).to_be_visible()
-        tail.click()
+        # Tap the character region
+        character = app_page.locator('[data-region="character"]')
+        expect(character).to_be_visible()
+        character.click()
         app_page.wait_for_timeout(100)
         sparkles = app_page.locator(".sparkle")
         assert sparkles.count() > 0, "No sparkle elements found after tap"
@@ -105,8 +105,8 @@ class TestTouchInteraction:
         base = app_page.url.split("#")[0]
         app_page.goto(base + "#/dressup")
         app_page.wait_for_timeout(500)
-        tail = app_page.locator('[data-region="tail"]')
-        tail.click()
+        character = app_page.locator('[data-region="character"]')
+        character.click()
         app_page.wait_for_timeout(100)
         # Sparkles should exist now
         assert app_page.locator(".sparkle").count() > 0
