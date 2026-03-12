@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Art & Deploy
 status: verifying
-stopped_at: Completed 07-02-PLAN.md with DPLY-03 verification failure -- iPad Safari dress-up broken
-last_updated: "2026-03-12T01:16:55.836Z"
+stopped_at: Completed 07-03-PLAN.md -- DPLY-03 fixes applied; awaiting real iPad Safari verification
+last_updated: "2026-03-12T11:49:36.930Z"
 last_activity: 2026-03-11 -- Completed 07-02 custom domain setup; DPLY-03 iPad Safari acceptance FAILED
 progress:
   total_phases: 4
-  completed_phases: 4
-  total_plans: 8
-  completed_plans: 8
+  completed_phases: 3
+  total_plans: 10
+  completed_plans: 9
   percent: 88
 ---
 
@@ -70,6 +70,7 @@ Gap closure steps:
 
 *Updated after each plan completion*
 | Phase 07 P02 | 15min | 3 tasks | 1 files |
+| Phase 07 P03 | 5min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -111,6 +112,9 @@ Recent decisions affecting current work:
 - [Phase 07]: DPLY-03 not satisfied: iPad Safari dress-up touch interaction broken on live site (07-02)
 - [Phase 07]: Part swap broken on GitHub Pages: tapping part shows full mermaid list not part swap (07-02)
 - [Phase 07]: Color recolor broken: swatch recolors most of mermaid not selected part only (07-02)
+- [Phase 07]: z-index layering: nav-bar=5, dressup-view=10, selection-panel=20 ensures selection panel above nav on iOS Safari
+- [Phase 07]: stopPropagation added defensively to all dressup interaction handlers to prevent tap-through to nav links on iPad
+- [Phase 07]: Debug overlay uses capture-phase listeners with no stopPropagation/preventDefault; activated via ?debug=1 or triple-tap home nav icon
 
 ### Pending Todos
 
@@ -125,6 +129,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-12T01:16:55.834Z
-Stopped at: Completed 07-02-PLAN.md with DPLY-03 verification failure -- iPad Safari dress-up broken
+Last session: 2026-03-12T11:49:36.928Z
+Stopped at: Completed 07-03-PLAN.md -- DPLY-03 fixes applied; awaiting real iPad Safari verification
 Resume file: None

@@ -32,7 +32,7 @@ Requirements for v1.1 Art & Deploy milestone. Each maps to roadmap phases.
 
 - [x] **DPLY-01**: frontend/ directory deploys to GitHub Pages as static site
 - [x] **DPLY-02**: All asset paths are relative (no absolute /assets/ paths)
-- [ ] **DPLY-03**: App is accessible on iPad Safari via GitHub Pages URL [GAP: dress-up touch broken on live site -- part swap not working, color scope incorrect]
+- [x] **DPLY-03**: App is accessible on iPad Safari via GitHub Pages URL [GAP: dress-up touch broken on live site -- part swap not working, color scope incorrect]
 
 ## Future Requirements
 

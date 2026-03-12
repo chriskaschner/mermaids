@@ -80,7 +80,7 @@ Plans:
   1. The frontend/ directory is deployed to GitHub Pages as a static site
   2. All asset references use relative paths (no broken loads from absolute /assets/ paths)
   3. Opening the GitHub Pages URL on iPad Safari loads the app and both activities work correctly
-**Plans:** 4 plans
+**Plans:** 3/4 plans executed
 
 Plans:
 - [x] 07-01-PLAN.md -- CI test job (static server E2E) + conftest BASE_URL support + deploy gate (DPLY-01, DPLY-02, DPLY-03)
@@ -100,4 +100,4 @@ Plans:
 | 4. Art Pipeline | v1.1 | 2/2 | Complete | 2026-03-10 |
 | 5. Flood-Fill Coloring | v1.1 | 2/2 | Complete | 2026-03-10 |
 | 6. Dress-Up Art Swap | v1.1 | 2/2 | Complete | 2026-03-10 |
-| 7. GitHub Pages Deployment | v1.1 | 2/4 | Gap closure (DPLY-03 open) | -- |
+| 7. GitHub Pages Deployment | 3/4 | In Progress|  | -- |
