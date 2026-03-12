@@ -23,7 +23,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 4: Art Pipeline** - Generate kawaii mermaid SVG assets via OpenAI gpt-image-1 and vtracer
 - [x] **Phase 5: Flood-Fill Coloring** - Replace region-based coloring with canvas flood fill and SVG overlay
 - [x] **Phase 6: Dress-Up Art Swap** - Replace hand-crafted mermaid with AI-generated kawaii art and variants
-- [x] **Phase 7: GitHub Pages Deployment** - Deploy static site with relative paths, accessible on iPad (completed 2026-03-12)
+- [ ] **Phase 7: GitHub Pages Deployment** - Deploy static site with relative paths, accessible on iPad
 
 ## Phase Details
 
@@ -80,11 +80,13 @@ Plans:
   1. The frontend/ directory is deployed to GitHub Pages as a static site
   2. All asset references use relative paths (no broken loads from absolute /assets/ paths)
   3. Opening the GitHub Pages URL on iPad Safari loads the app and both activities work correctly
-**Plans:** 2/2 plans complete
+**Plans:** 4 plans
 
 Plans:
 - [x] 07-01-PLAN.md -- CI test job (static server E2E) + conftest BASE_URL support + deploy gate (DPLY-01, DPLY-02, DPLY-03)
 - [x] 07-02-PLAN.md -- Custom domain DNS + GitHub Pages Settings + real iPad verification (DPLY-01 satisfied; DPLY-03 NOT satisfied)
+- [ ] 07-03-PLAN.md -- Gap closure: fix z-index layering + event propagation guards + debug overlay for iPad Safari diagnosis (DPLY-03)
+- [ ] 07-04-PLAN.md -- Gap closure: real iPad Safari verification + HTTPS enforcement (DPLY-01, DPLY-02, DPLY-03)
 
 ## Progress
 
@@ -98,4 +100,4 @@ Plans:
 | 4. Art Pipeline | v1.1 | 2/2 | Complete | 2026-03-10 |
 | 5. Flood-Fill Coloring | v1.1 | 2/2 | Complete | 2026-03-10 |
 | 6. Dress-Up Art Swap | v1.1 | 2/2 | Complete | 2026-03-10 |
-| 7. GitHub Pages Deployment | v1.1 | 2/2 | Gap (DPLY-03 open) | 2026-03-11 |
+| 7. GitHub Pages Deployment | v1.1 | 2/4 | Gap closure (DPLY-03 open) | -- |
