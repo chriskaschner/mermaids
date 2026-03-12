@@ -215,7 +215,8 @@ async function renderOptions(category) {
       btn.setAttribute("aria-label", `Color ${color}`);
       btn.style.background = color;
       btn.style.touchAction = "manipulation";
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
         recolorActivePart(color);
       });
       row.appendChild(btn);
@@ -236,7 +237,8 @@ async function renderOptions(category) {
       btn.classList.add("selected");
     }
 
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
       swapPart(category, variantId);
       row.querySelectorAll(".option-btn").forEach((b) => {
         b.classList.toggle("selected", b.getAttribute("data-variant") === variantId);
@@ -271,7 +273,8 @@ async function renderOptions(category) {
 
 export async function initDressUp() {
   document.querySelectorAll(".cat-tab").forEach((tab) => {
-    tab.addEventListener("click", async () => {
+    tab.addEventListener("click", async (e) => {
+      e.stopPropagation();
       const category = tab.getAttribute("data-category");
       state.activeCategory = category;
 
@@ -289,7 +292,8 @@ export async function initDressUp() {
 
   const undoBtn = document.querySelector(".undo-btn");
   if (undoBtn) {
-    undoBtn.addEventListener("click", () => {
+    undoBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
       undo();
       const cat = state.activeCategory;
       if (cat !== "color") {
