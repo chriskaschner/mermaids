@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Art & Deploy
-status: in-progress
-stopped_at: Completed 07-01 CI test gate for GitHub Pages deployment
-last_updated: "2026-03-12T01:08:00Z"
-last_activity: 2026-03-12 -- Completed 07-01 CI test job + BASE_URL fixture for static server E2E testing
+status: verifying
+stopped_at: Completed 07-02-PLAN.md with DPLY-03 verification failure -- iPad Safari dress-up broken
+last_updated: "2026-03-12T01:16:55.836Z"
+last_activity: 2026-03-11 -- Completed 07-02 custom domain setup; DPLY-03 iPad Safari acceptance FAILED
 progress:
   total_phases: 4
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 8
-  completed_plans: 7
+  completed_plans: 8
   percent: 88
 ---
 
@@ -21,16 +21,30 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-09)
 
 **Core value:** A 6-year-old can open this on an iPad, build her own mermaid, and color mermaid pages -- with zero friction and pure delight.
-**Current focus:** Phase 6 complete -- Dress-Up Art Swap (all AI SVGs deployed and wired)
+**Current focus:** Phase 7 -- custom domain live, but dress-up touch interaction broken on iPad Safari (gap closure needed)
 
 ## Current Position
 
 Phase: 7 of 7 (GitHub Pages Deployment)
-Plan: 1 of 2 complete
-Status: Phase 7 In Progress
-Last activity: 2026-03-12 -- Completed 07-01 CI test job + BASE_URL fixture for static server E2E testing
+Plan: 2 of 2 executed (DPLY-03 not satisfied -- gap closure required)
+Status: Phase 7 has verification gap -- BLOCKED on DPLY-03
+Last activity: 2026-03-11 -- Completed 07-02 custom domain setup; DPLY-03 iPad Safari acceptance FAILED
 
 Progress: [█████████░] 88%
+
+## Verification Gaps
+
+**DPLY-03: iPad Safari touch acceptance -- NOT MET**
+
+Site is live at https://mermaids.chriskaschner.com but dress-up activity is broken:
+- Tapping tail/hair/accessory shows full mermaid list instead of swapping the part
+- Color swatch recolors most of mermaid instead of selected part only
+
+Gap closure steps:
+1. Open DevTools on iPad Safari at https://mermaids.chriskaschner.com, capture console errors
+2. Diagnose dress-up part swap failure (check JS event wiring on static hosting)
+3. Diagnose color scope failure (check which element receives recolor event)
+4. Fix, push to main, confirm CI green, re-test on iPad Safari
 
 ## Performance Metrics
 
@@ -51,9 +65,11 @@ Progress: [█████████░] 88%
 | 6 Plan 01 | 1 | 3min | 3 min |
 | 6 Plan 02 | 1 | 5min | 5 min |
 | 7 Plan 01 | 1 | 8min | 8 min |
+| 7 Plan 02 | 1 | ~15min | ~15 min |
 | 4-7 (v1.1) | - | - | - |
 
 *Updated after each plan completion*
+| Phase 07 P02 | 15min | 3 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -89,6 +105,12 @@ Recent decisions affecting current work:
 - BASE_URL env var causes live_server fixture to yield URL directly without starting uvicorn (07-01)
 - CI test job uses python -m http.server 8080 + readiness poll before Playwright E2E run (07-01)
 - deploy job gated on test job via needs: [test] in deploy.yml (07-01)
+- DPLY-03 not satisfied: iPad Safari dress-up touch interaction broken on live site (07-02)
+- Part swap broken: tapping part shows full mermaid list not part swap (07-02)
+- Color recolor broken: swatch recolors most of mermaid not selected part only (07-02)
+- [Phase 07]: DPLY-03 not satisfied: iPad Safari dress-up touch interaction broken on live site (07-02)
+- [Phase 07]: Part swap broken on GitHub Pages: tapping part shows full mermaid list not part swap (07-02)
+- [Phase 07]: Color recolor broken: swatch recolors most of mermaid not selected part only (07-02)
 
 ### Pending Todos
 
@@ -96,13 +118,13 @@ None.
 
 ### Blockers/Concerns
 
+- **ACTIVE: DPLY-03 gap** -- dress-up touch broken on iPad Safari live site; root cause unknown; requires console error capture + diagnosis
 - OpenAI API key needed for art generation pipeline
 - AI art consistency across separate generations is unreliable -- edit API with masks is mitigation
 - vtracer settings may need tuning for AI-generated images (different detail level than hand-drawn)
-- Canvas flood-fill performance on older iPads needs real-hardware testing
 
 ## Session Continuity
 
-Last session: 2026-03-12T01:08:00Z
-Stopped at: Completed 07-01-PLAN.md
-Resume file: .planning/phases/07-github-pages-deployment/07-02-PLAN.md
+Last session: 2026-03-12T01:16:55.834Z
+Stopped at: Completed 07-02-PLAN.md with DPLY-03 verification failure -- iPad Safari dress-up broken
+Resume file: None
