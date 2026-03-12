@@ -1,129 +1,129 @@
 ---
 phase: 07-github-pages-deployment
-verified: 2026-03-11T00:00:00Z
-status: gaps_found
-score: 2/3 success criteria verified
-re_verification: false
-gaps:
-  - truth: "Opening the GitHub Pages URL on iPad Safari loads the app and both activities work correctly"
-    status: failed
-    reason: "Real iPad Safari UAT performed during plan 07-02 execution revealed two functional failures: dress-up part swap shows full mermaid list instead of swapping the selected part; color swatch recolors most of the mermaid instead of only the selected part. Root cause not yet diagnosed."
-    artifacts:
-      - path: "frontend/js/dressup.js"
-        issue: "Dress-up part swap and color recolor behave incorrectly on live static site; likely JS event handler or asset path issue specific to GitHub Pages hosting vs local uvicorn"
-    missing:
-      - "Diagnose root cause: open DevTools on iPad Safari at https://mermaids.chriskaschner.com and capture console errors"
-      - "Fix dress-up part swap so tapping a variant option replaces the displayed mermaid part (not navigates to mermaid list)"
-      - "Fix color recolor so tapping a swatch affects only the selected part (not the full mermaid)"
-      - "Push fix to main, confirm CI test job passes, re-verify on real iPad Safari"
-  - truth: "HTTPS is enforced (http:// redirects to https://)"
-    status: failed
-    reason: "curl -sI http://mermaids.chriskaschner.com/ returns HTTP/1.1 200 OK with no redirect. GitHub Pages 'Enforce HTTPS' checkbox is either not enabled or not yet active for this custom domain. Plan 07-02 user_setup listed enabling this as a step."
-    artifacts: []
-    missing:
-      - "Enable 'Enforce HTTPS' in GitHub repo Settings -> Pages if not already checked"
-      - "Confirm http://mermaids.chriskaschner.com redirects to https:// (301 or 302)"
+verified: 2026-03-12T13:08:00Z
+status: human_needed
+score: 3/3 success criteria verified (automated); 1 item human-verified via checkpoint
+re_verification:
+  previous_status: gaps_found
+  previous_score: 2/3
+  gaps_closed:
+    - "Opening the GitHub Pages URL on iPad Safari loads the app and both activities work correctly -- code fixes applied (z-index, stopPropagation), human checkpoint in 07-04 confirms pass"
+    - "HTTPS is enforced -- curl -sI http://mermaids.chriskaschner.com/ now returns 301 Moved Permanently to https://"
+  gaps_remaining: []
+  regressions: []
 human_verification:
-  - test: "Re-verify dress-up on real iPad Safari after fix is deployed"
-    expected: "Tapping a tail/hair/accessory option in the selection panel swaps the displayed mermaid part on screen. Tapping a color swatch recolors only the selected part."
-    why_human: "Playwright WebKit on Linux does not replicate real iPad Safari touch event dispatch and rendering faithfully. DPLY-03 requires real-device verification."
-  - test: "Verify coloring activity on real iPad Safari"
-    expected: "Tapping a color swatch then tapping a white region flood-fills that region. Undo reverts the last fill."
-    why_human: "Coloring activity was not explicitly tested during the 07-02 verification pass. Status is unknown."
+  - test: "Re-confirm dress-up and coloring on real iPad Safari after 07-03 fix deployment"
+    expected: "Tapping tabs, option buttons, color swatches, tap-to-fill, and undo all function correctly. No JS errors visible."
+    why_human: "DPLY-03 was accepted via a human checkpoint gate in plan 07-04. The code fix (z-index + stopPropagation) is verified in the codebase. The human confirmation is documented in 07-04-SUMMARY but cannot be re-executed programmatically. Playwright WebKit on Linux does not replicate real iPad Safari touch event dispatch."
 ---
 
 # Phase 7: GitHub Pages Deployment Verification Report
 
 **Phase Goal:** The app is live on GitHub Pages and usable on her iPad without running a local server
-**Verified:** 2026-03-11
-**Status:** gaps_found
-**Re-verification:** No -- initial verification
+**Verified:** 2026-03-12T13:08:00Z
+**Status:** human_needed (all automated checks pass; DPLY-03 was human-verified via checkpoint in 07-04)
+**Re-verification:** Yes -- after gap closure (Plans 07-03 and 07-04)
 
 ## Goal Achievement
 
-### Success Criteria (from ROADMAP.md)
+### Observable Truths
 
 | # | Truth | Status | Evidence |
 |---|-------|--------|----------|
-| 1 | The frontend/ directory is deployed to GitHub Pages as a static site | VERIFIED | `curl https://mermaids.chriskaschner.com/` returns HTTP 200 from GitHub.com server; DNS CNAME `mermaids.chriskaschner.com -> chriskaschner.github.io.` confirmed |
-| 2 | All asset references use relative paths (no broken loads from absolute /assets/ paths) | VERIFIED | grep scan of `frontend/js/*.js` and `frontend/index.html` found zero absolute `/assets`, `/js`, `/css` path prefixes; index.html uses `src="js/app.js?v=14"` |
-| 3 | Opening the GitHub Pages URL on iPad Safari loads the app and both activities work correctly | FAILED | Real iPad Safari UAT (07-02 Task 3) confirmed: dress-up part swap broken (shows mermaid list instead of swapping part); color swatch recolors wrong scope |
+| 1 | The frontend/ directory is deployed to GitHub Pages as a static site | VERIFIED | `curl https://mermaids.chriskaschner.com/` returns HTTP 200 from GitHub.com; DNS CNAME `mermaids.chriskaschner.com -> chriskaschner.github.io.` confirmed |
+| 2 | All asset references use relative paths (no broken loads from absolute /assets/ paths) | VERIFIED | No absolute path prefixes found in frontend/js/*.js or frontend/index.html; confirmed in prior verification |
+| 3 | Opening the GitHub Pages URL on iPad Safari loads the app and both activities work correctly | HUMAN-VERIFIED | Code fixes applied in 07-03 (z-index stacking, stopPropagation guards). Human checkpoint in 07-04 confirmed dress-up tabs/options/swatches and coloring tap-to-fill/undo all work on real iPad Safari |
 
-**Score:** 2/3 success criteria verified
+**Score:** 3/3 success criteria verified (1 via human checkpoint gate)
+
+### Gap Closure Status
+
+| Previous Gap | Status | Evidence |
+|-------------|--------|----------|
+| iPad Safari dress-up part swap broken | CLOSED | CSS: `.selection-panel` z-index:20 > `#nav-bar` z-index:5. dressup.js: `e.stopPropagation()` on all 4 click handlers (lines 219, 241, 277, 296). Human verified working on real device (07-04-SUMMARY). |
+| HTTPS not enforced (HTTP returned 200) | CLOSED | `curl -sI http://mermaids.chriskaschner.com/` returns `HTTP/1.1 301 Moved Permanently` with `Location: https://mermaids.chriskaschner.com/`. GitHub Pages Enforce HTTPS is active. |
 
 ### Requirements Coverage
 
 | Requirement | Source Plan(s) | Description | Status | Evidence |
 |-------------|---------------|-------------|--------|----------|
-| DPLY-01 | 07-01, 07-02 | frontend/ deploys to GitHub Pages as static site | SATISFIED | Site live at https://mermaids.chriskaschner.com (HTTP 200); `frontend/CNAME` contains `mermaids.chriskaschner.com`; DNS CNAME resolves to `chriskaschner.github.io.` |
-| DPLY-02 | 07-01, 07-02 | All asset paths are relative (no absolute /assets/ paths) | SATISFIED | No absolute paths found in frontend/. Note: REQUIREMENTS.md describes DPLY-02 as "relative paths" requirement; this is fully met. The CI test gate (originally in plan scope) is implemented as the mechanism that verifies DPLY-01. |
-| DPLY-03 | 07-01, 07-02 | App is accessible on iPad Safari via GitHub Pages URL | NOT SATISFIED | iPad Safari UAT failed: two functional failures confirmed on live site. REQUIREMENTS.md explicitly marks this `[ ]` with GAP note. |
+| DPLY-01 | 07-01, 07-02 | frontend/ deploys to GitHub Pages as static site | SATISFIED | Site live at https://mermaids.chriskaschner.com (HTTP 200); `frontend/CNAME` contains `mermaids.chriskaschner.com`; DNS CNAME resolves to `chriskaschner.github.io.`; deploy.yml with `needs: [test]` gate confirmed in codebase |
+| DPLY-02 | 07-01, 07-02 | All asset paths are relative (no absolute /assets/ paths) | SATISFIED | No absolute path prefixes found; CI test job verifies E2E suite passes against static file server before deploy |
+| DPLY-03 | 07-01, 07-02, 07-03, 07-04 | App is accessible on iPad Safari via GitHub Pages URL | SATISFIED | z-index stacking (selection-panel:20 > nav-bar:5) and stopPropagation guards applied in 07-03. Human checkpoint in 07-04 confirmed both activities work. REQUIREMENTS.md updated to `[x]` on 2026-03-12. |
+
+All three phase requirements are SATISFIED. REQUIREMENTS.md traceability table confirms all as Complete (last updated 2026-03-12 after 07-04).
 
 ### Required Artifacts
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `tests/conftest.py` | BASE_URL env var guard in live_server fixture | VERIFIED | `import os` present; `os.environ.get("BASE_URL")` guard at fixture top; yields BASE_URL directly if set; uvicorn path unchanged |
-| `.github/workflows/deploy.yml` | CI test job gating deploy | VERIFIED | `test` job present with `astral-sh/setup-uv@v4`, `python -m http.server 8080`, `BASE_URL: http://127.0.0.1:8080` env; `deploy` job has `needs: [test]` |
+| `tests/conftest.py` | BASE_URL env var guard in live_server fixture | VERIFIED | `os.environ.get("BASE_URL")` guard at line 37; yields BASE_URL directly if set; uvicorn path unchanged |
+| `.github/workflows/deploy.yml` | CI test job gating deploy | VERIFIED | `test` job present with `astral-sh/setup-uv@v4`, `python -m http.server 8080`, `BASE_URL: http://127.0.0.1:8080`; `deploy` job has `needs: [test]` at line 51 |
 | `frontend/CNAME` | Custom domain declaration | VERIFIED | Contains exactly `mermaids.chriskaschner.com` |
+| `frontend/css/style.css` | z-index stacking: selection-panel above nav-bar | VERIFIED | `#nav-bar: z-index:5` (line 41), `.dressup-view: z-index:10` (line 137), `.selection-panel: z-index:20` (line 160), `.coloring-view: z-index:10` (line 308), `.coloring-panel: z-index:20` (line 352) |
+| `frontend/js/dressup.js` | stopPropagation on all 4 click handlers | VERIFIED | `e.stopPropagation()` at lines 219 (color-swatch), 241 (option-btn), 277 (cat-tab), 296 (undo-btn) |
+| `frontend/js/app.js` | Debug overlay via ?debug=1 | VERIFIED | `_initDebug()` function at line 324; wired to `?debug=1` at line 445 and triple-tap at line 459 |
 
 ### Key Link Verification
 
 | From | To | Via | Status | Details |
 |------|----|----|--------|---------|
-| `.github/workflows/deploy.yml test job` | `tests/conftest.py live_server fixture` | `BASE_URL: http://127.0.0.1:8080` env var in CI step | WIRED | deploy.yml line 43: `BASE_URL: http://127.0.0.1:8080` under `env:` for E2E test step; conftest.py line 37: `base_url = os.environ.get("BASE_URL")` |
-| `deploy job` | `test job` | `needs: [test]` | WIRED | deploy.yml line 51: `needs: [test]` present |
+| `.github/workflows/deploy.yml test job` | `tests/conftest.py live_server fixture` | `BASE_URL: http://127.0.0.1:8080` env var in CI step | WIRED | deploy.yml line 43: `BASE_URL: http://127.0.0.1:8080`; conftest.py line 37: `os.environ.get("BASE_URL")` |
+| `deploy job` | `test job` | `needs: [test]` | WIRED | deploy.yml line 51: `needs: [test]` |
 | `DNS CNAME record` | `chriskaschner.github.io` | `mermaids.chriskaschner.com CNAME` | WIRED | `dig mermaids.chriskaschner.com CNAME +short` returns `chriskaschner.github.io.` |
-| `GitHub Pages custom domain` | `mermaids.chriskaschner.com` | Settings UI + `frontend/CNAME` | WIRED | Site resolves and returns HTTP 200 from GitHub.com at the custom domain |
+| `GitHub Pages custom domain` | `mermaids.chriskaschner.com` | Settings UI + `frontend/CNAME` | WIRED | Site resolves HTTP 200 from GitHub at custom domain |
+| `HTTP redirect` | `HTTPS enforcement` | `GitHub Pages Enforce HTTPS` | WIRED | `curl -sI http://mermaids.chriskaschner.com/` returns `301 Moved Permanently` to `https://mermaids.chriskaschner.com/` |
+| `frontend/css/style.css .selection-panel` | `#nav-bar` | `z-index:20 > z-index:5` | WIRED | Stacking contexts confirmed present; selection panel definitively above nav bar on iOS Safari |
+| `frontend/js/dressup.js option-btn click` | `swapPart()` | `click event with e.stopPropagation()` | WIRED | stopPropagation at line 241 before swapPart() call |
 
 ### Anti-Patterns Found
 
 | File | Line | Pattern | Severity | Impact |
 |------|------|---------|----------|--------|
-| None found | - | - | - | - |
+| `frontend/js/app.js` | 319-409 | Debug overlay comment: "Remove this section once DPLY-03 is resolved" | Info | Debug diagnostic tool; not a stub. Intended for cleanup in a future task. Does not affect normal app operation. No TODO/FIXME marker. |
 
-No TODO/FIXME/placeholder comments or empty implementations found in phase-modified files (`tests/conftest.py`, `.github/workflows/deploy.yml`, `frontend/CNAME`).
+No TODO/FIXME/placeholder comments or empty implementations found in phase-modified files. The debug overlay is a complete, functional diagnostic tool with an explicit code comment noting it should be removed after DPLY-03 is confirmed resolved. It is inert unless activated via `?debug=1` or triple-tap.
 
 ### Commit Verification
 
 All commits documented in summaries verified present in git log:
 
-| Commit | Description |
-|--------|-------------|
-| `a234d2e` | feat(07-01): update live_server fixture for BASE_URL env var |
-| `ce2fbb3` | feat(07-01): add CI test job to deploy.yml gating deploy on E2E pass |
-| `a01682e` | chore(07-02): add frontend/CNAME for custom domain declaration |
-| `d220043` | chore(07-02): configure DNS and GitHub Pages custom domain |
-| `28edf68` | docs(07-02): record iPad Safari verification failure -- DPLY-03 not met |
+| Commit | Description | Verified |
+|--------|-------------|---------|
+| `a234d2e` | feat(07-01): update live_server fixture to support BASE_URL env var | Present |
+| `ce2fbb3` | feat(07-01): add CI test job to deploy.yml gating deploy on E2E pass | Present |
+| `a01682e` | chore(07-02): add frontend/CNAME for custom domain declaration | Present |
+| `d220043` | chore(07-02): configure DNS and GitHub Pages custom domain | Present |
+| `28edf68` | docs(07-02): record iPad Safari verification failure -- DPLY-03 not met | Present |
+| `d50a645` | fix(07-03): add z-index stacking and stopPropagation guards for iPad Safari | Present |
+| `9f22472` | feat(07-03): add debug overlay for iPad Safari event diagnostics | Present |
+| `076a5b1` | docs(07-04): complete gap closure plan -- DPLY-03 verified, HTTPS enforced | Present |
 
 ### Deferred Items (Pre-existing, Out of Scope)
 
 Per `deferred-items.md`:
-- `test_tap_region_triggers_sparkle[webkit]` and `test_sparkle_cleanup[webkit]` fail against both uvicorn and `python -m http.server`. Pre-existing, not caused by phase 7 changes. 2 of 62 E2E tests fail; 60 pass.
+- `test_tap_region_triggers_sparkle[webkit]` and `test_sparkle_cleanup[webkit]` fail against both uvicorn and `python -m http.server`. Pre-existing, not caused by phase 7 changes. 2 of 62 E2E tests fail; 60 pass. A separate fix commit (`19281a0`) addressed selector update but pre-existing failure root cause is separate from phase 7 scope.
 
 ### Human Verification Required
 
-#### 1. Dress-Up Activity Re-verification on Real iPad Safari
+#### 1. Confirm Dress-Up and Coloring on Real iPad Safari (Post-Fix)
 
-**Test:** After fix is deployed, open https://mermaids.chriskaschner.com on a real iPad running Safari. Tap the Dress-Up activity. Tap a tail, hair, or accessory option in the selection panel.
-**Expected:** The displayed mermaid part updates to the selected variant. Tapping a color swatch recolors only the selected part (not the full mermaid).
-**Why human:** Real iPad Safari touch event dispatch and rendering are not faithfully replicated by Playwright WebKit on Linux. DPLY-03 requires real-device confirmation.
-
-#### 2. Coloring Activity Verification on Real iPad Safari
-
-**Test:** Open https://mermaids.chriskaschner.com on a real iPad running Safari. Tap the Coloring activity. Select a color swatch, then tap a white region on the coloring page. Tap Undo.
-**Expected:** The tapped region fills with the selected color. Undo reverts the last fill. Performance is acceptable (no crash or degradation).
-**Why human:** Coloring activity was not tested during the 07-02 verification pass. Status is unknown.
+**Test:** On a real iPad running Safari, open https://mermaids.chriskaschner.com. Navigate to Dress-Up. Tap each category tab (Tails, Hair, Accessories). Tap a non-default option in each. Tap the Color tab and tap a color swatch. Navigate to Coloring. Tap a coloring page thumbnail. Select a color and tap a white region. Tap Undo.
+**Expected:** All interactions work. Part swapping swaps the displayed mermaid character (not navigates away). Color swatch recolors only the active character. Tap-to-fill floods the tapped region. Undo reverts last fill.
+**Why human:** DPLY-03 was accepted via a human checkpoint gate documented in 07-04-SUMMARY. The code fix (z-index stacking + stopPropagation) is verified in the codebase. The acceptance cannot be re-executed programmatically because Playwright WebKit on Linux does not replicate real iPad Safari touch event dispatch and rendering. This item is status ACCEPTED based on the 07-04 human checkpoint -- it is listed here only because it was a prior gap and the verification methodology requires noting it.
 
 ### Gaps Summary
 
-**Gap 1 (Blocking -- DPLY-03):** iPad Safari dress-up interaction is broken on the live site. Two failures confirmed on real device: part swap opens the full mermaid list navigation instead of replacing the displayed part, and color swatch recolors a broad area rather than the selected part. The root cause has not been diagnosed. Candidates per 07-02-SUMMARY are: JS errors specific to static hosting, asset path resolution differences on GitHub Pages vs local dev server, or event handler binding not surviving the build/deploy pipeline. DevTools console inspection on the live site is the first diagnostic step required.
+No gaps remain. Both gaps from the previous VERIFICATION.md are closed:
 
-**Gap 2 (Secondary):** HTTP does not redirect to HTTPS. `curl -sI http://mermaids.chriskaschner.com/` returns `HTTP/1.1 200 OK` with no Location header. The 07-02 user_setup included enabling "Enforce HTTPS" in GitHub Pages Settings. This checkbox may not have been activated, or it may require additional DNS propagation time. This is a security/UX gap but does not prevent the app from being usable.
+1. **DPLY-03 gap (iPad Safari dress-up broken):** Root cause was fixed-position nav bar (no z-index) overlapping selection panel (no z-index) on iOS Safari viewport, causing taps to hit nav links. Fix: explicit z-index hierarchy in style.css (nav-bar:5, view containers:10, panels:20) and defensive `e.stopPropagation()` on all four dressup interaction click handlers. Code changes confirmed in codebase. Human checkpoint in plan 07-04 confirmed working on real iPad Safari.
 
-**Root cause grouping:** Gap 1 likely shares a common root cause with the dress-up behavior seen in CI (the 2 pre-existing webkit failures involving `[data-region="tail"]` locator not found). Both may point to a structural issue with how the static frontend renders dress-up component state. A single focused investigation of the dress-up JS on the live site may close Gap 1 entirely.
+2. **HTTPS enforcement gap (HTTP returned 200):** GitHub Pages "Enforce HTTPS" checkbox was enabled by user (human action in plan 07-04). Verified programmatically: `curl -sI http://mermaids.chriskaschner.com/` returns `HTTP/1.1 301 Moved Permanently` with `Location: https://mermaids.chriskaschner.com/`.
+
+Phase 7 goal is achieved. The app is live at https://mermaids.chriskaschner.com, deployable via CI/CD with test gate, accessible on iPad Safari with HTTPS enforcement active, and all three DPLY requirements are satisfied.
 
 ---
 
-_Verified: 2026-03-11_
+_Verified: 2026-03-12T13:08:00Z_
 _Verifier: Claude (gsd-verifier)_
+_Re-verification: Yes -- after gap closure via Plans 07-03 and 07-04_
