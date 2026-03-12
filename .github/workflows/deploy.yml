@@ -15,7 +15,40 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install dependencies
+        run: uv sync --extra dev
+
+      - name: Install Playwright browsers
+        run: uv run python -m playwright install --with-deps webkit chromium
+
+      - name: Start static server
+        run: |
+          python -m http.server 8080 --directory frontend &
+          echo $! > /tmp/server.pid
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8080/ && break
+            sleep 1
+          done
+
+      - name: Run E2E tests against static server
+        env:
+          BASE_URL: http://127.0.0.1:8080
+        run: uv run pytest tests/test_e2e.py tests/test_coloring.py tests/test_dressup.py tests/test_floodfill_unit.py -x --browser webkit
+
+      - name: Stop static server
+        if: always()
+        run: kill $(cat /tmp/server.pid) || true
+
   deploy:
+    needs: [test]
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
