@@ -32,7 +32,7 @@ Requirements for v1.1 Art & Deploy milestone. Each maps to roadmap phases.
 
 - [x] **DPLY-01**: frontend/ directory deploys to GitHub Pages as static site
 - [x] **DPLY-02**: All asset paths are relative (no absolute /assets/ paths)
-- [x] **DPLY-03**: App is accessible on iPad Safari via GitHub Pages URL [GAP: dress-up touch broken on live site -- part swap not working, color scope incorrect]
+- [x] **DPLY-03**: App is accessible on iPad Safari via GitHub Pages URL
 
 ## Future Requirements
 
@@ -101,7 +101,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DRSV-03 | Phase 6 | Complete |
 | DPLY-01 | Phase 7 | Complete |
 | DPLY-02 | Phase 7 | Complete |
-| DPLY-03 | Phase 7 | GAP -- iPad Safari dress-up broken (07-02 verification failed) |
+| DPLY-03 | Phase 7 | Complete (07-04) |
 
 **Coverage:**
 - v1.1 requirements: 15 total
@@ -110,4 +110,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-03-09*
-*Last updated: 2026-03-10 after 05-02 completion*
+*Last updated: 2026-03-12 after 07-04 completion -- DPLY-03 gap closed*

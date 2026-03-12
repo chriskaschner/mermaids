@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Art & Deploy
-status: verifying
-stopped_at: Completed 07-03-PLAN.md -- DPLY-03 fixes applied; awaiting real iPad Safari verification
-last_updated: "2026-03-12T11:49:36.930Z"
-last_activity: 2026-03-11 -- Completed 07-02 custom domain setup; DPLY-03 iPad Safari acceptance FAILED
+status: complete
+stopped_at: Completed 07-04-PLAN.md -- DPLY-03 verified on real iPad Safari, HTTPS enforcement enabled, Phase 7 complete
+last_updated: "2026-03-12T13:04:51.336Z"
+last_activity: 2026-03-12 -- Completed 07-04 gap closure; DPLY-03 verified on real iPad Safari, HTTPS enforcement enabled, v1.1 milestone complete
 progress:
   total_phases: 4
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 10
-  completed_plans: 9
-  percent: 88
+  completed_plans: 10
+  percent: 100
 ---
 
 # Project State
@@ -21,30 +21,20 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-09)
 
 **Core value:** A 6-year-old can open this on an iPad, build her own mermaid, and color mermaid pages -- with zero friction and pure delight.
-**Current focus:** Phase 7 -- custom domain live, but dress-up touch interaction broken on iPad Safari (gap closure needed)
+**Current focus:** v1.1 Art & Deploy milestone complete -- all phases done, app live at https://mermaids.chriskaschner.com
 
 ## Current Position
 
 Phase: 7 of 7 (GitHub Pages Deployment)
-Plan: 2 of 2 executed (DPLY-03 not satisfied -- gap closure required)
-Status: Phase 7 has verification gap -- BLOCKED on DPLY-03
-Last activity: 2026-03-11 -- Completed 07-02 custom domain setup; DPLY-03 iPad Safari acceptance FAILED
+Plan: 4 of 4 executed (all requirements satisfied)
+Status: Phase 7 complete -- all gaps closed, DPLY-03 satisfied
+Last activity: 2026-03-12 -- Completed 07-04 gap closure; DPLY-03 verified on real iPad Safari, HTTPS enforcement enabled
 
-Progress: [█████████░] 88%
+Progress: [██████████] 100%
 
 ## Verification Gaps
 
-**DPLY-03: iPad Safari touch acceptance -- NOT MET**
-
-Site is live at https://mermaids.chriskaschner.com but dress-up activity is broken:
-- Tapping tail/hair/accessory shows full mermaid list instead of swapping the part
-- Color swatch recolors most of mermaid instead of selected part only
-
-Gap closure steps:
-1. Open DevTools on iPad Safari at https://mermaids.chriskaschner.com, capture console errors
-2. Diagnose dress-up part swap failure (check JS event wiring on static hosting)
-3. Diagnose color scope failure (check which element receives recolor event)
-4. Fix, push to main, confirm CI green, re-test on iPad Safari
+None -- all gaps closed.
 
 ## Performance Metrics
 
@@ -71,6 +61,7 @@ Gap closure steps:
 *Updated after each plan completion*
 | Phase 07 P02 | 15min | 3 tasks | 1 files |
 | Phase 07 P03 | 5min | 2 tasks | 3 files |
+| Phase 07 P04 | 5min | 2 tasks | 0 files |
 
 ## Accumulated Context
 
@@ -115,6 +106,8 @@ Recent decisions affecting current work:
 - [Phase 07]: z-index layering: nav-bar=5, dressup-view=10, selection-panel=20 ensures selection panel above nav on iOS Safari
 - [Phase 07]: stopPropagation added defensively to all dressup interaction handlers to prevent tap-through to nav links on iPad
 - [Phase 07]: Debug overlay uses capture-phase listeners with no stopPropagation/preventDefault; activated via ?debug=1 or triple-tap home nav icon
+- [Phase 07]: DPLY-03 satisfied: iPad Safari verification confirmed tapping tabs, option buttons, color swatches, tap-to-fill, and undo all work on real device
+- [Phase 07]: HTTPS enforcement enabled via GitHub Pages Settings checkbox -- redirect activates within 24h
 
 ### Pending Todos
 
@@ -122,13 +115,12 @@ None.
 
 ### Blockers/Concerns
 
-- **ACTIVE: DPLY-03 gap** -- dress-up touch broken on iPad Safari live site; root cause unknown; requires console error capture + diagnosis
 - OpenAI API key needed for art generation pipeline
 - AI art consistency across separate generations is unreliable -- edit API with masks is mitigation
 - vtracer settings may need tuning for AI-generated images (different detail level than hand-drawn)
 
 ## Session Continuity
 
-Last session: 2026-03-12T11:49:36.928Z
-Stopped at: Completed 07-03-PLAN.md -- DPLY-03 fixes applied; awaiting real iPad Safari verification
+Last session: 2026-03-12T13:04:51.333Z
+Stopped at: Completed 07-04-PLAN.md -- DPLY-03 verified on real iPad Safari, HTTPS enforcement enabled, Phase 7 complete
 Resume file: None
