@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Art & Deploy
-status: completed
-stopped_at: Phase 7 context gathered
-last_updated: "2026-03-11T21:43:40.151Z"
-last_activity: 2026-03-10 -- Completed 06-02 async preview thumbnails with color sync
+status: in-progress
+stopped_at: Completed 07-01 CI test gate for GitHub Pages deployment
+last_updated: "2026-03-12T01:08:00Z"
+last_activity: 2026-03-12 -- Completed 07-01 CI test job + BASE_URL fixture for static server E2E testing
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 6
-  completed_plans: 6
-  percent: 100
+  total_plans: 8
+  completed_plans: 7
+  percent: 88
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 
 ## Current Position
 
-Phase: 6 of 7 (Dress-Up Art Swap)
-Plan: 2 of 2 complete
-Status: Phase 6 Complete
-Last activity: 2026-03-10 -- Completed 06-02 async preview thumbnails with color sync
+Phase: 7 of 7 (GitHub Pages Deployment)
+Plan: 1 of 2 complete
+Status: Phase 7 In Progress
+Last activity: 2026-03-12 -- Completed 07-01 CI test job + BASE_URL fixture for static server E2E testing
 
-Progress: [██████████] 100%
+Progress: [█████████░] 88%
 
 ## Performance Metrics
 
@@ -50,6 +50,7 @@ Progress: [██████████] 100%
 | 5 Plan 02 | 1 | 6min | 6 min |
 | 6 Plan 01 | 1 | 3min | 3 min |
 | 6 Plan 02 | 1 | 5min | 5 min |
+| 7 Plan 01 | 1 | 8min | 8 min |
 | 4-7 (v1.1) | - | - | - |
 
 *Updated after each plan completion*
@@ -85,6 +86,9 @@ Recent decisions affecting current work:
 - Preview SVG cache stores original text, colors applied to DOM after insertion -- cache never needs clearing (06-02)
 - acc-none keeps inline X icon since no traced SVG exists for "no accessory" (06-02)
 - Relative asset paths (no leading /) for GitHub Pages deployment compatibility (06-02)
+- BASE_URL env var causes live_server fixture to yield URL directly without starting uvicorn (07-01)
+- CI test job uses python -m http.server 8080 + readiness poll before Playwright E2E run (07-01)
+- deploy job gated on test job via needs: [test] in deploy.yml (07-01)
 
 ### Pending Todos
 
@@ -99,6 +103,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-11T21:43:40.141Z
-Stopped at: Phase 7 context gathered
-Resume file: .planning/phases/07-github-pages-deployment/07-CONTEXT.md
+Last session: 2026-03-12T01:08:00Z
+Stopped at: Completed 07-01-PLAN.md
+Resume file: .planning/phases/07-github-pages-deployment/07-02-PLAN.md
