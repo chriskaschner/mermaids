@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Mermaid Art Rework
-status: active
-stopped_at: null
-last_updated: "2026-03-12"
-last_activity: 2026-03-12 -- Roadmap created, Phase 8 ready to plan
+status: planning
+stopped_at: Phase 8 context gathered
+last_updated: "2026-03-13T02:02:18.529Z"
+last_activity: 2026-03-12 -- Roadmap created for v1.2
 progress:
   total_phases: 3
   completed_phases: 0
@@ -67,6 +67,6 @@ None active.
 
 ## Session Continuity
 
-Last session: 2026-03-12
-Stopped at: Roadmap written, Phase 8 ready to plan
-Resume file: None
+Last session: 2026-03-13T02:02:18.521Z
+Stopped at: Phase 8 context gathered
+Resume file: .planning/phases/08-dress-up-art-rework/08-CONTEXT.md
