@@ -11,19 +11,24 @@ import pytest
 SVG_NS = "http://www.w3.org/2000/svg"
 XLINK_NS = "http://www.w3.org/1999/xlink"
 
-# All expected variant IDs in defs
+# All expected variant IDs in defs (12 parts + body)
 VARIANT_IDS = [
     "tail-1", "tail-2", "tail-3",
     "hair-1", "hair-2", "hair-3",
+    "eye-1", "eye-2", "eye-3",
     "acc-1", "acc-2", "acc-3",
 ]
+
+# Expected 5-layer stacking order (tail=back, acc=top)
+LAYER_ORDER = ["active-tail", "active-body", "active-hair", "active-eyes", "active-acc"]
 
 
 @pytest.fixture
 def traced_parts_dir(tmp_path) -> Path:
     """Create mock traced SVG files simulating vtracer output.
 
-    Creates simple SVGs with path elements named tail-1.svg through acc-3.svg.
+    Creates simple SVGs with path elements named tail-1.svg through acc-3.svg,
+    plus a body.svg for the static base body.
     """
     parts_dir = tmp_path / "traced_parts"
     parts_dir.mkdir()
@@ -36,6 +41,14 @@ def traced_parts_dir(tmp_path) -> Path:
         )
         (parts_dir / f"{variant_id}.svg").write_text(svg_content)
 
+    # Base body SVG
+    body_svg = (
+        f'<svg xmlns="{SVG_NS}" viewBox="0 0 1024 1024">'
+        f'<path d="M200,200 L800,200 L800,800 L200,800 Z" fill="#ffd0b0" />'
+        f'</svg>'
+    )
+    (parts_dir / "body.svg").write_text(body_svg)
+
     return parts_dir
 
 
@@ -45,7 +58,8 @@ def assembled_svg(traced_parts_dir, tmp_path) -> tuple[Path, ET.Element]:
     from mermaids.pipeline.assemble import assemble_mermaid_svg
 
     output = tmp_path / "mermaid.svg"
-    assemble_mermaid_svg(traced_parts_dir, output)
+    base_svg = traced_parts_dir / "body.svg"
+    assemble_mermaid_svg(traced_parts_dir, output, base_traced_svg=base_svg)
 
     tree = ET.parse(output)
     root = tree.getroot()
@@ -69,7 +83,7 @@ class TestAssembleMermaidSvg:
         assert defs is not None, "SVG should contain a <defs> element"
 
     def test_assemble_has_all_variant_ids(self, assembled_svg):
-        """Assembled SVG contains g elements with all variant IDs in defs."""
+        """Assembled SVG contains g elements with all 12 variant IDs + body in defs."""
         _, root = assembled_svg
 
         defs = root.find(f"{{{SVG_NS}}}defs")
@@ -82,17 +96,82 @@ class TestAssembleMermaidSvg:
         for variant_id in VARIANT_IDS:
             assert variant_id in g_ids, f"Missing variant group id={variant_id} in defs"
 
-    def test_assemble_has_single_use(self, assembled_svg):
-        """Assembled SVG has a single <use id='active-character'> referencing tail-1."""
+        # Body group must also be present
+        assert "body" in g_ids, "Missing 'body' group in defs"
+
+    def test_body_group_in_defs(self, assembled_svg):
+        """Assembled SVG has a 'body' group in defs containing base body paths."""
+        _, root = assembled_svg
+
+        defs = root.find(f"{{{SVG_NS}}}defs")
+        body_group = None
+        for g in defs.findall(f"{{{SVG_NS}}}g"):
+            if g.get("id") == "body":
+                body_group = g
+                break
+
+        assert body_group is not None, "Expected a <g id='body'> group in defs"
+        # Should have at least one child path from the base body SVG
+        children = list(body_group)
+        assert len(children) >= 1, "Body group should contain at least one child element"
+
+    def test_assemble_has_five_use_elements(self, assembled_svg):
+        """Assembled SVG has exactly 5 <use> elements with correct IDs."""
         _, root = assembled_svg
 
         uses = list(root.iter(f"{{{SVG_NS}}}use"))
-        assert len(uses) == 1, f"Expected 1 <use> element, got {len(uses)}"
+        assert len(uses) == 5, f"Expected 5 <use> elements, got {len(uses)}"
 
-        use = uses[0]
-        assert use.get("id") == "active-character"
-        href = use.get("href") or use.get(f"{{{XLINK_NS}}}href")
-        assert href == "#tail-1"
+        use_ids = {u.get("id") for u in uses}
+        assert use_ids == {"active-tail", "active-body", "active-hair", "active-eyes", "active-acc"}, (
+            f"Expected 5 use IDs, got {use_ids}"
+        )
+
+    def test_layer_stacking_order(self, assembled_svg):
+        """Use elements appear in DOM order: tail (back) > body > hair > eyes > acc (top)."""
+        _, root = assembled_svg
+
+        uses = [e for e in root if e.tag == f"{{{SVG_NS}}}use"]
+        use_ids = [u.get("id") for u in uses]
+
+        assert use_ids == LAYER_ORDER, (
+            f"Expected layer order {LAYER_ORDER}, got {use_ids}"
+        )
+
+    def test_active_tail_references_tail1(self, assembled_svg):
+        """active-tail use element references #tail-1 by default."""
+        _, root = assembled_svg
+
+        uses = {u.get("id"): u for u in root.iter(f"{{{SVG_NS}}}use")}
+        active_tail = uses.get("active-tail")
+        assert active_tail is not None, "Expected active-tail use element"
+
+        href = active_tail.get("href") or active_tail.get(f"{{{XLINK_NS}}}href")
+        assert href == "#tail-1", f"Expected active-tail href=#tail-1, got {href}"
+
+    def test_active_body_references_body(self, assembled_svg):
+        """active-body use element references the static #body group."""
+        _, root = assembled_svg
+
+        uses = {u.get("id"): u for u in root.iter(f"{{{SVG_NS}}}use")}
+        active_body = uses.get("active-body")
+        assert active_body is not None, "Expected active-body use element"
+
+        href = active_body.get("href") or active_body.get(f"{{{XLINK_NS}}}href")
+        assert href == "#body", f"Expected active-body href=#body, got {href}"
+
+    def test_data_category_attributes(self, assembled_svg):
+        """Swappable use elements have data-category attribute; active-body does not."""
+        _, root = assembled_svg
+
+        uses = {u.get("id"): u for u in root.iter(f"{{{SVG_NS}}}use")}
+
+        assert uses["active-tail"].get("data-category") == "tail"
+        assert uses["active-hair"].get("data-category") == "hair"
+        assert uses["active-eyes"].get("data-category") == "eyes"
+        assert uses["active-acc"].get("data-category") == "acc"
+        # active-body has no data-category (static, never swapped)
+        assert uses["active-body"].get("data-category") is None
 
     def test_assemble_viewbox(self, assembled_svg):
         """Assembled SVG has square viewBox matching 1024x1024 traced source."""
@@ -103,11 +182,19 @@ class TestAssembleMermaidSvg:
     def test_assembled_svg_valid_xml(self, assembled_svg):
         """Output mermaid.svg parses as valid XML."""
         output, _ = assembled_svg
-        # If we got here, ET.parse already succeeded in the fixture.
-        # Double-check by reading raw text and parsing again.
         content = output.read_text()
         root = ET.fromstring(content)
         assert root.tag.endswith("svg")
+
+    def test_defs_has_thirteen_groups(self, assembled_svg):
+        """Defs contain 13 groups: 12 variant parts + 1 body."""
+        _, root = assembled_svg
+
+        defs = root.find(f"{{{SVG_NS}}}defs")
+        g_elements = defs.findall(f"{{{SVG_NS}}}g")
+        assert len(g_elements) == 13, (
+            f"Expected 13 groups in defs (12 parts + body), got {len(g_elements)}"
+        )
 
 
 # -------------------------------------------------------
@@ -168,15 +255,15 @@ class TestCopyFunctions:
 
 
 # -------------------------------------------------------
-# Copy dressup parts tests
+# Copy dressup parts tests (updated for 12 variants)
 # -------------------------------------------------------
 
 
 class TestCopyDressupParts:
     """Tests for copy_dressup_parts_to_frontend()."""
 
-    def test_copies_all_nine_variants(self, tmp_path):
-        """copy_dressup_parts_to_frontend() copies 9 SVGs from generated
+    def test_copies_all_twelve_variants(self, tmp_path):
+        """copy_dressup_parts_to_frontend() copies 12 SVGs from generated
         dressup dir to frontend/assets/svg/dressup/."""
         from mermaids.pipeline.assemble import copy_dressup_parts_to_frontend
 
@@ -198,7 +285,7 @@ class TestCopyDressupParts:
         ):
             results = copy_dressup_parts_to_frontend()
 
-        assert len(results) == 9
+        assert len(results) == 12, f"Expected 12 copied files, got {len(results)}"
         for r in results:
             assert r.exists()
         for variant_id in VARIANT_IDS:
@@ -250,6 +337,14 @@ class TestBackgroundStrip:
             )
             (parts_dir / f"{variant_id}.svg").write_text(svg_content)
 
+        # Simple body SVG without background rect
+        body_svg = (
+            f'<svg xmlns="{SVG_NS}" viewBox="0 0 1024 1024">'
+            f'<path d="M200,200 L800,200 L800,800 L200,800 Z" fill="#ffd0b0" />'
+            f'</svg>'
+        )
+        (parts_dir / "body.svg").write_text(body_svg)
+
         return parts_dir
 
     def test_first_path_stripped(self, traced_with_bg_dir, tmp_path):
@@ -258,7 +353,8 @@ class TestBackgroundStrip:
         from mermaids.pipeline.assemble import assemble_mermaid_svg
 
         output = tmp_path / "mermaid_bg.svg"
-        assemble_mermaid_svg(traced_with_bg_dir, output)
+        base_svg = traced_with_bg_dir / "body.svg"
+        assemble_mermaid_svg(traced_with_bg_dir, output, base_traced_svg=base_svg)
 
         tree = ET.parse(output)
         root = tree.getroot()
@@ -279,7 +375,8 @@ class TestBackgroundStrip:
         from mermaids.pipeline.assemble import assemble_mermaid_svg
 
         output = tmp_path / "mermaid_bg.svg"
-        assemble_mermaid_svg(traced_with_bg_dir, output)
+        base_svg = traced_with_bg_dir / "body.svg"
+        assemble_mermaid_svg(traced_with_bg_dir, output, base_traced_svg=base_svg)
 
         tree = ET.parse(output)
         root = tree.getroot()
