@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: Art & Deploy
-status: archived
-stopped_at: Milestone v1.1 completed and archived
+milestone: v1.2
+milestone_name: Mermaid Art Rework
+status: active
+stopped_at: null
 last_updated: "2026-03-12"
-last_activity: 2026-03-12 -- Milestone v1.1 archived
+last_activity: 2026-03-12 -- Milestone v1.2 started
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 10
-  completed_plans: 10
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,12 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-12)
 
 **Core value:** A 6-year-old can open this on an iPad, build her own mermaid, and color mermaid pages -- with zero friction and pure delight.
-**Current focus:** Planning next milestone
+**Current focus:** Defining requirements for v1.2 Mermaid Art Rework
 
 ## Current Position
 
-Milestone v1.1 Art & Deploy archived. App live at https://mermaids.chriskaschner.com.
-Next step: `/gsd:new-milestone` to define v1.2 or v2.0.
+Phase: Not started (defining requirements)
+Plan: --
+Status: Defining requirements
+Last activity: 2026-03-12 -- Milestone v1.2 started
 
 ## Accumulated Context
 
@@ -45,5 +47,5 @@ None active.
 ## Session Continuity
 
 Last session: 2026-03-12
-Stopped at: Milestone v1.1 completed and archived
+Stopped at: Milestone v1.2 started, defining requirements
 Resume file: None

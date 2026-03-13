@@ -23,7 +23,14 @@ A 6-year-old can open this on an iPad, build her own mermaid, and color mermaid 
 
 ### Active
 
-(None -- define next milestone requirements via `/gsd:new-milestone`)
+## Current Milestone: v1.2 Mermaid Art Rework
+
+**Goal:** Fix dress-up and coloring art so both use a single base mermaid with swappable parts (hair, eyes, tail) and closed hair regions for paint bucket.
+
+**Target features:**
+- Dress-up rework: one base mermaid with swappable hair, eyes, and tail (not different mermaids per item)
+- Coloring rework: coloring pages with hair/eyes/tail variety (not just accessories)
+- Closed hair regions: hair shapes are filled/closed so flood-fill works on them
 
 ### Future
 
@@ -32,6 +39,7 @@ A 6-year-old can open this on an iPad, build her own mermaid, and color mermaid 
 - [ ] Save creations: gallery of completed mermaids and colored pages
 - [ ] Sound effects on interaction (tap, place, sparkle) with mute button
 - [ ] Themed coloring page sets (Coral Reef, Mermaid Castle collections)
+- [ ] Dress-up-to-coloring: the mermaid you customize in dress-up becomes the coloring page you color
 
 ### Out of Scope
 
@@ -86,4 +94,4 @@ Art style: kawaii flat-color mermaid illustrations (pivoted from watercolor in v
 | CI test gate before deploy | Prevent broken builds from reaching production | Good -- caught real issues |
 
 ---
-*Last updated: 2026-03-12 after v1.1 milestone*
+*Last updated: 2026-03-12 after v1.2 milestone start*
