@@ -51,7 +51,7 @@ Full details: `.planning/milestones/v1.1-ROADMAP.md`
   3. User can tap eye swatches and the mermaid's eyes change while everything else stays the same
   4. User can tap tail swatches and the mermaid's tail changes while everything else stays the same
   5. Hair and tail art regions do not visually overlap or bleed into each other
-**Plans:** 3 plans
+**Plans:** 2/3 plans executed
 Plans:
 - [ ] 08-01-PLAN.md -- Pipeline rework: prompts, regions, masks, multi-layer SVG assembly
 - [ ] 08-02-PLAN.md -- Frontend rework: multi-part swap, eyes tab, per-part recoloring
@@ -88,6 +88,6 @@ Plans:
 | 5. Flood-Fill Coloring | v1.1 | 2/2 | Complete | 2026-03-10 |
 | 6. Dress-Up Art Swap | v1.1 | 2/2 | Complete | 2026-03-10 |
 | 7. GitHub Pages Deployment | v1.1 | 4/4 | Complete | 2026-03-12 |
-| 8. Dress-Up Art Rework | v1.2 | 0/3 | In progress | - |
+| 8. Dress-Up Art Rework | 2/3 | In Progress|  | - |
 | 9. Coloring Art Rework | v1.2 | 0/? | Not started | - |
 | 10. Cleanup & Stability | v1.2 | 0/? | Not started | - |

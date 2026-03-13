@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Mermaid Art Rework
-status: planning
-stopped_at: Phase 8 context gathered
-last_updated: "2026-03-13T02:02:18.529Z"
-last_activity: 2026-03-12 -- Roadmap created for v1.2
+status: executing
+stopped_at: Completed 08-02-PLAN.md
+last_updated: "2026-03-13T02:26:07.689Z"
+last_activity: 2026-03-12 -- Completed 08-01 art pipeline rework
 progress:
   total_phases: 3
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 3
+  completed_plans: 2
+  percent: 33
 ---
 
 # Project State
@@ -26,26 +26,27 @@ See: .planning/PROJECT.md (updated 2026-03-12)
 ## Current Position
 
 Phase: 8 of 10 (Dress-Up Art Rework)
-Plan: -- of -- (not yet planned)
-Status: Ready to plan
-Last activity: 2026-03-12 -- Roadmap created for v1.2
+Plan: 1 of 3 complete
+Status: Executing
+Last activity: 2026-03-12 -- Completed 08-01 art pipeline rework
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [###-------] 33%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0 (this milestone)
-- Average duration: --
-- Total execution time: --
+- Total plans completed: 1 (this milestone)
+- Average duration: 25 min
+- Total execution time: 25 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 08-dress-up-art-rework | 1 | 25 min | 25 min |
 
 *Updated after each plan completion*
+| Phase 08-dress-up-art-rework P02 | 308s | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -54,8 +55,14 @@ Progress: [░░░░░░░░░░] 0%
 Decisions are logged in PROJECT.md Key Decisions table.
 
 Recent decisions affecting current work:
-- v1.1: DEBT-03 (hair/tail overlap) carried forward -- fix lands in Phase 8 art rework
+- v1.1: DEBT-03 (hair/tail overlap) carried forward -- FIXED in 08-01 via non-overlapping vertical region layout
 - v1.1: 2 sparkle WebKit failures are pre-existing -- targeted fix in Phase 10
+- 08-01: acc region moved to torso/collar (y 450-549) instead of top-of-head to achieve non-overlap with hair
+- 08-01: 5-layer SVG stacking (tail > body > hair > eyes > acc) replacing single active-character use element
+- 08-01: assemble_mermaid_svg() gains optional base_traced_svg parameter for body group creation
+- [Phase 08-dress-up-art-rework]: Eye preview SVGs are placeholder stubs; real AI art from Plan 01 pipeline replaces them
+- [Phase 08-dress-up-art-rework]: mermaid.svg updated with 5 stacked use elements and eye stubs so Plan 02 JS works without Plan 01 pipeline run
+- [Phase 08-dress-up-art-rework]: recolorActivePart uses lastPartCategory when color tab is active for cross-tab recolor continuity
 
 ### Pending Todos
 
@@ -67,6 +74,6 @@ None active.
 
 ## Session Continuity
 
-Last session: 2026-03-13T02:02:18.521Z
-Stopped at: Phase 8 context gathered
-Resume file: .planning/phases/08-dress-up-art-rework/08-CONTEXT.md
+Last session: 2026-03-13T02:26:07.687Z
+Stopped at: Completed 08-02-PLAN.md
+Resume file: None

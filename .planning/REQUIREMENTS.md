@@ -9,10 +9,10 @@ Requirements for Mermaid Art Rework milestone. Each maps to roadmap phases.
 
 ### Dress-Up Art
 
-- [ ] **DRSU-01**: User sees a single base mermaid (not different mermaids per item)
-- [ ] **DRSU-02**: User can swap between multiple hair style variants
-- [ ] **DRSU-03**: User can swap between multiple eye style variants
-- [ ] **DRSU-04**: User can swap between multiple tail style variants
+- [x] **DRSU-01**: User sees a single base mermaid (not different mermaids per item)
+- [x] **DRSU-02**: User can swap between multiple hair style variants
+- [x] **DRSU-03**: User can swap between multiple eye style variants
+- [x] **DRSU-04**: User can swap between multiple tail style variants
 
 ### Coloring Art
 
@@ -62,10 +62,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DRSU-01 | Phase 8 | Pending |
-| DRSU-02 | Phase 8 | Pending |
-| DRSU-03 | Phase 8 | Pending |
-| DRSU-04 | Phase 8 | Pending |
+| DRSU-01 | Phase 8 | Complete |
+| DRSU-02 | Phase 8 | Complete |
+| DRSU-03 | Phase 8 | Complete |
+| DRSU-04 | Phase 8 | Complete |
 | DEBT-03 | Phase 8 | Pending |
 | COLR-01 | Phase 9 | Pending |
 | COLR-02 | Phase 9 | Pending |
