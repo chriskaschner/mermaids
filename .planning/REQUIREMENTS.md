@@ -62,22 +62,22 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DRSU-01 | Pending | Pending |
-| DRSU-02 | Pending | Pending |
-| DRSU-03 | Pending | Pending |
-| DRSU-04 | Pending | Pending |
-| COLR-01 | Pending | Pending |
-| COLR-02 | Pending | Pending |
-| COLR-03 | Pending | Pending |
-| DEBT-01 | Pending | Pending |
-| DEBT-02 | Pending | Pending |
-| DEBT-03 | Pending | Pending |
+| DRSU-01 | Phase 8 | Pending |
+| DRSU-02 | Phase 8 | Pending |
+| DRSU-03 | Phase 8 | Pending |
+| DRSU-04 | Phase 8 | Pending |
+| DEBT-03 | Phase 8 | Pending |
+| COLR-01 | Phase 9 | Pending |
+| COLR-02 | Phase 9 | Pending |
+| COLR-03 | Phase 9 | Pending |
+| DEBT-01 | Phase 10 | Pending |
+| DEBT-02 | Phase 10 | Pending |
 
 **Coverage:**
 - v1.2 requirements: 10 total
-- Mapped to phases: 0
-- Unmapped: 10
+- Mapped to phases: 10
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-12*
-*Last updated: 2026-03-12 after initial definition*
+*Last updated: 2026-03-12 after roadmap creation*

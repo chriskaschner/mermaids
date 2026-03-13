@@ -5,9 +5,9 @@ milestone_name: Mermaid Art Rework
 status: active
 stopped_at: null
 last_updated: "2026-03-12"
-last_activity: 2026-03-12 -- Milestone v1.2 started
+last_activity: 2026-03-12 -- Roadmap created, Phase 8 ready to plan
 progress:
-  total_phases: 0
+  total_phases: 3
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -21,20 +21,41 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-12)
 
 **Core value:** A 6-year-old can open this on an iPad, build her own mermaid, and color mermaid pages -- with zero friction and pure delight.
-**Current focus:** Defining requirements for v1.2 Mermaid Art Rework
+**Current focus:** Phase 8 -- Dress-Up Art Rework
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: --
-Status: Defining requirements
-Last activity: 2026-03-12 -- Milestone v1.2 started
+Phase: 8 of 10 (Dress-Up Art Rework)
+Plan: -- of -- (not yet planned)
+Status: Ready to plan
+Last activity: 2026-03-12 -- Roadmap created for v1.2
+
+Progress: [░░░░░░░░░░] 0%
+
+## Performance Metrics
+
+**Velocity:**
+- Total plans completed: 0 (this milestone)
+- Average duration: --
+- Total execution time: --
+
+**By Phase:**
+
+| Phase | Plans | Total | Avg/Plan |
+|-------|-------|-------|----------|
+| - | - | - | - |
+
+*Updated after each plan completion*
 
 ## Accumulated Context
 
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
+
+Recent decisions affecting current work:
+- v1.1: DEBT-03 (hair/tail overlap) carried forward -- fix lands in Phase 8 art rework
+- v1.1: 2 sparkle WebKit failures are pre-existing -- targeted fix in Phase 10
 
 ### Pending Todos
 
@@ -47,5 +68,5 @@ None active.
 ## Session Continuity
 
 Last session: 2026-03-12
-Stopped at: Milestone v1.2 started, defining requirements
+Stopped at: Roadmap written, Phase 8 ready to plan
 Resume file: None
