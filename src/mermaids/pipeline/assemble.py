@@ -1,9 +1,9 @@
 """SVG assembly combining traced parts into defs+use mermaid.svg.
 
 Builds a new mermaid.svg with the defs+use structure that the frontend
-dressup.js expects. Each variant is a complete character (not an isolated
-part), so the assembled SVG uses a single <use> element that swaps between
-full-character groups in <defs>.
+dressup.js expects. Each variant is an isolated part (not a full character).
+The assembled SVG uses 5 stacked <use> elements for independent layer swapping:
+  tail (back) > body (static) > hair (mid) > eyes (front) > accessories (top).
 
 Also provides copy utilities for deploying generated SVGs to the frontend
 assets directory.
@@ -23,11 +23,25 @@ XLINK_NS = "http://www.w3.org/1999/xlink"
 ET.register_namespace("", SVG_NS)
 ET.register_namespace("xlink", XLINK_NS)
 
-# Expected variant part IDs in order
+# Expected variant part IDs in order (12 total: 3 per category)
 VARIANT_IDS = [
     "tail-1", "tail-2", "tail-3",
     "hair-1", "hair-2", "hair-3",
-    "acc-1", "acc-2", "acc-3",
+    "eye-1",  "eye-2",  "eye-3",
+    "acc-1",  "acc-2",  "acc-3",
+]
+
+# ID for the static base body group in defs
+BODY_ID = "body"
+
+# Stacked layer definitions in DOM order (tail=back, acc=top)
+# Each entry: (use_id, default_href, data_category or None)
+_LAYERS = [
+    ("active-tail",  "#tail-1",  "tail"),
+    ("active-body",  "#body",    None),    # static, never swapped by UI
+    ("active-hair",  "#hair-1",  "hair"),
+    ("active-eyes",  "#eye-1",   "eyes"),
+    ("active-acc",   "#acc-1",   "acc"),
 ]
 
 
@@ -73,7 +87,7 @@ def _is_background_path(element: ET.Element) -> bool:
 def _make_variant_group(variant_id: str, traced_svg_path: Path) -> ET.Element:
     """Parse a traced SVG and wrap its path/shape elements in a <g> with id.
 
-    Each variant is a complete character traced at 1024x1024. No scaling is
+    Each variant is an isolated part traced at 1024x1024. No scaling is
     applied since the viewBox matches the source coordinate space.
     Strips the vtracer background rectangle (first near-white path covering
     the full canvas) to prevent solid color blocks when recoloring.
@@ -100,18 +114,30 @@ def _make_variant_group(variant_id: str, traced_svg_path: Path) -> ET.Element:
     return g
 
 
+def assemble_mermaid_svg(
+    traced_parts_dir: Path,
+    output_path: Path,
+    *,
+    base_traced_svg: Path | None = None,
+) -> Path:
+    """Build a mermaid.svg with multi-layer defs+use structure from traced part SVGs.
 
+    Produces 5 stacked <use> elements for independent swapping of each body
+    layer. The static base body is always visible; the other 4 layers swap
+    their href to change hair, eyes, tail, and accessory variants.
 
-def assemble_mermaid_svg(traced_parts_dir: Path, output_path: Path) -> Path:
-    """Build a mermaid.svg with defs+use structure from traced part SVGs.
-
-    Each variant is a complete character (not an isolated part). The
-    assembled SVG uses a single <use> element that the frontend swaps
-    between full-character groups in <defs>.
+    Layer stacking order (DOM order = paint order, first=back, last=front):
+      1. active-tail   (tail layer, back)
+      2. active-body   (static base body, always visible)
+      3. active-hair   (hair layer)
+      4. active-eyes   (eyes layer)
+      5. active-acc    (accessories layer, front)
 
     Args:
         traced_parts_dir: Directory containing traced SVGs (tail-1.svg, etc.)
         output_path: Where to write the assembled mermaid.svg.
+        base_traced_svg: Path to traced base body SVG (creates 'body' group in
+            defs). If None, an empty body group is created.
 
     Returns:
         The output_path as a Path object.
@@ -127,7 +153,15 @@ def assemble_mermaid_svg(traced_parts_dir: Path, output_path: Path) -> Path:
     # Create defs
     defs = ET.SubElement(root, f"{{{SVG_NS}}}defs")
 
-    # Add variant groups from traced SVGs
+    # Add body group (static base) first in defs
+    if base_traced_svg is not None and Path(base_traced_svg).exists():
+        body_group = _make_variant_group(BODY_ID, Path(base_traced_svg))
+    else:
+        body_group = ET.Element(f"{{{SVG_NS}}}g")
+        body_group.set("id", BODY_ID)
+    defs.append(body_group)
+
+    # Add variant part groups from traced SVGs
     for variant_id in VARIANT_IDS:
         svg_file = traced_parts_dir / f"{variant_id}.svg"
         if svg_file.exists():
@@ -138,12 +172,14 @@ def assemble_mermaid_svg(traced_parts_dir: Path, output_path: Path) -> Path:
             g = ET.SubElement(defs, f"{{{SVG_NS}}}g")
             g.set("id", variant_id)
 
-    # Single <use> referencing the active character (default: tail-1)
-    use = ET.SubElement(root, f"{{{SVG_NS}}}use")
-    use.set("id", "active-character")
-    use.set("href", "#tail-1")
-    use.set("data-region", "character")
-    use.set("pointer-events", "all")
+    # Add 5 stacked <use> elements in layer order (tail=back, acc=front)
+    for use_id, default_href, data_category in _LAYERS:
+        use = ET.SubElement(root, f"{{{SVG_NS}}}use")
+        use.set("id", use_id)
+        use.set("href", default_href)
+        if data_category is not None:
+            use.set("data-category", data_category)
+            use.set("pointer-events", "all")
 
     # Write output
     output_path.parent.mkdir(parents=True, exist_ok=True)
