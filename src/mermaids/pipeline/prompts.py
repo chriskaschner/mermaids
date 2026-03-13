@@ -36,30 +36,108 @@ COLORING_PAGES: list[dict[str, str]] = [
 ]
 
 # ---------------------------------------------------------------------------
-# Dress-up: full-color chibi kawaii mermaid with flat fills for recoloring
+# Dress-up: full-color chibi kawaii mermaid base body for part overlay editing
 # ---------------------------------------------------------------------------
 
 DRESSUP_BASE_PROMPT: str = (
     "Full color chibi kawaii mermaid character, flat cell-shaded style with "
-    "solid color fills. Big head, small body, oversized round eyes, Sanrio-like "
-    "cute proportions. Clean edges between color regions suitable for SVG "
-    "tracing. White background, centered, front-facing pose. "
+    "solid color fills. Big head, small body, Sanrio-like cute proportions. "
+    "Neutral front-facing pose, centered, white background. Clean edges between "
+    "color regions suitable for SVG tracing. The base body should have minimal "
+    "details so that hair, eyes, tail, and accessory parts can be overlaid. "
 )
 
 DRESSUP_VARIANTS: dict[str, list[dict[str, str]]] = {
     "tails": [
-        {"id": "tail-1", "prompt_detail": "classic fish tail with rounded fins, pastel pink"},
-        {"id": "tail-2", "prompt_detail": "flowing ribbon-like tail with scalloped edges, lavender purple"},
-        {"id": "tail-3", "prompt_detail": "star-shaped tail fin with sparkle accents, aqua blue"},
+        {
+            "id": "tail-1",
+            "prompt_detail": (
+                "isolated tail part only, keep rest of character unchanged. "
+                "Classic fish tail with rounded fins, pastel pink"
+            ),
+        },
+        {
+            "id": "tail-2",
+            "prompt_detail": (
+                "isolated tail part only, keep rest of character unchanged. "
+                "Flowing ribbon-like tail with scalloped edges, lavender purple"
+            ),
+        },
+        {
+            "id": "tail-3",
+            "prompt_detail": (
+                "isolated tail part only, keep rest of character unchanged. "
+                "Star-shaped tail fin with sparkle accents, aqua blue"
+            ),
+        },
     ],
     "hair": [
-        {"id": "hair-1", "prompt_detail": "long flowing wavy hair, golden blonde"},
-        {"id": "hair-2", "prompt_detail": "twin pigtails with bows, coral pink"},
-        {"id": "hair-3", "prompt_detail": "short bob with bangs and a seashell clip, mint green"},
+        {
+            "id": "hair-1",
+            "prompt_detail": (
+                "isolated hair part only, keep rest of character unchanged. "
+                "Long flowing wavy hair, golden blonde"
+            ),
+        },
+        {
+            "id": "hair-2",
+            "prompt_detail": (
+                "isolated hair part only, keep rest of character unchanged. "
+                "Twin pigtails with bows, coral pink"
+            ),
+        },
+        {
+            "id": "hair-3",
+            "prompt_detail": (
+                "isolated hair part only, keep rest of character unchanged. "
+                "Short bob with bangs and a seashell clip, mint green"
+            ),
+        },
+    ],
+    "eyes": [
+        {
+            "id": "eye-1",
+            "prompt_detail": (
+                "isolated eyes part only, keep rest of character unchanged. "
+                "Big round eyes, classic kawaii style"
+            ),
+        },
+        {
+            "id": "eye-2",
+            "prompt_detail": (
+                "isolated eyes part only, keep rest of character unchanged. "
+                "Sparkle star-pupil eyes"
+            ),
+        },
+        {
+            "id": "eye-3",
+            "prompt_detail": (
+                "isolated eyes part only, keep rest of character unchanged. "
+                "Sleepy half-closed dreamy eyes"
+            ),
+        },
     ],
     "accessories": [
-        {"id": "acc-1", "prompt_detail": "pearl necklace and small tiara crown"},
-        {"id": "acc-2", "prompt_detail": "flower garland around shoulders and a starfish hairpin"},
-        {"id": "acc-3", "prompt_detail": "bubble wand in hand and tiny seahorse companion on shoulder"},
+        {
+            "id": "acc-1",
+            "prompt_detail": (
+                "isolated accessory part only, keep rest of character unchanged. "
+                "Pearl necklace and small tiara crown"
+            ),
+        },
+        {
+            "id": "acc-2",
+            "prompt_detail": (
+                "isolated accessory part only, keep rest of character unchanged. "
+                "Flower garland around shoulders and a starfish hairpin"
+            ),
+        },
+        {
+            "id": "acc-3",
+            "prompt_detail": (
+                "isolated accessory part only, keep rest of character unchanged. "
+                "Bubble wand in hand and tiny seahorse companion on shoulder"
+            ),
+        },
     ],
 }

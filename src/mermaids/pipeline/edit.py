@@ -2,7 +2,7 @@
 
 Provides create_region_mask() for building RGBA masks, edit_region() for
 calling the gpt-image-1 edit endpoint, and generate_dressup_variants() to
-produce all 9 dress-up part PNGs (3 tails, 3 hair, 3 accessories).
+produce all 12 dress-up part PNGs (3 tails, 3 hair, 3 eyes, 3 accessories).
 """
 
 import base64
@@ -35,16 +35,27 @@ def _get_client() -> openai.OpenAI:
 
 # Region coordinate definitions for 1024x1024 generation space.
 # Transparent area = area to be replaced by the edit API.
+# Regions are designed to be non-overlapping (fixes DEBT-03).
+#
+# Vertical layout (top -> bottom):
+#   hair:  upper head/crown zone -- y: 0..290
+#   eyes:  face-center zone -- y: 300..440
+#   acc:   torso/collar zone (necklaces, wands, companions) -- y: 450..549
+#   tail:  lower body -- y: 550..1024 (hair y2=290 < tail y1=550)
+#
+# No pair of regions share any pixel area.
 REGIONS: dict[str, tuple[int, int, int, int]] = {
-    "tail": (200, 500, 824, 1024),   # lower body area
-    "hair": (200, 0, 824, 350),       # head/hair area
-    "acc":  (300, 0, 724, 250),       # top of head for accessories
+    "hair": (150, 0,   874, 290),   # upper head, crown and hair
+    "eyes": (300, 300, 724, 440),   # face-center, eye area
+    "acc":  (200, 450, 824, 549),   # torso/collar for necklaces, wands, companions
+    "tail": (200, 550, 824, 1024),  # lower body, well below all above regions
 }
 
 # Map DRESSUP_VARIANTS category keys to region keys
 _CATEGORY_TO_REGION: dict[str, str] = {
     "tails": "tail",
     "hair": "hair",
+    "eyes": "eyes",
     "accessories": "acc",
 }
 
@@ -162,16 +173,16 @@ def generate_base_mermaid() -> Path:
 
 
 def generate_dressup_variants() -> list[Path]:
-    """Generate all 9 dress-up variant PNGs via the edit API.
+    """Generate all 12 dress-up variant PNGs via the edit API.
 
     1. Generates (or skips) the base mermaid image.
-    2. For each category (tails, hair, accessories):
+    2. For each category (tails, hair, eyes, accessories):
        a. Creates a mask for that region.
        b. For each variant, calls edit_region() with the variant prompt.
     3. Returns list of all generated variant paths.
 
     Returns:
-        List of 9 Path objects (tail-1..3, hair-1..3, acc-1..3).
+        List of 12 Path objects (tail-1..3, hair-1..3, eye-1..3, acc-1..3).
     """
     print("Generating base mermaid for dress-up...")
     base_path = generate_base_mermaid()
