@@ -5,10 +5,10 @@
  */
 
 import { initTouch } from "./touch.js?v=14";
-import { initDressUp, resetState } from "./dressup.js?v=14";
+import { initDressUp, resetState, CHARACTERS, COLORS as DRESSUP_COLORS, SKIN_TONES } from "./dressup.js?v=14";
 import {
   COLORING_PAGES,
-  COLORS,
+  COLORS as COLORING_COLORS,
   initColoringCanvas,
   handleCanvasTap,
   strokeStart,
@@ -56,53 +56,40 @@ async function renderDressUp() {
   try {
     const resp = await fetch("assets/svg/mermaid.svg");
     const svgText = await resp.text();
+
+    const allColors = [...DRESSUP_COLORS, ...SKIN_TONES];
+
     el.innerHTML = `
       <div class="dressup-view">
         <div class="mermaid-container" id="mermaid-container">
           ${svgText}
         </div>
         <div class="selection-panel">
-          <div class="category-tabs">
-            <button class="cat-tab active" data-category="hair" aria-label="Hair">
-              <svg width="24" height="24" viewBox="0 0 24 24">
-                <path d="M6,12 Q6,4 12,3 Q18,4 18,12 Q16,8 12,7 Q8,8 6,12Z"
-                      fill="#c4a7d7" />
-              </svg>
-            </button>
-            <button class="cat-tab" data-category="eyes" aria-label="Eyes">
-              <svg width="24" height="24" viewBox="0 0 24 24">
-                <ellipse cx="12" cy="12" rx="8" ry="6" fill="none" stroke="#87ceeb" stroke-width="2" />
-                <circle cx="12" cy="12" r="3" fill="#87ceeb" />
-              </svg>
-            </button>
-            <button class="cat-tab" data-category="tail" aria-label="Tails">
-              <svg width="24" height="24" viewBox="0 0 24 24">
-                <path d="M12,2 Q8,10 6,16 Q10,20 12,18 Q14,20 18,16 Q16,10 12,2Z"
-                      fill="#7ec8c8" />
-              </svg>
-            </button>
-            <button class="cat-tab" data-category="acc" aria-label="Accessories">
-              <svg width="24" height="24" viewBox="0 0 24 24">
-                <path d="M12,2 L14,8 L20,8 L15,12 L17,18 L12,14 L7,18 L9,12 L4,8 L10,8Z"
-                      fill="#ffd700" />
-              </svg>
-            </button>
-            <button class="cat-tab" data-category="color" aria-label="Colors">
-              <svg width="24" height="24" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10" fill="none" stroke="#999" stroke-width="2" />
-                <circle cx="8" cy="10" r="3" fill="#ff69b4" />
-                <circle cx="16" cy="10" r="3" fill="#87ceeb" />
-                <circle cx="12" cy="16" r="3" fill="#98fb98" />
-              </svg>
-            </button>
+          <div class="character-gallery">
+            ${CHARACTERS.map((id, i) => `
+              <button class="char-btn${i === 0 ? " selected" : ""}"
+                      data-character="${id}"
+                      aria-label="${id}">
+                <span class="char-num">${i + 1}</span>
+              </button>
+            `).join("")}
+          </div>
+          <div class="color-row">
+            <div class="color-section">
+              ${allColors.map((color) => `
+                <button class="color-swatch"
+                        data-color="${color}"
+                        aria-label="Color ${color}"
+                        style="background: ${color};">
+                </button>
+              `).join("")}
+            </div>
             <button class="undo-btn" aria-label="Undo">
               <svg width="24" height="24" viewBox="0 0 24 24">
                 <path d="M7,12 L3,8 L7,4 M3,8 L15,8 Q20,8 20,14 Q20,20 15,20 L10,20"
                       fill="none" stroke="#888" stroke-width="2.5" stroke-linecap="round" />
               </svg>
             </button>
-          </div>
-          <div class="options-row" id="options-row">
           </div>
         </div>
       </div>
@@ -116,7 +103,7 @@ async function renderDressUp() {
     resetState();
     // Wire touch sparkle feedback on the mermaid itself
     initTouch("#mermaid-svg");
-    // Wire dress-up interaction (tabs, options, undo)
+    // Wire dress-up interaction (gallery, colors, undo)
     await initDressUp();
   } catch (err) {
     el.innerHTML = '<div class="error">Could not load mermaid.</div>';
@@ -198,7 +185,7 @@ async function openColoringPage(pageId) {
             </button>
           </div>
           <div class="options-row" id="color-swatches">
-            ${COLORS.map(
+            ${COLORING_COLORS.map(
               (color, i) => `
               <button class="color-swatch${i === 2 ? " selected" : ""}"
                       data-color="${color}"
@@ -226,7 +213,7 @@ async function openColoringPage(pageId) {
     });
 
     // Set default selected color (hot pink, COLORS[2])
-    setSelectedColor(COLORS[2]);
+    setSelectedColor(COLORING_COLORS[2]);
 
     // Initialize canvas with the SVG rasterized onto it
     const { canvas } = await initColoringCanvas(page.file, container);

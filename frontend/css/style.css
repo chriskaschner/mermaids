@@ -158,6 +158,65 @@ html, body {
     border-top: 1px solid rgba(0, 0, 0, 0.1);
     position: relative;
     z-index: 20;
+    padding: 8px;
+}
+
+/* Character gallery -- 3x3 grid of mermaid buttons */
+.character-gallery {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 0 8px 8px;
+    max-width: 280px;
+    margin: 0 auto;
+}
+
+.char-btn {
+    width: 100%;
+    aspect-ratio: 1;
+    min-width: 60px;
+    min-height: 60px;
+    border: 3px solid #ddd;
+    border-radius: 14px;
+    background: rgba(200, 220, 240, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+    cursor: pointer;
+}
+
+.char-btn.selected {
+    border-color: #c47ed0;
+    background: rgba(196, 126, 208, 0.15);
+}
+
+.char-btn:active {
+    transform: scale(0.93);
+}
+
+.char-num {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #7eb8c8;
+    pointer-events: none;
+}
+
+/* Color row -- swatches + undo in one horizontal strip */
+.color-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+}
+
+.color-section {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex: 1;
+    padding: 4px 0;
 }
 
 .category-tabs {

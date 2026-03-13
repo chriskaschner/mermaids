@@ -47,16 +47,16 @@ def trace_coloring_pages() -> list[Path]:
     return results
 
 
-def trace_dressup_parts() -> list[Path]:
-    """Trace dress-up part PNGs to SVGs with simplify=False (color mode).
+def trace_dressup_characters() -> list[Path]:
+    """Trace dress-up character PNGs to SVGs with simplify=False (full color).
 
-    Stub for Plan 02 -- scans GENERATED_PNG_DIR/dressup/parts/ for .png
-    files and traces each to GENERATED_SVG_DIR/dressup/<same_name>.svg.
+    Scans GENERATED_PNG_DIR/dressup/ for mermaid-*.png files and traces each
+    to GENERATED_SVG_DIR/dressup/<same_name>.svg. Skips if output exists.
 
     Returns:
         List of output SVG Path objects.
     """
-    png_dir = GENERATED_PNG_DIR / "dressup" / "parts"
+    png_dir = GENERATED_PNG_DIR / "dressup"
     svg_dir = GENERATED_SVG_DIR / "dressup"
     svg_dir.mkdir(parents=True, exist_ok=True)
 
@@ -65,7 +65,7 @@ def trace_dressup_parts() -> list[Path]:
         print(f"  No dress-up PNGs found in {png_dir}")
         return results
 
-    for png_file in sorted(png_dir.glob("*.png")):
+    for png_file in sorted(png_dir.glob("mermaid-*.png")):
         svg_out = svg_dir / f"{png_file.stem}.svg"
 
         if svg_out.exists():
@@ -85,9 +85,9 @@ def main():
     coloring = trace_coloring_pages()
     print(f"  Coloring pages: {len(coloring)} processed")
 
-    print("\nTracing dress-up parts (color mode)...")
-    dressup = trace_dressup_parts()
-    print(f"  Dress-up parts: {len(dressup)} processed")
+    print("\nTracing dress-up characters (full color mode)...")
+    dressup = trace_dressup_characters()
+    print(f"  Dress-up characters: {len(dressup)} processed")
 
     print(f"\nDone: {len(coloring) + len(dressup)} total SVGs.")
 

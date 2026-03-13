@@ -19,7 +19,7 @@ from mermaids.pipeline.config import (
     RETRY_MAX,
 )
 from mermaids.pipeline.generate import generate_image, retry_api_call
-from mermaids.pipeline.prompts import DRESSUP_BASE_PROMPT, DRESSUP_VARIANTS
+from mermaids.pipeline.prompts import DRESSUP_BASE_PROMPT
 
 # Module-level client cache (separate from generate.py's client)
 _client = None
@@ -211,5 +211,87 @@ def generate_dressup_variants() -> list[Path]:
             print(f"  Variant: {variant_id}")
             result = edit_region(base_path, mask_bytes, prompt, output)
             results.append(result)
+
+    return results
+
+
+def composite_all_combinations() -> list[Path]:
+    """Build all 81 composite PNGs from base + variant regions.
+
+    For each combination of (hair, eyes, tail, acc), takes the base mermaid
+    and pastes each variant's region pixels on top. Produces one unified
+    1024x1024 image per combination with no seams.
+
+    Naming: combo-{hair_idx}-{eye_idx}-{tail_idx}-{acc_idx}.png
+    where each idx is 1-3.
+
+    Writes to: assets/generated/png/dressup/composites/
+
+    Returns:
+        List of composite PNG paths.
+    """
+    import itertools
+
+    base_dir = GENERATED_PNG_DIR / "dressup" / "base"
+    parts_dir = GENERATED_PNG_DIR / "dressup" / "parts"
+    composites_dir = GENERATED_PNG_DIR / "dressup" / "composites"
+    composites_dir.mkdir(parents=True, exist_ok=True)
+
+    base_path = base_dir / "mermaid-base.png"
+    base_img = Image.open(base_path).convert("RGB")
+
+    # Load all variant images into memory
+    variant_images: dict[str, Image.Image] = {}
+    for variant_id in [
+        "hair-1", "hair-2", "hair-3",
+        "eye-1", "eye-2", "eye-3",
+        "tail-1", "tail-2", "tail-3",
+        "acc-1", "acc-2", "acc-3",
+    ]:
+        path = parts_dir / f"{variant_id}.png"
+        if path.exists():
+            variant_images[variant_id] = Image.open(path).convert("RGB")
+
+    # Region for each category (maps variant prefix to region key)
+    prefix_to_region = {
+        "hair": "hair",
+        "eye": "eyes",
+        "tail": "tail",
+        "acc": "acc",
+    }
+
+    results = []
+    hair_opts = [1, 2, 3]
+    eye_opts = [1, 2, 3]
+    tail_opts = [1, 2, 3]
+    acc_opts = [1, 2, 3]
+
+    for h, e, t, a in itertools.product(hair_opts, eye_opts, tail_opts, acc_opts):
+        combo_name = f"combo-{h}-{e}-{t}-{a}"
+        dst = composites_dir / f"{combo_name}.png"
+
+        canvas = base_img.copy()
+
+        # Paste each variant's region onto the base
+        for variant_id, region_key in [
+            (f"hair-{h}", "hair"),
+            (f"eye-{e}", "eyes"),
+            (f"tail-{t}", "tail"),
+            (f"acc-{a}", "acc"),
+        ]:
+            if variant_id not in variant_images:
+                continue
+            x1, y1, x2, y2 = REGIONS[region_key]
+            region_crop = variant_images[variant_id].crop((x1, y1, x2, y2))
+            canvas.paste(region_crop, (x1, y1))
+
+        canvas.save(dst)
+        results.append(dst)
+
+    print(f"  Composited {len(results)} combinations")
+
+    # Close loaded images
+    for img in variant_images.values():
+        img.close()
 
     return results

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Character Review - Mermaid Gallery</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, sans-serif;
+    background: #f0f4f8;
+    padding: 20px;
+  }
+  h1 {
+    text-align: center;
+    color: #4a6fa5;
+    margin-bottom: 8px;
+    font-size: 1.5rem;
+  }
+  .subtitle {
+    text-align: center;
+    color: #888;
+    margin-bottom: 24px;
+    font-size: 0.9rem;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .card {
+    background: white;
+    border-radius: 16px;
+    padding: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    text-align: center;
+  }
+  .card .label {
+    font-weight: 600;
+    color: #5a7ba8;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+  }
+  .card .svg-container {
+    background: #fafafa;
+    border-radius: 12px;
+    padding: 8px;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+  }
+  .card .svg-container img {
+    max-width: 100%;
+    max-height: 100%;
+  }
+  .card .meta {
+    font-size: 0.75rem;
+    color: #aaa;
+  }
+  .row-compare {
+    display: flex;
+    gap: 16px;
+    max-width: 900px;
+    margin: 32px auto 0;
+    justify-content: center;
+  }
+  .row-compare .side {
+    flex: 1;
+    max-width: 300px;
+    text-align: center;
+  }
+  .row-compare .side img {
+    max-width: 100%;
+    border-radius: 12px;
+    background: white;
+    padding: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .row-compare .side .label {
+    font-weight: 600;
+    color: #5a7ba8;
+    margin-top: 8px;
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+  <h1>Mermaid Character Gallery - Review</h1>
+  <p class="subtitle">9 diverse characters for the dress-up feature. Tap to enlarge.</p>
+
+  <div class="grid" id="grid"></div>
+
+  <script>
+    const characters = [
+      { id: "mermaid-1", desc: "Blonde, blue eyes, pink tail, pearl necklace" },
+      { id: "mermaid-2", desc: "Red pigtails, green eyes, lavender tail, starfish pin" },
+      { id: "mermaid-3", desc: "Brown curly hair, brown eyes, teal tail, flower garland" },
+      { id: "mermaid-4", desc: "Black braid, brown eyes, coral tail, seashell crown" },
+      { id: "mermaid-5", desc: "Afro puffs, brown eyes, aqua star tail, bubble wand" },
+      { id: "mermaid-6", desc: "Braids with gold beads, dark eyes, golden tail, earrings" },
+      { id: "mermaid-7", desc: "Coily hair + flower, brown eyes, magenta tail, tiara" },
+      { id: "mermaid-8", desc: "Silver locs + blue tips, bright eyes, purple tail, seahorse" },
+      { id: "mermaid-9", desc: "Mint green bob, starry eyes, rainbow tail, jellyfish" },
+    ];
+
+    const grid = document.getElementById("grid");
+
+    characters.forEach((char, i) => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="label">#${i + 1} - ${char.id}</div>
+        <div class="svg-container">
+          <img src="assets/svg/dressup/${char.id}.svg" alt="${char.id}">
+        </div>
+        <div class="meta">${char.desc}</div>
+      `;
+      card.querySelector("img").addEventListener("click", () => {
+        window.open(`assets/svg/dressup/${char.id}.svg`, "_blank");
+      });
+      grid.appendChild(card);
+    });
+  </script>
+</body>
+</html>

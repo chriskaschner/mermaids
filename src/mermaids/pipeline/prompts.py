@@ -36,108 +36,80 @@ COLORING_PAGES: list[dict[str, str]] = [
 ]
 
 # ---------------------------------------------------------------------------
-# Dress-up: full-color chibi kawaii mermaid base body for part overlay editing
+# Dress-up: 9 diverse full-color chibi kawaii mermaid characters
 # ---------------------------------------------------------------------------
 
 DRESSUP_BASE_PROMPT: str = (
     "Full color chibi kawaii mermaid character, flat cell-shaded style with "
     "solid color fills. Big head, small body, Sanrio-like cute proportions. "
     "Neutral front-facing pose, centered, white background. Clean edges between "
-    "color regions suitable for SVG tracing. The base body should have minimal "
-    "details so that hair, eyes, tail, and accessory parts can be overlaid. "
+    "color regions suitable for SVG tracing. "
 )
 
-DRESSUP_VARIANTS: dict[str, list[dict[str, str]]] = {
-    "tails": [
-        {
-            "id": "tail-1",
-            "prompt_detail": (
-                "isolated tail part only, keep rest of character unchanged. "
-                "Classic fish tail with rounded fins, pastel pink"
-            ),
-        },
-        {
-            "id": "tail-2",
-            "prompt_detail": (
-                "isolated tail part only, keep rest of character unchanged. "
-                "Flowing ribbon-like tail with scalloped edges, lavender purple"
-            ),
-        },
-        {
-            "id": "tail-3",
-            "prompt_detail": (
-                "isolated tail part only, keep rest of character unchanged. "
-                "Star-shaped tail fin with sparkle accents, aqua blue"
-            ),
-        },
-    ],
-    "hair": [
-        {
-            "id": "hair-1",
-            "prompt_detail": (
-                "isolated hair part only, keep rest of character unchanged. "
-                "Long flowing wavy hair, golden blonde"
-            ),
-        },
-        {
-            "id": "hair-2",
-            "prompt_detail": (
-                "isolated hair part only, keep rest of character unchanged. "
-                "Twin pigtails with bows, coral pink"
-            ),
-        },
-        {
-            "id": "hair-3",
-            "prompt_detail": (
-                "isolated hair part only, keep rest of character unchanged. "
-                "Short bob with bangs and a seashell clip, mint green"
-            ),
-        },
-    ],
-    "eyes": [
-        {
-            "id": "eye-1",
-            "prompt_detail": (
-                "isolated eyes part only, keep rest of character unchanged. "
-                "Big round eyes, classic kawaii style"
-            ),
-        },
-        {
-            "id": "eye-2",
-            "prompt_detail": (
-                "isolated eyes part only, keep rest of character unchanged. "
-                "Sparkle star-pupil eyes"
-            ),
-        },
-        {
-            "id": "eye-3",
-            "prompt_detail": (
-                "isolated eyes part only, keep rest of character unchanged. "
-                "Sleepy half-closed dreamy eyes"
-            ),
-        },
-    ],
-    "accessories": [
-        {
-            "id": "acc-1",
-            "prompt_detail": (
-                "isolated accessory part only, keep rest of character unchanged. "
-                "Pearl necklace and small tiara crown"
-            ),
-        },
-        {
-            "id": "acc-2",
-            "prompt_detail": (
-                "isolated accessory part only, keep rest of character unchanged. "
-                "Flower garland around shoulders and a starfish hairpin"
-            ),
-        },
-        {
-            "id": "acc-3",
-            "prompt_detail": (
-                "isolated accessory part only, keep rest of character unchanged. "
-                "Bubble wand in hand and tiny seahorse companion on shoulder"
-            ),
-        },
-    ],
-}
+DRESSUP_CHARACTERS: list[dict[str, str]] = [
+    {
+        "id": "mermaid-1",
+        "prompt_detail": (
+            "Light fair skin, long flowing wavy golden blonde hair, big round "
+            "blue eyes, pastel pink fish tail with rounded fins, pearl necklace"
+        ),
+    },
+    {
+        "id": "mermaid-2",
+        "prompt_detail": (
+            "Light fair skin with freckles, twin red pigtails with bows, big "
+            "green eyes, lavender purple ribbon-like tail, starfish hairpin"
+        ),
+    },
+    {
+        "id": "mermaid-3",
+        "prompt_detail": (
+            "Medium olive skin, long dark brown curly hair, big warm brown eyes, "
+            "teal green tail with scalloped edges, flower garland around shoulders"
+        ),
+    },
+    {
+        "id": "mermaid-4",
+        "prompt_detail": (
+            "Medium tan skin, straight black hair in a long braid, big dark "
+            "brown eyes, coral orange tail with fan-shaped fin, seashell crown"
+        ),
+    },
+    {
+        "id": "mermaid-5",
+        "prompt_detail": (
+            "Medium brown skin, dark curly afro puffs tied with ribbons, big "
+            "sparkle brown eyes, aqua blue star-shaped tail, bubble wand in hand"
+        ),
+    },
+    {
+        "id": "mermaid-6",
+        "prompt_detail": (
+            "Brown skin, black hair in long braids with gold beads, big warm "
+            "dark eyes, golden yellow tail with rounded fins, shell earrings"
+        ),
+    },
+    {
+        "id": "mermaid-7",
+        "prompt_detail": (
+            "Deep brown skin, dark coily hair with a flower tucked in, big "
+            "bright brown eyes, magenta pink tail with flowing fins, pearl tiara"
+        ),
+    },
+    {
+        "id": "mermaid-8",
+        "prompt_detail": (
+            "Dark rich skin, silver-white locs with ocean-blue tips, big bright "
+            "eyes, deep purple tail with sparkle accents, tiny seahorse companion "
+            "on shoulder"
+        ),
+    },
+    {
+        "id": "mermaid-9",
+        "prompt_detail": (
+            "Light warm skin, short mint green bob with bangs and a seashell "
+            "clip, big starry eyes, rainbow iridescent tail, holding a small "
+            "jellyfish friend"
+        ),
+    },
+]

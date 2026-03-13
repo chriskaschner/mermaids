@@ -16,7 +16,12 @@ from mermaids.pipeline.config import (
     RETRY_BASE_DELAY,
     RETRY_MAX,
 )
-from mermaids.pipeline.prompts import COLORING_BASE_PROMPT, COLORING_PAGES
+from mermaids.pipeline.prompts import (
+    COLORING_BASE_PROMPT,
+    COLORING_PAGES,
+    DRESSUP_BASE_PROMPT,
+    DRESSUP_CHARACTERS,
+)
 
 # Module-level client cache
 _client = None
@@ -96,6 +101,29 @@ def generate_image(
     print(f"  Generated: {output_path.name}")
 
     return output_path
+
+
+def generate_dressup_characters() -> list[Path]:
+    """Generate all 9 diverse mermaid character PNGs.
+
+    Each character combines the DRESSUP_BASE_PROMPT with a character-specific
+    detail prompt. Output goes to GENERATED_PNG_DIR / "dressup" / "<id>.png".
+
+    Returns:
+        List of output Path objects for each generated image.
+    """
+    output_dir = GENERATED_PNG_DIR / "dressup"
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    results = []
+    for char in DRESSUP_CHARACTERS:
+        full_prompt = DRESSUP_BASE_PROMPT + char["prompt_detail"]
+        out = output_dir / f"{char['id']}.png"
+        print(f"  Character: {char['id']}")
+        result = generate_image(full_prompt, out)
+        results.append(result)
+
+    return results
 
 
 def generate_coloring_pages() -> list[Path]:

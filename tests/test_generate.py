@@ -220,3 +220,29 @@ class TestGenerateColoringPages:
         # All should be Path objects
         for r in results:
             assert isinstance(r, Path)
+
+
+class TestGenerateDressupCharacters:
+    """Tests for generate_dressup_characters function."""
+
+    def test_generate_dressup_characters_produces_nine(self, tmp_path):
+        """generate_dressup_characters() produces 9 character PNGs."""
+        from mermaids.pipeline.generate import generate_dressup_characters
+
+        mock_client = MagicMock()
+        mock_client.images.generate.return_value = _mock_response()
+
+        with (
+            patch("mermaids.pipeline.generate._get_client", return_value=mock_client),
+            patch(
+                "mermaids.pipeline.config.GENERATED_PNG_DIR",
+                tmp_path / "generated" / "png",
+            ),
+        ):
+            results = generate_dressup_characters()
+
+        assert len(results) == 9
+        for r in results:
+            assert isinstance(r, Path)
+        names = {r.stem for r in results}
+        assert names == {f"mermaid-{i}" for i in range(1, 10)}

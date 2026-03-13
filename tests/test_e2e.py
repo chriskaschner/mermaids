@@ -56,13 +56,13 @@ class TestNavigation:
         assert "coloring" in app_page.url
 
     def test_dressup_shows_mermaid_svg(self, app_page: Page):
-        """Dress-up view displays the mermaid SVG with data-region elements."""
+        """Dress-up view displays the mermaid SVG and character gallery."""
         app_page.goto(app_page.url.split("#")[0] + "#/dressup")
-        app_page.wait_for_timeout(300)
+        app_page.wait_for_selector("#mermaid-svg", state="visible", timeout=5000)
         svg = app_page.locator("#mermaid-svg")
         expect(svg).to_be_visible()
-        regions = app_page.locator("[data-region]")
-        assert regions.count() >= 1, "Expected at least 1 data-region element"
+        gallery = app_page.locator(".character-gallery .char-btn")
+        assert gallery.count() == 9, f"Expected 9 character buttons, got {gallery.count()}"
 
     def test_nav_visible_on_all_views(self, app_page: Page):
         """Navigation bar is visible on every view."""
@@ -87,32 +87,28 @@ class TestNavigation:
 class TestTouchInteraction:
     """SVG touch events and sparkle particle effects."""
 
-    def test_tap_region_triggers_sparkle(self, app_page: Page):
-        """Tapping an SVG region creates sparkle elements."""
+    def test_character_select_triggers_celebration_sparkle(self, app_page: Page):
+        """Selecting a non-default character triggers celebration sparkle."""
         base = app_page.url.split("#")[0]
         app_page.goto(base + "#/dressup")
-        app_page.wait_for_timeout(500)
-        # Tap the character region
-        character = app_page.locator('[data-region="character"]')
-        expect(character).to_be_visible()
-        character.click()
-        app_page.wait_for_timeout(100)
-        sparkles = app_page.locator(".sparkle")
-        assert sparkles.count() > 0, "No sparkle elements found after tap"
-
-    def test_sparkle_cleanup(self, app_page: Page):
-        """Sparkle elements are removed from DOM after animation."""
-        base = app_page.url.split("#")[0]
-        app_page.goto(base + "#/dressup")
-        app_page.wait_for_timeout(500)
-        character = app_page.locator('[data-region="character"]')
-        character.click()
-        app_page.wait_for_timeout(100)
-        # Sparkles should exist now
-        assert app_page.locator(".sparkle").count() > 0
-        # Wait for cleanup (600ms animation + buffer)
+        app_page.wait_for_selector("#mermaid-svg", state="visible", timeout=5000)
+        # Select second character to trigger celebration
+        app_page.locator(".char-btn").nth(1).click()
         app_page.wait_for_timeout(800)
-        assert app_page.locator(".sparkle").count() == 0, "Sparkles not cleaned up"
+        sparkles = app_page.locator(".sparkle.celebration")
+        assert sparkles.count() > 0, "No celebration sparkle elements found after character select"
+
+    def test_celebration_sparkle_cleanup(self, app_page: Page):
+        """Celebration sparkle elements are removed from DOM after animation."""
+        base = app_page.url.split("#")[0]
+        app_page.goto(base + "#/dressup")
+        app_page.wait_for_selector("#mermaid-svg", state="visible", timeout=5000)
+        app_page.locator(".char-btn").nth(1).click()
+        app_page.wait_for_timeout(800)
+        assert app_page.locator(".sparkle.celebration").count() > 0
+        # Wait for cleanup (1s celebration animation + buffer)
+        app_page.wait_for_timeout(1500)
+        assert app_page.locator(".sparkle.celebration").count() == 0, "Sparkles not cleaned up"
 
 
 class TestTapTargets:

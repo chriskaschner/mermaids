@@ -1,21 +1,21 @@
-"""Generate kawaii mermaid dress-up variant PNGs via gpt-image-1 edit API.
+"""Generate 9 diverse kawaii mermaid character PNGs via gpt-image-1.
 
-Thin CLI entry point that calls generate_dressup_variants() from the
-pipeline module. Produces a base mermaid + 9 variant PNGs (3 tails,
-3 hair, 3 accessories). Re-running skips already-generated files.
+Thin CLI entry point that calls generate_dressup_characters() from the
+pipeline module. Produces 9 standalone full-color character PNGs.
+Re-running skips already-generated files.
 
 Usage:
     uv run python scripts/generate_dressup.py
 """
 
-from mermaids.pipeline.edit import generate_dressup_variants
+from mermaids.pipeline.generate import generate_dressup_characters
 
 
 def main():
-    print("Generating dress-up base + variants...")
-    results = generate_dressup_variants()
+    print("Generating 9 dress-up characters...")
+    results = generate_dressup_characters()
 
-    print(f"\nDone: {len(results)} dress-up variant(s) processed.")
+    print(f"\nDone: {len(results)} character(s) processed.")
     for r in results:
         print(f"  {r.name}")
 

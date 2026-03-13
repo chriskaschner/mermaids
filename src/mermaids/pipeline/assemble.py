@@ -1,9 +1,8 @@
-"""SVG assembly combining traced parts into defs+use mermaid.svg.
+"""SVG assembly for composite dress-up characters.
 
-Builds a new mermaid.svg with the defs+use structure that the frontend
-dressup.js expects. Each variant is an isolated part (not a full character).
-The assembled SVG uses 5 stacked <use> elements for independent layer swapping:
-  tail (back) > body (static) > hair (mid) > eyes (front) > accessories (top).
+Each composite is a single pre-built character (one combination of hair, eyes,
+tail, accessories). The frontend swaps the entire SVG when the user changes any
+part, rather than swapping individual layers.
 
 Also provides copy utilities for deploying generated SVGs to the frontend
 assets directory.
@@ -34,15 +33,8 @@ VARIANT_IDS = [
 # ID for the static base body group in defs
 BODY_ID = "body"
 
-# Stacked layer definitions in DOM order (tail=back, acc=top)
-# Each entry: (use_id, default_href, data_category or None)
-_LAYERS = [
-    ("active-tail",  "#tail-1",  "tail"),
-    ("active-body",  "#body",    None),    # static, never swapped by UI
-    ("active-hair",  "#hair-1",  "hair"),
-    ("active-eyes",  "#eye-1",   "eyes"),
-    ("active-acc",   "#acc-1",   "acc"),
-]
+# Default combo indices (all variant 1)
+DEFAULT_COMBO = "combo-1-1-1-1"
 
 
 def _is_background_path(element: ET.Element) -> bool:
@@ -84,111 +76,134 @@ def _is_background_path(element: ET.Element) -> bool:
     return True
 
 
-def _make_variant_group(variant_id: str, traced_svg_path: Path) -> ET.Element:
-    """Parse a traced SVG and wrap its path/shape elements in a <g> with id.
+def assemble_combo_svg(traced_svg_path: Path, output_path: Path) -> Path:
+    """Build a mermaid SVG from a single traced composite image.
 
-    Each variant is an isolated part traced at 1024x1024. No scaling is
-    applied since the viewBox matches the source coordinate space.
-    Strips the vtracer background rectangle (first near-white path covering
-    the full canvas) to prevent solid color blocks when recoloring.
-    """
-    g = ET.Element(f"{{{SVG_NS}}}g")
-    g.set("id", variant_id)
-
-    try:
-        tree = ET.parse(traced_svg_path)
-        root = tree.getroot()
-
-        # Copy child elements, skipping the first-child background rect
-        first_child = True
-        for child in root:
-            if first_child and _is_background_path(child):
-                first_child = False
-                continue
-            first_child = False
-            g.append(child)
-    except ET.ParseError:
-        # If the traced SVG is malformed, create empty group
-        pass
-
-    return g
-
-
-def assemble_mermaid_svg(
-    traced_parts_dir: Path,
-    output_path: Path,
-    *,
-    base_traced_svg: Path | None = None,
-) -> Path:
-    """Build a mermaid.svg with multi-layer defs+use structure from traced part SVGs.
-
-    Produces 5 stacked <use> elements for independent swapping of each body
-    layer. The static base body is always visible; the other 4 layers swap
-    their href to change hair, eyes, tail, and accessory variants.
-
-    Layer stacking order (DOM order = paint order, first=back, last=front):
-      1. active-tail   (tail layer, back)
-      2. active-body   (static base body, always visible)
-      3. active-hair   (hair layer)
-      4. active-eyes   (eyes layer)
-      5. active-acc    (accessories layer, front)
+    Takes a traced SVG (from a pre-composited PNG) and wraps it in
+    the expected structure with id="mermaid-svg". Strips the vtracer
+    background rectangle.
 
     Args:
-        traced_parts_dir: Directory containing traced SVGs (tail-1.svg, etc.)
-        output_path: Where to write the assembled mermaid.svg.
-        base_traced_svg: Path to traced base body SVG (creates 'body' group in
-            defs). If None, an empty body group is created.
+        traced_svg_path: Path to the traced composite SVG.
+        output_path: Where to write the assembled SVG.
 
     Returns:
         The output_path as a Path object.
     """
     output_path = Path(output_path)
 
-    # Create root SVG -- square viewBox matching 1024x1024 traced source
     root = ET.Element(f"{{{SVG_NS}}}svg")
     root.set("viewBox", "0 0 1024 1024")
     root.set("preserveAspectRatio", "xMidYMid meet")
     root.set("id", "mermaid-svg")
 
-    # Create defs
-    defs = ET.SubElement(root, f"{{{SVG_NS}}}defs")
+    try:
+        tree = ET.parse(traced_svg_path)
+        src_root = tree.getroot()
 
-    # Add body group (static base) first in defs
-    if base_traced_svg is not None and Path(base_traced_svg).exists():
-        body_group = _make_variant_group(BODY_ID, Path(base_traced_svg))
-    else:
-        body_group = ET.Element(f"{{{SVG_NS}}}g")
-        body_group.set("id", BODY_ID)
-    defs.append(body_group)
+        first_child = True
+        for child in src_root:
+            if first_child and _is_background_path(child):
+                first_child = False
+                continue
+            first_child = False
+            root.append(child)
+    except ET.ParseError:
+        pass
 
-    # Add variant part groups from traced SVGs
-    for variant_id in VARIANT_IDS:
-        svg_file = traced_parts_dir / f"{variant_id}.svg"
-        if svg_file.exists():
-            g = _make_variant_group(variant_id, svg_file)
-            defs.append(g)
-        else:
-            # Create empty placeholder group
-            g = ET.SubElement(defs, f"{{{SVG_NS}}}g")
-            g.set("id", variant_id)
-
-    # Add 5 stacked <use> elements in layer order (tail=back, acc=front)
-    for use_id, default_href, data_category in _LAYERS:
-        use = ET.SubElement(root, f"{{{SVG_NS}}}use")
-        use.set("id", use_id)
-        use.set("href", default_href)
-        if data_category is not None:
-            use.set("data-category", data_category)
-            use.set("pointer-events", "all")
-
-    # Write output
     output_path.parent.mkdir(parents=True, exist_ok=True)
     tree = ET.ElementTree(root)
     ET.indent(tree, space="  ")
     tree.write(output_path, encoding="unicode", xml_declaration=False)
 
-    print(f"  Assembled: {output_path.name}")
     return output_path
+
+
+def assemble_all_combos(traced_combos_dir: Path, output_dir: Path) -> list[Path]:
+    """Assemble all traced composite SVGs into frontend-ready SVGs.
+
+    Args:
+        traced_combos_dir: Directory with traced combo SVGs (combo-1-1-1-1.svg, etc.)
+        output_dir: Where to write assembled SVGs.
+
+    Returns:
+        List of output paths.
+    """
+    output_dir.mkdir(parents=True, exist_ok=True)
+    results = []
+
+    for svg_file in sorted(traced_combos_dir.glob("combo-*.svg")):
+        output = output_dir / svg_file.name
+        assemble_combo_svg(svg_file, output)
+        results.append(output)
+
+    print(f"  Assembled {len(results)} combo SVGs")
+    return results
+
+
+def deploy_combos_to_frontend(assembled_dir: Path) -> Path:
+    """Copy assembled combo SVGs to frontend and set the default mermaid.svg.
+
+    Copies all combo SVGs to frontend/assets/svg/dressup/.
+    Copies the default combo (1-1-1-1) as mermaid.svg.
+
+    Args:
+        assembled_dir: Directory containing assembled combo SVGs.
+
+    Returns:
+        Path to the default mermaid.svg in the frontend.
+    """
+    dst_dir = FRONTEND_SVG_DIR / "dressup"
+    dst_dir.mkdir(parents=True, exist_ok=True)
+
+    count = 0
+    for svg_file in sorted(assembled_dir.glob("combo-*.svg")):
+        dst = dst_dir / svg_file.name
+        shutil.copy2(svg_file, dst)
+        count += 1
+
+    # Copy default combo as mermaid.svg
+    default_src = assembled_dir / f"{DEFAULT_COMBO}.svg"
+    mermaid_dst = FRONTEND_SVG_DIR / "mermaid.svg"
+    if default_src.exists():
+        shutil.copy2(default_src, mermaid_dst)
+
+    print(f"  Deployed {count} combo SVGs + mermaid.svg to frontend")
+    return mermaid_dst
+
+
+def deploy_characters_to_frontend(assembled_dir: Path) -> Path:
+    """Deploy assembled mermaid character SVGs to the frontend.
+
+    Copies mermaid-{1..9}.svg to frontend/assets/svg/dressup/.
+    Copies mermaid-1.svg as the default mermaid.svg.
+
+    Args:
+        assembled_dir: Directory containing assembled mermaid-*.svg files.
+
+    Returns:
+        Path to the default mermaid.svg in the frontend.
+    """
+    dst_dir = FRONTEND_SVG_DIR / "dressup"
+    dst_dir.mkdir(parents=True, exist_ok=True)
+
+    count = 0
+    for svg_file in sorted(assembled_dir.glob("mermaid-*.svg")):
+        dst = dst_dir / svg_file.name
+        shutil.copy2(svg_file, dst)
+        count += 1
+
+    # Copy mermaid-1 as the default mermaid.svg
+    default_src = assembled_dir / "mermaid-1.svg"
+    mermaid_dst = FRONTEND_SVG_DIR / "mermaid.svg"
+    if default_src.exists():
+        shutil.copy2(default_src, mermaid_dst)
+
+    print(f"  Deployed {count} character SVGs + mermaid.svg to frontend")
+    return mermaid_dst
+
+
+# --- Legacy functions kept for coloring page support ---
 
 
 def copy_coloring_pages_to_frontend() -> list[Path]:
