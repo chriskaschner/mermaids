@@ -1,20 +1,27 @@
 /**
- * Dress-up character selection: swap between complete AI-generated kawaii
- * characters, apply hue-shift recoloring, undo stack, completion detection.
+ * Dress-up character selection: swap individual parts independently via stacked
+ * <use> elements, apply per-part recoloring, undo stack, completion detection.
  *
- * Each variant in <defs> is a full character (not an isolated part).
- * A single <use id="active-character"> references the currently displayed one.
- * Characters are organized by category (tail/hair/acc) for browsing.
+ * SVG structure (from assemble.py):
+ *   <use id="active-tail" href="#tail-1" data-category="tail" />
+ *   <use id="active-body" href="#body" />
+ *   <use id="active-hair" href="#hair-1" data-category="hair" />
+ *   <use id="active-eyes" href="#eye-1" data-category="eyes" />
+ *   <use id="active-acc"  href="#acc-1"  data-category="acc"  />
+ *
+ * Each category has 3 variants in <defs>. swapPart() updates only the target
+ * layer's href, leaving all other layers unchanged.
  *
  * Previews are fetched from individual traced SVGs and shown at 48x48.
  */
 
 import { triggerCelebration } from "./sparkle.js?v=14";
 
-// Character variant definitions -- each is a complete character
+// Part variant IDs per category
 export const PARTS = {
-  tail: ["tail-1", "tail-2", "tail-3"],
   hair: ["hair-1", "hair-2", "hair-3"],
+  eyes: ["eye-1", "eye-2", "eye-3"],
+  tail: ["tail-1", "tail-2", "tail-3"],
   acc: ["acc-1", "acc-2", "acc-3"],
 };
 
@@ -32,15 +39,15 @@ export const COLORS = [
   "#40e0d0", // turquoise
 ];
 
-// State -- source of truth for active character and selections
+// State -- source of truth for active parts and category
 export const state = {
-  tail: "tail-1",
   hair: "hair-1",
+  eyes: "eye-1",
+  tail: "tail-1",
   acc: "acc-1",
-  activeCharacter: "tail-1", // which full character is displayed
-  activeCategory: "tail",
-  lastPartCategory: "tail",
-  colors: {}, // { "tail-1": "#ff69b4" } per-variant color overrides
+  activeCategory: "hair", // Default to hair (first tab in UI order)
+  lastPartCategory: "hair",
+  colors: {}, // { "hair-1": "#ff69b4" } per-part color overrides
 };
 
 const undoStack = [];
@@ -53,25 +60,24 @@ const previewSVGCache = new Map();
 // -- Core operations ----------------------------------------------------------
 
 /**
- * Swap the displayed character. Updates the single <use> element's href.
- * Tracks which variant is selected per category for browsing state.
+ * Swap the part for a specific category. Updates only that category's <use>
+ * element href; all other layers remain unchanged.
+ *
+ * @param {string} category - "hair" | "eyes" | "tail" | "acc"
+ * @param {string} variantId - e.g. "hair-2", "eye-3"
  */
 export function swapPart(category, variantId) {
-  const useEl = document.getElementById("active-character");
+  const useEl = document.getElementById(`active-${category}`);
   if (!useEl) return;
 
   const prevHref = useEl.getAttribute("href");
-  const prevId = prevHref ? prevHref.slice(1) : null;
-  if (prevId === variantId) return; // no-op
+  const prevVariantId = prevHref ? prevHref.slice(1) : null;
+  if (prevVariantId === variantId) return; // no-op
 
-  const prevCategory = state.activeCategory !== "color"
-    ? state.activeCategory
-    : state.lastPartCategory;
-  const prevCategoryValue = state[prevCategory];
+  const prevStateValue = state[category];
 
   useEl.setAttribute("href", `#${variantId}`);
   state[category] = variantId;
-  state.activeCharacter = variantId;
 
   // Re-apply color override if one exists for the new variant
   const savedColor = state.colors[variantId];
@@ -80,12 +86,11 @@ export function swapPart(category, variantId) {
   }
 
   pushUndo(() => {
-    useEl.setAttribute("href", `#${prevId}`);
-    state[prevCategory] = prevCategoryValue;
-    state.activeCharacter = prevId;
-    const prevColor = state.colors[prevId];
+    useEl.setAttribute("href", `#${prevVariantId}`);
+    state[category] = prevStateValue;
+    const prevColor = state.colors[prevVariantId];
     if (prevColor) {
-      applyColorToSource(prevId, prevColor);
+      applyColorToSource(prevVariantId, prevColor);
     }
   });
 
@@ -93,11 +98,18 @@ export function swapPart(category, variantId) {
 }
 
 /**
- * Recolor the currently displayed character.
+ * Recolor the currently active category's part.
+ * Uses state.activeCategory; if on "color" tab, falls back to lastPartCategory.
  * Only recolors paths that are not outlines or skin tones.
+ *
+ * @param {string} color - hex color string e.g. "#ff69b4"
  */
 export function recolorActivePart(color) {
-  const variantId = state.activeCharacter;
+  const category = state.activeCategory !== "color"
+    ? state.activeCategory
+    : state.lastPartCategory;
+
+  const variantId = state[category];
   if (!variantId) return;
 
   const source = document.getElementById(variantId);
@@ -145,13 +157,14 @@ export function undo() {
 }
 
 /**
- * Check if the user has explored all categories (selected at least one
+ * Check if the user has explored all 4 categories (selected at least one
  * non-default in each). Triggers celebration on first completion.
  */
 export function checkCompletion() {
   const isComplete =
-    state.tail !== "tail-1" &&
     state.hair !== "hair-1" &&
+    state.eyes !== "eye-1" &&
+    state.tail !== "tail-1" &&
     state.acc !== "acc-1";
 
   if (isComplete && !celebrated) {
@@ -171,12 +184,12 @@ export function checkCompletion() {
  * Reset state to defaults, clear undo stack and color overrides.
  */
 export function resetState() {
-  state.tail = "tail-1";
   state.hair = "hair-1";
+  state.eyes = "eye-1";
+  state.tail = "tail-1";
   state.acc = "acc-1";
-  state.activeCharacter = "tail-1";
-  state.activeCategory = "tail";
-  state.lastPartCategory = "tail";
+  state.activeCategory = "hair";
+  state.lastPartCategory = "hair";
   state.colors = {};
   undoStack.length = 0;
   celebrated = false;
@@ -251,21 +264,25 @@ async function renderOptions(category) {
 
   await Promise.all(
     buttons.map(async ({ btn, variantId }) => {
-      const svgText = await fetchVariantPreview(variantId);
-      btn.innerHTML = svgText;
+      try {
+        const svgText = await fetchVariantPreview(variantId);
+        btn.innerHTML = svgText;
 
-      const svgEl = btn.querySelector("svg");
-      if (svgEl) {
-        svgEl.setAttribute("width", "48");
-        svgEl.setAttribute("height", "48");
-        if (!svgEl.getAttribute("viewBox")) {
-          svgEl.setAttribute("viewBox", "0 0 1024 1024");
-        }
+        const svgEl = btn.querySelector("svg");
+        if (svgEl) {
+          svgEl.setAttribute("width", "48");
+          svgEl.setAttribute("height", "48");
+          if (!svgEl.getAttribute("viewBox")) {
+            svgEl.setAttribute("viewBox", "0 0 1024 1024");
+          }
 
-        const savedColor = state.colors[variantId];
-        if (savedColor) {
-          applyColorToPreviewSVG(svgEl, savedColor);
+          const savedColor = state.colors[variantId];
+          if (savedColor) {
+            applyColorToPreviewSVG(svgEl, savedColor);
+          }
         }
+      } catch {
+        // Preview fetch failed -- leave button without thumbnail (non-fatal)
       }
     })
   );
@@ -295,22 +312,23 @@ export async function initDressUp() {
     undoBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       undo();
-      const cat = state.activeCategory;
-      if (cat !== "color") {
-        const row = document.getElementById("options-row");
-        if (row) {
-          row.querySelectorAll(".option-btn").forEach((btn) => {
-            btn.classList.toggle(
-              "selected",
-              btn.getAttribute("data-variant") === state[cat]
-            );
-          });
-        }
+      const cat = state.activeCategory !== "color"
+        ? state.activeCategory
+        : state.lastPartCategory;
+      const row = document.getElementById("options-row");
+      if (row) {
+        row.querySelectorAll(".option-btn").forEach((btn) => {
+          btn.classList.toggle(
+            "selected",
+            btn.getAttribute("data-variant") === state[cat]
+          );
+        });
       }
     });
   }
 
-  await renderOptions("tail");
+  // Render the default "hair" options (matches first active tab in UI)
+  await renderOptions("hair");
 }
 
 // -- Internal helpers ---------------------------------------------------------
