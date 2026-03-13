@@ -63,16 +63,22 @@ async function renderDressUp() {
         </div>
         <div class="selection-panel">
           <div class="category-tabs">
-            <button class="cat-tab active" data-category="tail" aria-label="Tails">
-              <svg width="24" height="24" viewBox="0 0 24 24">
-                <path d="M12,2 Q8,10 6,16 Q10,20 12,18 Q14,20 18,16 Q16,10 12,2Z"
-                      fill="#7ec8c8" />
-              </svg>
-            </button>
-            <button class="cat-tab" data-category="hair" aria-label="Hair">
+            <button class="cat-tab active" data-category="hair" aria-label="Hair">
               <svg width="24" height="24" viewBox="0 0 24 24">
                 <path d="M6,12 Q6,4 12,3 Q18,4 18,12 Q16,8 12,7 Q8,8 6,12Z"
                       fill="#c4a7d7" />
+              </svg>
+            </button>
+            <button class="cat-tab" data-category="eyes" aria-label="Eyes">
+              <svg width="24" height="24" viewBox="0 0 24 24">
+                <ellipse cx="12" cy="12" rx="8" ry="6" fill="none" stroke="#87ceeb" stroke-width="2" />
+                <circle cx="12" cy="12" r="3" fill="#87ceeb" />
+              </svg>
+            </button>
+            <button class="cat-tab" data-category="tail" aria-label="Tails">
+              <svg width="24" height="24" viewBox="0 0 24 24">
+                <path d="M12,2 Q8,10 6,16 Q10,20 12,18 Q14,20 18,16 Q16,10 12,2Z"
+                      fill="#7ec8c8" />
               </svg>
             </button>
             <button class="cat-tab" data-category="acc" aria-label="Accessories">
