@@ -53,7 +53,7 @@ Full details: `.planning/milestones/v1.1-ROADMAP.md`
   5. Hair and tail art regions do not visually overlap or bleed into each other
 **Plans:** 2/3 plans executed
 Plans:
-- [ ] 08-01-PLAN.md -- Pipeline rework: prompts, regions, masks, multi-layer SVG assembly
+- [x] 08-01-PLAN.md -- Pipeline rework: prompts, regions, masks, multi-layer SVG assembly
 - [ ] 08-02-PLAN.md -- Frontend rework: multi-part swap, eyes tab, per-part recoloring
 - [ ] 08-03-PLAN.md -- Art generation: run pipeline, deploy assets, visual verification
 
