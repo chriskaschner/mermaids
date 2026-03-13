@@ -94,6 +94,121 @@ class TestCreateRegionMask:
 
 
 # -------------------------------------------------------
+# Region definition tests (new for 4-category design)
+# -------------------------------------------------------
+
+
+class TestRegions:
+    """Tests for REGIONS dict: 4 non-overlapping bounding boxes."""
+
+    def test_regions_has_four_categories(self):
+        """REGIONS has exactly 4 keys: tail, hair, eyes, acc."""
+        from mermaids.pipeline.edit import REGIONS
+
+        assert set(REGIONS.keys()) == {"tail", "hair", "eyes", "acc"}, (
+            f"Expected exactly 4 keys (tail, hair, eyes, acc), got {set(REGIONS.keys())}"
+        )
+
+    def test_eyes_region_exists(self):
+        """REGIONS has an 'eyes' key."""
+        from mermaids.pipeline.edit import REGIONS
+
+        assert "eyes" in REGIONS, "REGIONS must contain 'eyes' key"
+
+    def _bboxes_overlap(self, a: tuple, b: tuple) -> bool:
+        """Return True if two (x1,y1,x2,y2) bboxes overlap."""
+        ax1, ay1, ax2, ay2 = a
+        bx1, by1, bx2, by2 = b
+        # No overlap if one is fully left, right, above, or below the other
+        if ax2 <= bx1 or bx2 <= ax1:
+            return False
+        if ay2 <= by1 or by2 <= ay1:
+            return False
+        return True
+
+    def test_regions_do_not_overlap(self):
+        """No pair of REGIONS bboxes intersect."""
+        from mermaids.pipeline.edit import REGIONS
+
+        keys = list(REGIONS.keys())
+        for i in range(len(keys)):
+            for j in range(i + 1, len(keys)):
+                k1, k2 = keys[i], keys[j]
+                assert not self._bboxes_overlap(REGIONS[k1], REGIONS[k2]), (
+                    f"REGIONS['{k1}'] {REGIONS[k1]} overlaps REGIONS['{k2}'] {REGIONS[k2]}"
+                )
+
+    def test_hair_tail_no_vertical_overlap(self):
+        """Hair and tail regions have zero vertical overlap (DEBT-03 fix)."""
+        from mermaids.pipeline.edit import REGIONS
+
+        _, hair_y1, _, hair_y2 = REGIONS["hair"]
+        _, tail_y1, _, tail_y2 = REGIONS["tail"]
+
+        # Hair must end (y2) before tail begins (y1), or tail ends before hair begins
+        no_overlap = hair_y2 <= tail_y1 or tail_y2 <= hair_y1
+        assert no_overlap, (
+            f"Hair region y={hair_y1}-{hair_y2} overlaps tail region y={tail_y1}-{tail_y2} "
+            f"(DEBT-03: hair y2={hair_y2} must be <= tail y1={tail_y1})"
+        )
+
+    def test_eyes_region_in_face_area(self):
+        """Eyes region fits within the face/center-upper area (y < 600)."""
+        from mermaids.pipeline.edit import REGIONS
+
+        _, eyes_y1, _, eyes_y2 = REGIONS["eyes"]
+        assert eyes_y2 <= 600, (
+            f"Eyes region y2={eyes_y2} should be within face area (< 600)"
+        )
+        assert eyes_y1 >= 0, "Eyes region y1 must be non-negative"
+
+
+# -------------------------------------------------------
+# Prompts tests (new for 4-category design)
+# -------------------------------------------------------
+
+
+class TestDressupVariantsPrompts:
+    """Tests for DRESSUP_VARIANTS: 4 categories with 3 variants each."""
+
+    def test_dressup_variants_has_four_categories(self):
+        """DRESSUP_VARIANTS has exactly 4 keys: tails, hair, eyes, accessories."""
+        from mermaids.pipeline.prompts import DRESSUP_VARIANTS
+
+        assert set(DRESSUP_VARIANTS.keys()) == {"tails", "hair", "eyes", "accessories"}, (
+            f"Expected 4 categories, got {set(DRESSUP_VARIANTS.keys())}"
+        )
+
+    def test_dressup_variants_has_twelve_total(self):
+        """DRESSUP_VARIANTS has 12 total variants (3 per category)."""
+        from mermaids.pipeline.prompts import DRESSUP_VARIANTS
+
+        total = sum(len(v) for v in DRESSUP_VARIANTS.values())
+        assert total == 12, f"Expected 12 total variants, got {total}"
+
+    def test_dressup_variants_eyes_category(self):
+        """DRESSUP_VARIANTS has 'eyes' category with 3 variants."""
+        from mermaids.pipeline.prompts import DRESSUP_VARIANTS
+
+        assert "eyes" in DRESSUP_VARIANTS, "DRESSUP_VARIANTS must contain 'eyes'"
+        eyes = DRESSUP_VARIANTS["eyes"]
+        assert len(eyes) == 3, f"Expected 3 eye variants, got {len(eyes)}"
+        ids = {v["id"] for v in eyes}
+        assert ids == {"eye-1", "eye-2", "eye-3"}, (
+            f"Expected eye IDs eye-1, eye-2, eye-3, got {ids}"
+        )
+
+    def test_dressup_variants_each_category_has_three(self):
+        """Each category in DRESSUP_VARIANTS has exactly 3 variants."""
+        from mermaids.pipeline.prompts import DRESSUP_VARIANTS
+
+        for category, variants in DRESSUP_VARIANTS.items():
+            assert len(variants) == 3, (
+                f"Category '{category}' has {len(variants)} variants, expected 3"
+            )
+
+
+# -------------------------------------------------------
 # Base mermaid generation tests
 # -------------------------------------------------------
 
@@ -183,15 +298,15 @@ class TestEditRegion:
 
 
 # -------------------------------------------------------
-# Full variant generation tests
+# Full variant generation tests (updated for 12 variants)
 # -------------------------------------------------------
 
 
 class TestGenerateDressupVariants:
     """Tests for generate_dressup_variants()."""
 
-    def test_generate_dressup_variants_produces_all_nine(self, tmp_path):
-        """generate_dressup_variants() produces 3 tails + 3 hair + 3 accessories = 9 variant PNGs."""
+    def test_generate_dressup_variants_produces_twelve(self, tmp_path):
+        """generate_dressup_variants() produces 3 tails + 3 hair + 3 eyes + 3 accessories = 12 variant PNGs."""
         from mermaids.pipeline.edit import generate_dressup_variants
 
         mock_client = MagicMock()
@@ -208,7 +323,7 @@ class TestGenerateDressupVariants:
         ):
             results = generate_dressup_variants()
 
-        assert len(results) == 9
+        assert len(results) == 12, f"Expected 12 variants, got {len(results)}"
         # All should be Path objects
         for r in results:
             assert isinstance(r, Path)
@@ -218,6 +333,9 @@ class TestGenerateDressupVariants:
         expected = {
             "tail-1", "tail-2", "tail-3",
             "hair-1", "hair-2", "hair-3",
+            "eye-1", "eye-2", "eye-3",
             "acc-1", "acc-2", "acc-3",
         }
-        assert names == expected
+        assert names == expected, (
+            f"Expected variant IDs {expected}, got {names}"
+        )
