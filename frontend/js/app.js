@@ -5,7 +5,7 @@
  */
 
 import { initTouch } from "./touch.js?v=14";
-import { initDressUp, resetState, CHARACTERS, COLORS as DRESSUP_COLORS, SKIN_TONES } from "./dressup.js?v=14";
+import { initDressUp, resetState, CHARACTERS, COLORS as DRESSUP_COLORS } from "./dressup.js?v=14";
 import {
   COLORING_PAGES,
   COLORS as COLORING_COLORS,
@@ -57,7 +57,7 @@ async function renderDressUp() {
     const resp = await fetch("assets/svg/mermaid.svg");
     const svgText = await resp.text();
 
-    const allColors = [...DRESSUP_COLORS, ...SKIN_TONES];
+    const allColors = DRESSUP_COLORS;
 
     el.innerHTML = `
       <div class="dressup-view">
@@ -70,7 +70,7 @@ async function renderDressUp() {
               <button class="char-btn${i === 0 ? " selected" : ""}"
                       data-character="${id}"
                       aria-label="${id}">
-                <span class="char-num">${i + 1}</span>
+                <img src="assets/svg/dressup/${id}.svg" alt="Mermaid ${i + 1}" />
               </button>
             `).join("")}
           </div>

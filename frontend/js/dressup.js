@@ -1,7 +1,7 @@
 /**
  * Dress-up character gallery: 9 diverse mermaid characters displayed in a
- * flat gallery. Tap a character to select it. Color swatches recolor the
- * active character. Includes skin tone colors for inclusive customization.
+ * flat gallery. Tap a character to select it. Color swatches apply a
+ * hue-rotate CSS filter to shift the character's colors.
  *
  * Each character is a standalone pre-generated SVG (mermaid-1..9).
  */
@@ -15,7 +15,7 @@ export const CHARACTERS = [
   "mermaid-7", "mermaid-8", "mermaid-9",
 ];
 
-// Color palette -- fun colors + skin tones for inclusive customization
+// Color palette -- each color maps to a hue-rotate angle
 export const COLORS = [
   "#7ec8c8", // ocean teal
   "#c4a7d7", // lavender
@@ -29,19 +29,10 @@ export const COLORS = [
   "#40e0d0", // turquoise
 ];
 
-export const SKIN_TONES = [
-  "#FDDCB5", // light
-  "#F5C5A3", // light-medium
-  "#E8A97E", // medium
-  "#D4915A", // medium-tan
-  "#C07840", // brown
-  "#8D5524", // deep brown
-];
-
 // State
 export const state = {
   activeCharacter: "mermaid-1",
-  colors: {},
+  currentRotation: 0,
 };
 
 const undoStack = [];
@@ -64,18 +55,44 @@ async function fetchCharacterSVG(characterId) {
 }
 
 /**
+ * Extract hue (0-360) from a hex color string.
+ */
+function hexToHue(hex) {
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const d = max - min;
+  if (d === 0) return 0;
+  let h;
+  if (max === r) h = ((g - b) / d) % 6;
+  else if (max === g) h = (b - r) / d + 2;
+  else h = (r - g) / d + 4;
+  h = Math.round(h * 60);
+  if (h < 0) h += 360;
+  return h;
+}
+
+/**
  * Select a character. Fetches and displays its SVG.
  */
 export async function selectCharacter(characterId) {
   if (state.activeCharacter === characterId) return;
 
   const prevId = state.activeCharacter;
+  const prevRotation = state.currentRotation;
   state.activeCharacter = characterId;
+  state.currentRotation = 0;
 
   const svgText = await fetchCharacterSVG(characterId);
   const container = document.querySelector(".dressup-view .mermaid-container");
   if (!container) return;
   container.innerHTML = svgText;
+
+  // Clear any hue filter from previous character
+  const svgEl = container.querySelector("svg");
+  if (svgEl) svgEl.style.filter = "";
 
   // Update gallery selection
   document.querySelectorAll(".char-btn").forEach((btn) => {
@@ -84,9 +101,14 @@ export async function selectCharacter(characterId) {
 
   pushUndo(async () => {
     state.activeCharacter = prevId;
+    state.currentRotation = prevRotation;
     const prevSvg = await fetchCharacterSVG(prevId);
     const c = document.querySelector(".dressup-view .mermaid-container");
-    if (c) c.innerHTML = prevSvg;
+    if (c) {
+      c.innerHTML = prevSvg;
+      const svg = c.querySelector("svg");
+      if (svg && prevRotation) svg.style.filter = `hue-rotate(${prevRotation}deg)`;
+    }
     document.querySelectorAll(".char-btn").forEach((btn) => {
       btn.classList.toggle("selected", btn.getAttribute("data-character") === prevId);
     });
@@ -96,26 +118,23 @@ export async function selectCharacter(characterId) {
 }
 
 /**
- * Recolor paths in the currently displayed character SVG.
+ * Apply a hue-rotate filter to the displayed character SVG.
  */
 export function recolorActivePart(color) {
-  const svgRoot = document.getElementById("mermaid-svg");
-  if (!svgRoot) return;
+  const container = document.querySelector(".dressup-view .mermaid-container");
+  if (!container) return;
+  const svgEl = container.querySelector("svg");
+  if (!svgEl) return;
 
-  const elements = getRecolorableElements(svgRoot);
-  const previousFills = elements.map((el) => ({
-    element: el,
-    fill: el.getAttribute("fill"),
-  }));
+  const prevRotation = state.currentRotation;
+  const hue = hexToHue(color);
+  state.currentRotation = hue;
 
-  elements.forEach((el) => {
-    el.setAttribute("fill", color);
-  });
+  svgEl.style.filter = hue === 0 ? "" : `hue-rotate(${hue}deg)`;
 
   pushUndo(() => {
-    previousFills.forEach(({ element, fill }) => {
-      element.setAttribute("fill", fill);
-    });
+    state.currentRotation = prevRotation;
+    svgEl.style.filter = prevRotation === 0 ? "" : `hue-rotate(${prevRotation}deg)`;
   });
 }
 
@@ -129,7 +148,8 @@ export function checkCompletion() {
 
   if (isComplete && !celebrated) {
     celebrated = true;
-    const svgRoot = document.getElementById("mermaid-svg");
+    const container = document.querySelector(".dressup-view .mermaid-container");
+    const svgRoot = container ? container.querySelector("svg") : null;
     if (svgRoot) {
       triggerCelebration(svgRoot);
     }
@@ -142,7 +162,7 @@ export function checkCompletion() {
 
 export function resetState() {
   state.activeCharacter = "mermaid-1";
-  state.colors = {};
+  state.currentRotation = 0;
   undoStack.length = 0;
   celebrated = false;
 }
@@ -179,42 +199,6 @@ export async function initDressUp() {
 }
 
 // -- Internal helpers ---------------------------------------------------------
-
-function _isDark(hex) {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return r < 0x50 && g < 0x50 && b < 0x50;
-}
-
-function _isSkinTone(hex) {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return r > 0xD0 && g > 0x90 && g < 0xE0 && b > 0x70 && b < 0xD0 && r > g && g > b;
-}
-
-function _isNearWhite(hex) {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return r > 0xE8 && g > 0xE8 && b > 0xE8;
-}
-
-function getRecolorableElements(parentEl) {
-  return Array.from(
-    parentEl.querySelectorAll("path, circle, ellipse, rect")
-  ).filter((el) => {
-    const fill = el.getAttribute("fill");
-    if (!fill || fill === "none") return false;
-    const hex = fill.trim();
-    if (!hex.startsWith("#") || hex.length !== 7) return false;
-    if (_isDark(hex)) return false;
-    if (_isSkinTone(hex)) return false;
-    if (_isNearWhite(hex)) return false;
-    return true;
-  });
-}
 
 function pushUndo(fn) {
   undoStack.push({ undo: fn });

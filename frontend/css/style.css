@@ -195,6 +195,13 @@ html, body {
     transform: scale(0.93);
 }
 
+.char-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+}
+
 .char-num {
     font-size: 1.2rem;
     font-weight: 700;
