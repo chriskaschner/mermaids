@@ -21,3 +21,19 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# ── GSD baseline (auto-generated) ──
+*.swo
+*~
+*.code-workspace
+!.env.example
+node_modules/
+.next/
+*.pyc
+venv/
+target/
+vendor/
+*.log
+coverage/
+.cache/
+tmp/

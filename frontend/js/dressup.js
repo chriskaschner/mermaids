@@ -49,6 +49,7 @@ async function fetchCharacterSVG(characterId) {
     return characterSVGCache.get(characterId);
   }
   const resp = await fetch(`assets/svg/dressup/${characterId}.svg`);
+  if (!resp.ok) throw new Error(`Failed to load character SVG: ${resp.status}`);
   const text = await resp.text();
   characterSVGCache.set(characterId, text);
   return text;

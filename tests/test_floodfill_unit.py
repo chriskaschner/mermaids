@@ -277,7 +277,7 @@ class TestColoringModuleExports:
         assert result["third"] == "#ff69b4"
 
     def test_exports_coloring_pages_array(self, js_page: Page):
-        """COLORING_PAGES is an array of 4 page metadata objects."""
+        """COLORING_PAGES is an array of 9 page metadata objects."""
         result = js_page.evaluate("""
             (async () => {
                 const mod = await import('./js/coloring.js');
@@ -288,7 +288,7 @@ class TestColoringModuleExports:
                 };
             })()
         """)
-        assert result["length"] == 4
+        assert result["length"] == 9
         assert result["firstId"] == "page-1-ocean"
         assert result["firstLabel"] == "Ocean Mermaid"
 

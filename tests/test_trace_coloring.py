@@ -121,3 +121,14 @@ class TestTraceAllColoring:
 
         # The pre-existing SVG should not have been overwritten
         assert existing_svg.read_text() == original_content
+
+
+class TestColoringSVGAssets:
+    """Verify all 9 coloring page SVGs exist in the frontend directory."""
+
+    def test_all_nine_coloring_svgs_exist(self):
+        """All 9 coloring page SVGs are deployed to frontend/assets/svg/coloring/."""
+        from pathlib import Path
+        svg_dir = Path(__file__).resolve().parent.parent / "frontend" / "assets" / "svg" / "coloring"
+        svg_files = sorted(svg_dir.glob("page-*.svg"))
+        assert len(svg_files) >= 9, f"Expected 9 coloring SVGs, found {len(svg_files)}: {[f.name for f in svg_files]}"

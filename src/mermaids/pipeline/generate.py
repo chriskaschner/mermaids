@@ -127,7 +127,7 @@ def generate_dressup_characters() -> list[Path]:
 
 
 def generate_coloring_pages() -> list[Path]:
-    """Generate all 4 coloring page PNGs.
+    """Generate all coloring page PNGs.
 
     Each page combines the COLORING_BASE_PROMPT with a page-specific
     detail prompt. Output goes to GENERATED_PNG_DIR / "coloring" / "<id>.png".

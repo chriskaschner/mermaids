@@ -78,7 +78,7 @@ class TestColoringGallery:
     def test_gallery_shows_thumbnails(self, coloring_page: Page):
         """Navigate to #/coloring. Assert .gallery-thumb buttons exist with count >= 4."""
         thumbs = coloring_page.locator(".gallery-thumb")
-        assert thumbs.count() >= 4, f"Expected >= 4 gallery thumbnails, got {thumbs.count()}"
+        assert thumbs.count() >= 9, f"Expected >= 9 gallery thumbnails, got {thumbs.count()}"
         for i in range(thumbs.count()):
             attr = thumbs.nth(i).get_attribute("data-page")
             assert attr is not None, f"Thumbnail {i} missing data-page attribute"

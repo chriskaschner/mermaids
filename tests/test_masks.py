@@ -113,7 +113,7 @@ class TestRegions:
 
 
 # -------------------------------------------------------
-# Character prompt tests (replaces DRESSUP_VARIANTS tests)
+# Character prompt tests
 # -------------------------------------------------------
 
 

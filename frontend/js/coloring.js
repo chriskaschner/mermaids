@@ -40,6 +40,11 @@ export const COLORING_PAGES = [
   { id: "page-2-castle", label: "Mermaid Castle", file: "assets/svg/coloring/page-2-castle.svg" },
   { id: "page-3-seahorse", label: "Seahorse Friend", file: "assets/svg/coloring/page-3-seahorse.svg" },
   { id: "page-4-coral", label: "Coral Reef", file: "assets/svg/coloring/page-4-coral.svg" },
+  { id: "page-5-forest", label: "Kelp Forest", file: "assets/svg/coloring/page-5-forest.svg" },
+  { id: "page-6-treasure", label: "Treasure Chest", file: "assets/svg/coloring/page-6-treasure.svg" },
+  { id: "page-7-jellyfish", label: "Jellyfish Meadow", file: "assets/svg/coloring/page-7-jellyfish.svg" },
+  { id: "page-8-whirlpool", label: "Whirlpool Vortex", file: "assets/svg/coloring/page-8-whirlpool.svg" },
+  { id: "page-9-starfish", label: "Starfish Beach", file: "assets/svg/coloring/page-9-starfish.svg" },
 ];
 
 // -- State --------------------------------------------------------------------

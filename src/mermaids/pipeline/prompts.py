@@ -33,6 +33,51 @@ COLORING_PAGES: list[dict[str, str]] = [
         "id": "page-4-coral",
         "prompt_detail": "playing among coral reef formations with starfish on the ground",
     },
+    {
+        "id": "page-5-forest",
+        "prompt_detail": (
+            "A chibi kawaii mermaid with curly afro puffs hair and sparkle eyes "
+            "swimming through a tall kelp forest, with a star-shaped tail fin. "
+            "The mermaid's hair is a single enclosed shape with a clear black outline. "
+            "The mermaid's tail is a single enclosed shape with a clear black outline."
+        ),
+    },
+    {
+        "id": "page-6-treasure",
+        "prompt_detail": (
+            "A chibi kawaii mermaid with long braids adorned with beads and wide eyes "
+            "discovering a treasure chest on the ocean floor, with a rounded fin tail. "
+            "The mermaid's hair is a single enclosed shape with a clear black outline. "
+            "The mermaid's tail is a single enclosed shape with a clear black outline."
+        ),
+    },
+    {
+        "id": "page-7-jellyfish",
+        "prompt_detail": (
+            "A chibi kawaii mermaid with coily hair and a flower tucked in and bright eyes "
+            "floating among glowing jellyfish in a meadow, with a flowing tail. "
+            "The mermaid's hair is a single enclosed shape with a clear black outline. "
+            "The mermaid's tail is a single enclosed shape with a clear black outline."
+        ),
+    },
+    {
+        "id": "page-8-whirlpool",
+        "prompt_detail": (
+            "A chibi kawaii mermaid with silver locs with ocean-blue tips and big bright eyes "
+            "riding a whirlpool vortex surrounded by swirling bubbles, with a deep fin tail. "
+            "The mermaid's hair is a single enclosed shape with a clear black outline. "
+            "The mermaid's tail is a single enclosed shape with a clear black outline."
+        ),
+    },
+    {
+        "id": "page-9-starfish",
+        "prompt_detail": (
+            "A chibi kawaii mermaid with a short bob with bangs and starry eyes "
+            "resting on a starfish beach with sand dollars all around, with an iridescent tail. "
+            "The mermaid's hair is a single enclosed shape with a clear black outline. "
+            "The mermaid's tail is a single enclosed shape with a clear black outline."
+        ),
+    },
 ]
 
 # ---------------------------------------------------------------------------

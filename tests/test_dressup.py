@@ -103,19 +103,23 @@ class TestColorSwatches:
         assert swatches.count() > 0, "Expected color swatches to be visible"
 
     def test_color_swatch_recolors_paths(self, dressup_page: Page):
-        """Clicking a color swatch applies the color to recolorable paths."""
+        """Clicking a color swatch applies a hue-rotate CSS filter to the mermaid SVG.
+
+        Recoloring uses CSS hue-rotate (not fill manipulation) so it works on all
+        characters including dark-skinned ones where fill heuristics fail.
+        """
         dressup_page.locator('.color-swatch[data-color="#ff69b4"]').click()
         dressup_page.wait_for_timeout(200)
 
-        has_pink = dressup_page.evaluate("""
+        has_filter = dressup_page.evaluate("""
             (() => {
                 const svg = document.getElementById('mermaid-svg');
                 if (!svg) return false;
-                const els = svg.querySelectorAll('path, circle, ellipse, rect');
-                return Array.from(els).some(el => el.getAttribute('fill') === '#ff69b4');
+                const filter = svg.style.filter || '';
+                return filter.includes('hue-rotate');
             })()
         """)
-        assert has_pink, "Expected at least one element with fill #ff69b4 after recolor"
+        assert has_filter, "Expected hue-rotate CSS filter on mermaid-svg after color swatch click"
 
 
 class TestUndo:
@@ -136,13 +140,13 @@ class TestUndo:
         expect(dressup_page.locator('.char-btn').nth(0)).to_have_class(re.compile("selected"))
 
     def test_undo_reverts_color(self, dressup_page: Page):
-        """Recoloring then clicking undo restores the previous fills."""
-        original_fill = dressup_page.evaluate("""
+        """Recoloring then clicking undo removes the hue-rotate CSS filter."""
+        # Get initial filter state (should be empty)
+        original_filter = dressup_page.evaluate("""
             (() => {
                 const svg = document.getElementById('mermaid-svg');
-                if (!svg) return null;
-                const filled = svg.querySelector('path[fill]:not([fill="none"])');
-                return filled ? filled.getAttribute('fill') : null;
+                if (!svg) return '';
+                return svg.style.filter || '';
             })()
         """)
 
@@ -152,15 +156,14 @@ class TestUndo:
         dressup_page.locator('.undo-btn').click()
         dressup_page.wait_for_timeout(200)
 
-        restored_fill = dressup_page.evaluate("""
+        restored_filter = dressup_page.evaluate("""
             (() => {
                 const svg = document.getElementById('mermaid-svg');
-                if (!svg) return null;
-                const filled = svg.querySelector('path[fill]:not([fill="none"])');
-                return filled ? filled.getAttribute('fill') : null;
+                if (!svg) return '';
+                return svg.style.filter || '';
             })()
         """)
-        assert restored_fill == original_fill, f"Expected {original_fill} after undo, got {restored_fill}"
+        assert restored_filter == original_filter, f"Expected filter '{original_filter}' after undo, got '{restored_filter}'"
 
 
 class TestCompletion:

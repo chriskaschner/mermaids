@@ -199,8 +199,8 @@ class TestGenerateImage:
 class TestGenerateColoringPages:
     """Tests for generate_coloring_pages function."""
 
-    def test_generate_coloring_pages_produces_all_four(self, tmp_path):
-        """generate_coloring_pages() calls generate_image for each of the 4
+    def test_generate_coloring_pages_produces_all_nine(self, tmp_path):
+        """generate_coloring_pages() calls generate_image for each of the 9
         coloring page definitions."""
         from mermaids.pipeline.generate import generate_coloring_pages
 
@@ -216,10 +216,22 @@ class TestGenerateColoringPages:
         ):
             results = generate_coloring_pages()
 
-        assert len(results) == 4
+        assert len(results) == 9
         # All should be Path objects
         for r in results:
             assert isinstance(r, Path)
+
+    def test_coloring_page_prompts_have_distinct_styles(self):
+        """All 9 COLORING_PAGES entries have unique IDs and distinct prompt_detail."""
+        from mermaids.pipeline.prompts import COLORING_PAGES
+
+        assert len(COLORING_PAGES) == 9, f"Expected 9 coloring pages, got {len(COLORING_PAGES)}"
+
+        ids = [p["id"] for p in COLORING_PAGES]
+        assert len(ids) == len(set(ids)), "All COLORING_PAGES IDs must be unique"
+
+        prompts = [p["prompt_detail"] for p in COLORING_PAGES]
+        assert len(prompts) == len(set(prompts)), "All COLORING_PAGES prompt_detail values must be unique"
 
 
 class TestGenerateDressupCharacters:
