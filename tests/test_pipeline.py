@@ -1,11 +1,54 @@
 """Tests for the SVG tracing pipeline."""
 
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
 import pytest
 from PIL import Image
 
+from mermaids.pipeline.config import FRONTEND_SVG_DIR
 from mermaids.pipeline.trace import trace_to_svg
+
+# ---------------------------------------------------------------------------
+# Dress-up coloring outline asset tests
+# ---------------------------------------------------------------------------
+
+DRESSUP_COLORING_DIR: Path = FRONTEND_SVG_DIR / "dressup-coloring"
+OUTLINE_IDS: list[str] = [f"mermaid-{i}" for i in range(1, 10)]
+
+
+def test_dressup_coloring_outlines_exist():
+    """All 9 mermaid-{1-9}-outline.svg files exist in dressup-coloring/ and are >500 bytes."""
+    missing = []
+    too_small = []
+    for cid in OUTLINE_IDS:
+        path = DRESSUP_COLORING_DIR / f"{cid}-outline.svg"
+        if not path.exists():
+            missing.append(path.name)
+            continue
+        size = path.stat().st_size
+        if size <= 500:
+            too_small.append(f"{path.name} ({size} bytes)")
+
+    assert not missing, f"Missing outline SVGs: {missing}"
+    assert not too_small, f"Outline SVGs under 500 bytes: {too_small}"
+
+
+def test_dressup_coloring_outlines_are_valid_svg():
+    """Each mermaid-{1-9}-outline.svg starts with '<svg' and contains 'viewBox'."""
+    invalid = []
+    for cid in OUTLINE_IDS:
+        path = DRESSUP_COLORING_DIR / f"{cid}-outline.svg"
+        if not path.exists():
+            invalid.append(f"{path.name}: file not found")
+            continue
+        content = path.read_text(encoding="utf-8")
+        if not content.lstrip().startswith("<svg"):
+            invalid.append(f"{path.name}: does not start with <svg")
+        if "viewBox" not in content:
+            invalid.append(f"{path.name}: missing viewBox attribute")
+
+    assert not invalid, f"Invalid SVG files: {invalid}"
 
 
 @pytest.fixture

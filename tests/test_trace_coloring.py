@@ -132,3 +132,14 @@ class TestColoringSVGAssets:
         svg_dir = Path(__file__).resolve().parent.parent / "frontend" / "assets" / "svg" / "coloring"
         svg_files = sorted(svg_dir.glob("page-*.svg"))
         assert len(svg_files) >= 9, f"Expected 9 coloring SVGs, found {len(svg_files)}: {[f.name for f in svg_files]}"
+
+    def test_all_coloring_svgs_have_real_art(self):
+        """All 9 coloring SVGs contain >= 5 <path elements (real art, not 1x1 placeholder)."""
+        svg_dir = Path(__file__).resolve().parent.parent / "frontend" / "assets" / "svg" / "coloring"
+        failing = []
+        for svg_file in sorted(svg_dir.glob("page-*.svg")):
+            content = svg_file.read_text(encoding="utf-8")
+            path_count = content.count("<path")
+            if path_count < 5:
+                failing.append(f"{svg_file.name}: {path_count} paths")
+        assert not failing, f"SVGs with insufficient paths (real art needs >= 5): {failing}"

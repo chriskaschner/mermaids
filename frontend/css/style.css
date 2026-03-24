@@ -459,6 +459,37 @@ html, body {
     box-shadow: 0 0 0 2px #5b8fa8;
 }
 
+/* "Color This!" button in dress-up selection panel */
+.color-this-btn {
+    display: block;
+    width: calc(100% - 16px);
+    margin: 6px 8px 4px;
+    min-height: 60px;
+    padding: 10px 16px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    color: #fff;
+    background: linear-gradient(135deg, #ff6b9d 0%, #ff8c42 100%);
+    border: none;
+    border-radius: 18px;
+    box-shadow: 0 4px 12px rgba(255, 107, 157, 0.35);
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    -webkit-font-smoothing: antialiased;
+}
+
+.color-this-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(255, 107, 157, 0.45);
+}
+
+.color-this-btn:active {
+    transform: scale(0.96);
+    box-shadow: 0 2px 8px rgba(255, 107, 157, 0.3);
+}
+
 /* Loading state */
 .loading {
     display: flex;

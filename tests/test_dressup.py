@@ -103,10 +103,10 @@ class TestColorSwatches:
         assert swatches.count() > 0, "Expected color swatches to be visible"
 
     def test_color_swatch_recolors_paths(self, dressup_page: Page):
-        """Clicking a color swatch applies a hue-rotate CSS filter to the mermaid SVG.
+        """Clicking a color swatch applies a hue-rotate CSS filter to #hair-group.
 
-        Recoloring uses CSS hue-rotate (not fill manipulation) so it works on all
-        characters including dark-skinned ones where fill heuristics fail.
+        Recoloring uses CSS hue-rotate on #hair-group (not root SVG) to isolate
+        color shift to hair paths only.
         """
         dressup_page.locator('.color-swatch[data-color="#ff69b4"]').click()
         dressup_page.wait_for_timeout(200)
@@ -115,11 +115,36 @@ class TestColorSwatches:
             (() => {
                 const svg = document.getElementById('mermaid-svg');
                 if (!svg) return false;
-                const filter = svg.style.filter || '';
+                const hairGroup = svg.querySelector('#hair-group');
+                if (!hairGroup) return false;
+                const filter = hairGroup.style.filter || '';
                 return filter.includes('hue-rotate');
             })()
         """)
-        assert has_filter, "Expected hue-rotate CSS filter on mermaid-svg after color swatch click"
+        assert has_filter, "Expected hue-rotate CSS filter on #hair-group after color swatch click"
+
+    def test_hue_rotate_targets_hair_group_not_root(self, dressup_page: Page):
+        """After recoloring, #hair-group has hue-rotate filter but root SVG does not."""
+        dressup_page.locator('.color-swatch[data-color="#c4a7d7"]').click()
+        dressup_page.wait_for_timeout(200)
+
+        result = dressup_page.evaluate("""
+            (() => {
+                const svg = document.getElementById('mermaid-svg');
+                if (!svg) return { error: 'no mermaid-svg' };
+                const hairGroup = svg.querySelector('#hair-group');
+                if (!hairGroup) return { error: 'no hair-group' };
+                return {
+                    hairGroupFilter: hairGroup.style.filter || '',
+                    rootSvgFilter: svg.style.filter || '',
+                };
+            })()
+        """)
+        assert 'error' not in result, f"DOM query failed: {result}"
+        assert 'hue-rotate' in result['hairGroupFilter'], \
+            f"Expected hue-rotate on #hair-group, got: '{result['hairGroupFilter']}'"
+        assert result['rootSvgFilter'] == '', \
+            f"Expected no filter on root SVG, got: '{result['rootSvgFilter']}'"
 
 
 class TestUndo:
@@ -140,13 +165,15 @@ class TestUndo:
         expect(dressup_page.locator('.char-btn').nth(0)).to_have_class(re.compile("selected"))
 
     def test_undo_reverts_color(self, dressup_page: Page):
-        """Recoloring then clicking undo removes the hue-rotate CSS filter."""
+        """Recoloring then clicking undo removes the hue-rotate CSS filter from #hair-group."""
         # Get initial filter state (should be empty)
         original_filter = dressup_page.evaluate("""
             (() => {
                 const svg = document.getElementById('mermaid-svg');
                 if (!svg) return '';
-                return svg.style.filter || '';
+                const hairGroup = svg.querySelector('#hair-group');
+                if (!hairGroup) return '';
+                return hairGroup.style.filter || '';
             })()
         """)
 
@@ -160,7 +187,9 @@ class TestUndo:
             (() => {
                 const svg = document.getElementById('mermaid-svg');
                 if (!svg) return '';
-                return svg.style.filter || '';
+                const hairGroup = svg.querySelector('#hair-group');
+                if (!hairGroup) return '';
+                return hairGroup.style.filter || '';
             })()
         """)
         assert restored_filter == original_filter, f"Expected filter '{original_filter}' after undo, got '{restored_filter}'"

@@ -91,9 +91,9 @@ export async function selectCharacter(characterId) {
   if (!container) return;
   container.innerHTML = svgText;
 
-  // Clear any hue filter from previous character
-  const svgEl = container.querySelector("svg");
-  if (svgEl) svgEl.style.filter = "";
+  // Clear any hue filter from previous character (target hair-group, not root SVG)
+  const hairGroupNew = container.querySelector("#hair-group");
+  if (hairGroupNew) hairGroupNew.style.filter = "";
 
   // Update gallery selection
   document.querySelectorAll(".char-btn").forEach((btn) => {
@@ -107,8 +107,8 @@ export async function selectCharacter(characterId) {
     const c = document.querySelector(".dressup-view .mermaid-container");
     if (c) {
       c.innerHTML = prevSvg;
-      const svg = c.querySelector("svg");
-      if (svg && prevRotation) svg.style.filter = `hue-rotate(${prevRotation}deg)`;
+      const hairGrp = c.querySelector("#hair-group");
+      if (hairGrp && prevRotation) hairGrp.style.filter = `hue-rotate(${prevRotation}deg)`;
     }
     document.querySelectorAll(".char-btn").forEach((btn) => {
       btn.classList.toggle("selected", btn.getAttribute("data-character") === prevId);
@@ -119,23 +119,23 @@ export async function selectCharacter(characterId) {
 }
 
 /**
- * Apply a hue-rotate filter to the displayed character SVG.
+ * Apply a hue-rotate filter to the hair group of the displayed character SVG.
  */
 export function recolorActivePart(color) {
   const container = document.querySelector(".dressup-view .mermaid-container");
   if (!container) return;
-  const svgEl = container.querySelector("svg");
-  if (!svgEl) return;
+  const hairGroup = container.querySelector("#hair-group");
+  if (!hairGroup) return;
 
   const prevRotation = state.currentRotation;
   const hue = hexToHue(color);
   state.currentRotation = hue;
 
-  svgEl.style.filter = hue === 0 ? "" : `hue-rotate(${hue}deg)`;
+  hairGroup.style.filter = hue === 0 ? "" : `hue-rotate(${hue}deg)`;
 
   pushUndo(() => {
     state.currentRotation = prevRotation;
-    svgEl.style.filter = prevRotation === 0 ? "" : `hue-rotate(${prevRotation}deg)`;
+    hairGroup.style.filter = prevRotation === 0 ? "" : `hue-rotate(${prevRotation}deg)`;
   });
 }
 

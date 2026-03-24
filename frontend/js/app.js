@@ -5,7 +5,7 @@
  */
 
 import { initTouch } from "./touch.js?v=14";
-import { initDressUp, resetState, CHARACTERS, COLORS as DRESSUP_COLORS } from "./dressup.js?v=14";
+import { initDressUp, resetState, CHARACTERS, COLORS as DRESSUP_COLORS, state as dressupState } from "./dressup.js?v=14";
 import {
   COLORING_PAGES,
   COLORS as COLORING_COLORS,
@@ -32,9 +32,10 @@ function renderHome() {
       <a href="#/dressup" class="activity-btn activity-btn--dressup" aria-label="Dress Up">
         <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="40" cy="40" r="36" fill="#f0d4f5" stroke="#c47ed0" stroke-width="2"/>
-          <path d="M40 12L44 28L56 28L46 38L50 54L40 44L30 54L34 38L24 28L36 28Z"
-                fill="#c47ed0" opacity="0.8"/>
-          <path d="M28 58Q34 52 40 56Q46 52 52 58" stroke="#c47ed0" stroke-width="2.5"
+          <!-- mermaid tail: narrow stem, bifurcated lobes scaled to 80×80 -->
+          <path d="M34 10 C34 10 32 26 32 36 C22 41 12 50 14 62 C20 58 30 50 40 54 C50 50 60 58 66 62 C68 50 58 41 48 36 C48 26 46 10 46 10 Z"
+                fill="#c47ed0" opacity="0.85"/>
+          <path d="M40 44 L40 54" stroke="#9b5faa" stroke-width="2.5"
                 stroke-linecap="round" fill="none"/>
         </svg>
       </a>
@@ -92,6 +93,7 @@ async function renderDressUp() {
               </svg>
             </button>
           </div>
+          <button class="color-this-btn" aria-label="Color This Mermaid!">🎨 Color This!</button>
         </div>
       </div>
     `;
@@ -106,8 +108,190 @@ async function renderDressUp() {
     initTouch("#mermaid-svg");
     // Wire dress-up interaction (gallery, colors, undo)
     await initDressUp();
+    // Wire "Color This!" button — navigate to coloring with the active character
+    const colorThisBtn = el.querySelector(".color-this-btn");
+    if (colorThisBtn) {
+      colorThisBtn.addEventListener("click", () => {
+        const characterId = dressupState.activeCharacter || "mermaid-1";
+        window.location.hash = "#/coloring?character=" + characterId;
+      });
+    }
   } catch (err) {
     el.innerHTML = '<div class="error">Could not load mermaid.</div>';
+  }
+}
+
+/**
+ * Render a coloring canvas for a specific dress-up character.
+ * Loads the B&W outline from dressup-coloring/{characterId}-outline.svg.
+ * Back button returns to dress-up view (not the coloring gallery).
+ *
+ * Observability:
+ *   - console.error logged on SVG fetch failure
+ *   - .error div rendered if outline fails to load (inspectable in DOM)
+ *   - #coloring-canvas id added to canvas for DevTools inspection
+ *   - Network tab: outline SVG request visible as dressup-coloring/{id}-outline.svg
+ */
+async function renderColoringForCharacter(characterId) {
+  const el = appEl();
+  releaseCanvas();
+  el.innerHTML = '<div class="loading">Loading...</div>';
+
+  const svgUrl = `assets/svg/dressup-coloring/${characterId}-outline.svg`;
+
+  try {
+    // Build coloring view — identical structure to openColoringPage()
+    el.innerHTML = `
+      <div class="coloring-view">
+        <div class="coloring-page-container" id="coloring-container">
+        </div>
+        <div class="coloring-panel">
+          <div class="coloring-toolbar">
+            <button class="back-btn" aria-label="Back to dress-up">
+              <svg width="24" height="24" viewBox="0 0 24 24">
+                <path d="M15,4 L7,12 L15,20" fill="none" stroke="#888" stroke-width="2.5" stroke-linecap="round" />
+              </svg>
+            </button>
+            <button class="tool-btn selected" data-tool="fill" aria-label="Fill tool">
+              <svg width="24" height="24" viewBox="0 0 100 100" fill="none" stroke="#888" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 42 A30 30 0 0 1 80 42"/>
+                <path d="M15 42 L85 42 L85 88 Q85 95 78 95 L22 95 Q15 95 15 88 Z"/>
+                <path d="M72 42 C80 52 68 60 76 72" stroke-width="6"/>
+              </svg>
+            </button>
+            <button class="tool-btn" data-tool="brush" aria-label="Brush tool">
+              <svg width="24" height="24" viewBox="0 0 100 100" fill="none" stroke="#888" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 94 C0 82 2 68 12 60 C20 54 30 56 32 66 C34 76 22 92 8 94Z"/>
+                <line x1="24" y1="54" x2="36" y2="66"/>
+                <line x1="30" y1="48" x2="42" y2="60"/>
+                <path d="M34 50 C46 38 62 22 78 10 Q84 6 86 8 Q88 10 84 16 C70 30 54 46 42 58"/>
+              </svg>
+            </button>
+            <button class="undo-btn disabled" aria-label="Undo">
+              <svg width="24" height="24" viewBox="0 0 24 24">
+                <path d="M7,12 L3,8 L7,4 M3,8 L15,8 Q20,8 20,14 Q20,20 15,20 L10,20"
+                      fill="none" stroke="#888" stroke-width="2.5" stroke-linecap="round" />
+              </svg>
+            </button>
+          </div>
+          <div class="options-row" id="color-swatches">
+            ${COLORING_COLORS.map(
+              (color, i) => `
+              <button class="color-swatch${i === 2 ? " selected" : ""}"
+                      data-color="${color}"
+                      aria-label="Color ${color}"
+                      style="background: ${color};">
+              </button>
+            `
+            ).join("")}
+          </div>
+        </div>
+      </div>
+    `;
+
+    const container = el.querySelector("#coloring-container");
+    const undoBtn = el.querySelector(".coloring-toolbar .undo-btn");
+    let activeTool = "fill";
+
+    // Wire tool toggle buttons
+    el.querySelectorAll(".tool-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        activeTool = btn.dataset.tool;
+        el.querySelectorAll(".tool-btn").forEach((b) => b.classList.remove("selected"));
+        btn.classList.add("selected");
+      });
+    });
+
+    // Set default selected color (hot pink, COLORS[2])
+    setSelectedColor(COLORING_COLORS[2]);
+
+    // Initialize canvas with the character's outline SVG
+    const { canvas } = await initColoringCanvas(svgUrl, container);
+    canvas.id = "coloring-canvas";
+
+    // Fetch SVG text for crisp overlay
+    const svgResp = await fetch(svgUrl);
+    if (!svgResp.ok) throw new Error(`Failed to load outline SVG: ${svgResp.status}`);
+    const svgText = await svgResp.text();
+    const parser = new DOMParser();
+    const svgDoc = parser.parseFromString(svgText, "image/svg+xml");
+    const svgOverlay = svgDoc.documentElement;
+    svgOverlay.classList.add("coloring-svg-overlay");
+    svgOverlay.style.pointerEvents = "none";
+    if (!svgOverlay.getAttribute("viewBox")) {
+      const w = svgOverlay.getAttribute("width") || "1024";
+      const h = svgOverlay.getAttribute("height") || "1024";
+      svgOverlay.setAttribute("viewBox", `0 0 ${w} ${h}`);
+    }
+    svgOverlay.removeAttribute("width");
+    svgOverlay.removeAttribute("height");
+    container.appendChild(svgOverlay);
+
+    // Coordinate mapping helper
+    function _toCanvas(e) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      return [
+        Math.floor((e.clientX - rect.left) * scaleX),
+        Math.floor((e.clientY - rect.top) * scaleY),
+      ];
+    }
+
+    // Wire canvas pointer events
+    canvas.addEventListener("pointerdown", (e) => {
+      canvas.setPointerCapture(e.pointerId);
+      const [cx, cy] = _toCanvas(e);
+      if (activeTool === "fill") {
+        handleCanvasTap(cx, cy);
+        _updateUndoBtn(undoBtn);
+      } else {
+        strokeStart(cx, cy);
+      }
+    });
+    canvas.addEventListener("pointermove", (e) => {
+      if (activeTool === "brush") {
+        strokeMove(..._toCanvas(e));
+      }
+    });
+    canvas.addEventListener("pointerup", () => {
+      if (activeTool === "brush") {
+        strokeEnd();
+      }
+      _updateUndoBtn(undoBtn);
+    });
+    canvas.addEventListener("pointercancel", () => {
+      if (activeTool === "brush") {
+        strokeEnd();
+      }
+      _updateUndoBtn(undoBtn);
+    });
+
+    // Wire undo button
+    undoBtn.addEventListener("click", () => {
+      coloringUndo();
+      _updateUndoBtn(undoBtn);
+    });
+
+    // Back button → return to dress-up (not gallery)
+    el.querySelector(".back-btn").addEventListener("click", () => {
+      releaseCanvas();
+      window.location.hash = "#/dressup";
+    });
+
+    // Wire color swatch selection
+    el.querySelectorAll(".color-swatch").forEach((swatch) => {
+      swatch.addEventListener("click", () => {
+        setSelectedColor(swatch.dataset.color);
+        el.querySelectorAll(".color-swatch").forEach((s) =>
+          s.classList.remove("selected")
+        );
+        swatch.classList.add("selected");
+      });
+    });
+  } catch (err) {
+    console.error(`renderColoringForCharacter: failed to load ${svgUrl}`, err);
+    el.innerHTML = '<div class="error">Could not load coloring page.</div>';
   }
 }
 
@@ -327,7 +511,24 @@ function router() {
   // Release any active coloring canvas before rendering a new route (CLRV-04)
   releaseCanvas();
 
-  const hash = window.location.hash.slice(2) || "home";
+  const rawHash = window.location.hash.slice(2) || "home";
+  // Parse optional query string: "#/coloring?character=mermaid-3" → hash="coloring", params={character:"mermaid-3"}
+  const [hash, queryString] = rawHash.split("?");
+  const params = {};
+  if (queryString) {
+    queryString.split("&").forEach((pair) => {
+      const [key, value] = pair.split("=");
+      if (key) params[decodeURIComponent(key)] = decodeURIComponent(value || "");
+    });
+  }
+
+  // Route with character param: direct dress-up → coloring flow (bypasses gallery)
+  if (hash === "coloring" && params.character) {
+    renderColoringForCharacter(params.character);
+    updateNavHighlight(hash);
+    return;
+  }
+
   const render = routes[hash];
   if (render) {
     render();
